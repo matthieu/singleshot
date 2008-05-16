@@ -1,0 +1,13 @@
+<ol class='tasks hfeed'>
+  <% @tasks.each do |task| %>
+    <% content_tag_for 'li', task, :class=>'hentry' do %>
+      <div class='actions'><%= task_actions(task) %></div>
+      <h3 class='entry-title priority_<%= task.priority %> <%= 'overdue' if task.over_due? %>'>
+        <%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>'View/perform task' %></h3>
+      <div class='entry-content'>
+        <p class='description'><%= h(task.description) %></p>
+        <p class='vitals'><%= task_vitals(task) %></p>
+      </div>
+    <% end %>
+  <% end %>
+</ol>

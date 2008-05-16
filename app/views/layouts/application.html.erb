@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>Singleshot<%= " &mdash; #{escape_once(@title)}" if @title %></title>
+    <%= javascript_include_tag :all, :cache=>true %>
+    <%= stylesheet_link_tag 'default', :cache=>true %>
+    <%= stylesheet_link_tag 'print', :media=>'print', :cache=>true %>
+    <% @alternate.each do |mime, url| %>
+      <%= auto_discovery_link_tag mime.to_sym, url %>
+    <% end if @alternate %>
+  </head>
+  <body>
+    <div id='header'>
+      <h1><%= link_to 'Singleshot', root_url %></h1>
+      <ul id='personal'>
+        <li><a href='#'>Help</a></li>
+        <li><a href='#'>Settings</a></li>
+        <li><%= link_to 'Logout', session_url(:method=>:delete) %></li>
+      </ul>
+      <ul id='navigation'>
+        <li><%= link_to '➠ Tasks', tasks_url %></li>
+        <li><%= link_to 'Following', following_tasks_url %></a></li>
+        <li><%= link_to 'Completed', completed_tasks_url %></a></li>
+        <li><%= link_to 'Activity', activity_url %></a></li>
+        <li><a href='#'>Start &hellip;</a></li>
+      </ul>
+      <% if @alternate %>
+        <ul class='alternate'>
+          <li id='atom'><%= link_to image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :title=>'Subscribe with your feed reader' %></li>
+          <li id='ical'><%= link_to image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :title=>'Add this link to your calendar' %></li>
+        </ul>
+      <% end %>
+    </div>
+    <div id='main'>
+<%= yield %>
+    </div>
+    <div id='footer'>
+      <!-- Footer comes here -->
+    </div>
+  </body>
+</html>

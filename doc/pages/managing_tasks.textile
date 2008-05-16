@@ -1,0 +1,209 @@
+h1.  Creating and Managing Tasks
+
+h2.  Creating a Task
+
+To create a new task, the application authenticates and sends a POST request to the resource @/tasks@.  The task manager returns one of the following responses:
+
+* *201 (Created)* -- Includes a representation of the task in the selected content type, and the task URL in the @Location@ header.
+* *422 (Unprocessable Entity)* -- Indicates an invalid request, for example, priority out of range, person does not exist, etc.  The response provides more details.
+
+The application can make the request in any of the supported content types (see "Content Types":#content_types), using the following fields:
+
+* @admins@ -- List of administrators associated with the task.  You can use this to associate specific administrators on the individual task.  The account used to create the task is automatically added as an administrator during creation.
+* @cancellation@ -- Indicates which roles are allowed to cancel the task.
+* @creator@ -- Use this when creating a task on behalf of a person.  The creator of the task is separate from the account used to create the task, the later typically authenticating the application.
+* @data@ -- Each task can hold a set of name/value pairs which are passed from the application to the viewer and back when completing the task.
+* @due_on@ -- If the task has a due-on date.
+* @excluded_owners@ -- List of people who are not allowed to claim the task, typically owners of previously completed tasks.  People listed as excluded owners are not allowed to view or claim the task.
+* @frame_url@ -- URL for use as a frame when viewing/performing the task.
+* @outcome_url@ -- The task manager updates this URL when the task completes or is cancelled.
+* @owner@ -- Specify this to immediately assign the task to a particular person, otherwise, any potential owner can claim the task as their own.
+* @potential_owners@ -- List of potential owners that can claim the task.
+* @priority@ -- The task priority as a value from 1 to 3, 1 being the lowest (and default) priority.
+* @title@ -- The task title as it shows in the tasks list.  The task title is assumed to be text.
+
+To specify a singular stakeholder (e.g. creator, owner), use the form of public identity associated with that person, for example, nickname or OpenID URL.  To specify a plural stakeholder (e.g. potential owners, admins), use an array of identities.  See "Content Types":#content_types for details on how to specify an array, and make sure to include the @type='array'@ attribute when using XML.
+
+In both cases, the person must exist in the system before they can be referenced as a stakeholder, otherwise the request will fail.
+
+In JSON, the task data is represented as a hash, for example:
+
+  task {
+    title: 'Close order',
+    data: {
+      order: 123,
+      status: "open"s
+    }
+  }
+
+In XML, the element @data@ is structured to contain one child element for each name/value pair, for example:
+
+  <task>
+    <title>Close order</title>
+    <data>
+      <order type='integer'>123</order>
+      <status>open</status>
+    </data>
+  </task>
+
+In URL-encoded and multi-part, use the notation for representing hashes, for example:
+
+  task[title]=Close+order&task[data][order]=123&task[data][status]=open
+
+
+h2.  Changing and Cancelling
+
+Once the application created the task, the resource can be used to read and change the task state, including cancelling and completing the task.  Any stakeholder is able to view the task state, other operations are access controlled.  For example, only an administrator is allowed to change the task title, and only the owner is allowed to complete the task.
+
+The application can read and update the task state and also cancel/delete it by virtue of being an administrator on the task, so it must use the same credentials when accessing the task after creation.
+
+
+h3.  Reading the Task State
+
+To read the task state, authenticate and send a GET request to the task resource.  The task manager returns one of the following responses:
+
+* *200 (OK)* -- A representation of the task in the requested content type.
+* *404 (Not Found)* -- The task does not exist, has been cancelled, or the authenticated account cannot view this task.
+
+The task representation includes the following fields:
+
+* @admins@ -- List of administrators associated with this task.
+* @created_at@ -- Timestamp set at creation.
+* @creator@ -- The task creator, if specified.
+* @data@ -- Name/value pairs.
+* @due_on@ -- The task due-on date, if specified.
+* @id@ -- The task identifier.
+* @owner@ -- The task owner, if the task is assigned.
+* @potential_owners@ -- List of potential owners associated with this task.
+* @priority@ -- The task priority.
+* @status@ -- The task status, one of @active@, @suspended@ or @completed@.
+* @title@ --The task title.
+* @updated_at@ -- Timestamp of the last update (or creation).
+
+Each change to the task state updates the @updated_at@ timestamp.  You can also use the @ETag@ and @Last-Modified@ headers to detect changes and to make conditional GET and PUT requests.
+
+
+h3.  Changing the Task State
+
+To change the task state, authenticate and send a PUT request to the task resource.  The task manager returns one of the following responses:
+
+* *200 (OK)* -- Indicates successful update and returns a new representation of the task in the requested content type.
+* *403 (Forbidden)* -- The authenticated account is now allowed to make certain changes (for example, only administrators are allowed to change the task title).
+* *404 (Not Found)* -- The task does not exist, has been cancelled, or the authenticated account cannot view this task.
+* *400 (Bad Request)* -- Request missing the XML @<task>@ element or JSON object.
+* *409 (Conflict)* -- Task already completed or other conflicting change since the last read.
+* *422 (Unprocessable Entity)* -- Indicates an invalid request, for example, setting the owner to a non-existent person.  The response provides more details.
+* *412 (Percondition Failed)* -- Returned from a conditional PUT to indicate conflicting update.
+
+A change can affect any of the fields specified at creation, subject to access control, specifically:
+
+* Administrators can change all the fields specified at creation.
+* Owners can change the task data, assign the task to another owner, or release the task by setting the owner to nil.
+* Potential owners can assign the task to themselves if the task has no current owner.
+
+Certain fields are available in the task representation but not used at creation, for example, @id@ and @updated_at@.  These are read-only fields that are silently ignored in the request, allowing the application to retrieve and update the same document entity.  Fields that are missing in the request are also ignored, the only way to change the value of a field is by specifying a new value.  For example, to remove the due-on date or current owner, pass an empty string for the value of that field.  To delete plural fields, such as @potential_owners@, pass an empty array.
+
+It is possible that this change conflicts with another change made since the last attempt to read the task state.  For example, the task has since been completed and cannot be changed.  The application should read the task state before making another attempt.  If the task manager recognizes the conflict it returns the 409 status code.  When using conditional PUTs, the 412 status code takes precedence over the 409 status code.
+
+Conditional PUTs using ETag/If-Match are the recommended way to detect conflicting updates.
+
+
+h3.  Cancelling and Deleting
+
+To cancel the task, authenticate and send a DELETE request to the task resource.  The task manager returns one of the following responses:
+
+* *200 (OK)* -- Indicates the task has been cancelled/deleted.
+* *403 (Forbidden)* -- The authenticated account is not allowed to cancel this task.
+* *404 (Not Found)* -- The task does not exist, has been cancelled, or the authenticated account cannot view this task.
+* *409 (Conflict)* -- Task already completed.
+
+Cancelling the task depends on the cancellation policy:
+
+* @admin@ -- Only administrators can cancel the task (default).
+* @owner@ -- Task owner can cancel the task.
+
+The difference between cancelling and deleting depends on the task status.  If the task is active or suspended, cancelling the task will also affect the outcome resource.  Otherwise, the task resource is deleted.
+
+
+h3.  Completing the Task
+
+To complete the task, authenticate and send a POST request to the task resource.  The task manager returns one of the following responses:
+
+* *200 (OK)* -- Indicates the task has been cancelled/deleted.
+* *403 (Forbidden)* -- The authenticated account is not allowed to complete this task.
+* *404 (Not Found)* -- The task does not exist, has been cancelled, or the authenticated account cannot view this task.
+* *409 (Conflict)* -- Task already completed.
+
+To avoid conflicts, only the task owner is allowed to complete the task.
+
+
+h2.  Creating a Task Once
+
+Failure could lead to the application creating the same task more than once.  Applications can get around this using the following algorithm:
+
+1.  Authenticate and send a POST request with no document entity to "reserve" a new resoure.
+2.  Extract the resource URL from the @Location@ header.
+3.  Save the resource URL, or retrieve the saved resource URL after failure.
+4.  Authenticate with the same credentials.
+5.  Set the @If-None-Match@ header to @"*"@.
+6.  Send a PUT request with the document entity describing the task.
+
+The first three steps provides a resource URL for the new task, but the task will not show up in any query.  The resource will remain valid for a significant duration of time sufficient to complete the following steps. If failure occurs before completing the third step, the application can start again with the first step with no side effects.
+
+The application performs the last three steps to ensure the task is created exactly once, immediately following the first three steps or after recovery, and can be repeated any number of times.  Authentication with the same credentials is required.  The @If-None-Match@ header guarantees that the first attempt to update the task returns 200 (OK), but any subsequent attempt returns 412 (Precondition Failed) without changing the resource.  The application should treat either status code as a successful response.
+
+
+h2.  Task Outcome
+
+The application can determine the task outcome in three ways.
+
+*Poll*  The application can retrieve the task state periodically and notice changes to the task status.  When the task completes, its status changes to @completed@.  If the task is cancelled, the application receives a 404 status code.
+
+*Feed*  The application can retrieve a feed with all the recent updates and determine the status of each task listed there.  The general update feed (@/tasks@) lists all updates including task completion, but does not list cancelled tasks.  The completion feed (@/tasks/completed@) lists only completed tasks, while the cancellation feed (@/tasks/cancelled@) lists all cancelled tasks.
+
+*Outcome resource*  The application can specify an outcome resource that the task manager will update with the task outcome.  When the task completes, the task manager updates the outcome resource by sending a PUT request with the final representation of the task.  If the task is cancelled, the task manager deletes the outcome resource by sending a DELETE request.
+
+The task manager updates the outcome resource using the same content type used to create the task, either @application/json@ or @application/xml@.
+
+To deal with network failures, the task manager repeats the request until it gets a satisfactory outcome.  When updating the outcome resource, a satisfactory outcome is any 2xx status code, 404, 410 or 412.  When deleting the outcome resource, a satisfactory outcome is any 2xx or 4xx status code.  Updates use conditional PUT with the @If-None-Match@ header set to @"*"@.
+
+The outcome resource URL may use HTTP or HTTPS (recommended). If it includes an authority component, the request uses HTTP Basic Authentication to access the resource.  For example:
+
+  https://token:3032ad6aed6c5c3cda992d241f4d28bf@app.example.com/outcome/123
+
+
+h2.  Content Types
+
+Singleshot supports requests in four content types: JSON, XML, URL-encoded and multi-part.  Responses support JSON, XML, Atom and iCal.
+
+*application/json*  The request is formatted as a JSON object, using arrays and primitive types where applicable.  Use ISO-8601 for date and date/time values.  The same rules apply to responses containing @application/json@.
+
+*application/xml*  The request is formatted as an XML document using the applicable document element, for example, @<task>@ to represent a task.  Element names use dashes instead of underscores, for example, the field @due_on@ becomes the element @<due-on>@.  Simple value use elements, carrying the value in the element contents.  The @type@ attribute specifies the content type.
+
+The following simple types are supported: 
+
+* @date@ -- Date instance, using ISO-8601.
+* @datetime@ -- Date/time instance, using ISO-8601.
+* @integer@ -- Signed integer.
+* @float@ -- Numeric float.
+* @boolean@ -- Either @"true"@ or @"false"@.
+* @string@ -- Optional; elements without a @type@ attribute are interpreted as strings.
+* @base64Binary@ -- Base-64 encoded binary content.
+
+Arrays are specified using a plural element with the type @"array"@, and one singular element for each array item.  For example:
+
+  <admins type='array'>
+    <admin>assaf</admin>
+    <admin>alex</admin>
+  </admins>
+
+The same rules apply to responses containing @application/xml@.
+
+*application/x-www-form-urlencoded* and *multipart/form-data*  Control names (aka form fields) use a specific naming convention to map them into hashes and arrays.  Hash entries use brackets to specify the key, for example, @task[priority]@ refers to the task's priority field.  Array items use empty brackets as a suffix, for example, @task[admins][]@ adds an item to the administrators list.  Multiple array values are encoded as multiple name/value pairs.
+
+*application/atom+xml* TBD
+
+*text/calendar* TBD
+
+*Encoding*  All request formats support UTF-8 encoding, all responses use UTF-8 encoding.
+

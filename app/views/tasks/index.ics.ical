@@ -1,0 +1,14 @@
+calendar.prodid = 'Apache Singleshot'
+for task in @tasks
+  calendar.todo task do |todo|
+    todo.summary task.title
+    todo.description task.description
+    todo.url task_url(task)
+    todo.due task.due_on if task.due_on
+    todo.priority [1,5,9][task.priority - 1]
+    status = { 'ready'=>'NEEDS-ACTION', 'active'=>'IN-PROCESS' }[task.status] || task.status.upcase
+    todo.status status
+    todo.organizer "MAILTO:#{task.creator.email}" if task.creator
+    todo.completed task.completed_on if task.completed_on
+  end
+end

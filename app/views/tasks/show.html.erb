@@ -1,0 +1,15 @@
+<% @title = @task.title %>
+<body id='task'>
+  <div id='task_bar'>
+    <div id='summary'>
+      <span class='column prepend-1'><%= link_to 'Singleshot', root_url, :title=>'Switch back to dashboard' %></span>
+      <span class='column prepend-1'><%= task_bar_vitals(@task) %></span>
+      <span class='column push-0 append-1 last'><%= task_bar_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded')" %></span>
+    </div>
+    <div id='expanded' style='display:none'>
+      Nothing to see ... move right along.
+    </div>
+  </div>
+  <%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
+  <%= javascript_tag 'Singleshot.taskView()' %>
+</body>

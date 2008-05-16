@@ -1,0 +1,37 @@
+<script>
+  function roomForNewTopping() {
+    var lastTopping = $('last_topping').parentNode;
+    var newTopping = lastTopping.cloneNode(true);
+    newTopping.firstChild.value = null;
+    lastTopping.parentNode.insertBefore(newTopping, lastTopping.nextSibling);
+  }
+</script>
+<div style='padding:2em 5em 2em 5em'>
+  <% form_for :sandwich, @sandwich, :html=>{ :id=>'sandwich' } do |f| %>
+    <%= content_tag 'p', flash[:success], :class=>'success' if flash[:success] %>
+    <%= error_messages_for :sandwich, :message=>"Sudo can't make this sandwich ...", :header_message=>nil, :class=>'error' %>
+    <dl>
+      <dt><%= f.label :bread, 'Pick your bread' %></dt>
+      <dd><%= f.select :bread, ['Crusty', 'Toasty', 'French'].map { |s| [s, s.split.first.downcase] } + [['Atkins style', '']],
+                {}, :disabled=>@read_only %></dd>
+      <dt><%= f.label :spread, 'Choose your spread' %></dt>
+      <dd><%= f.select :spread, ['Creamy', 'Eggy', 'Not butter'].map { |s| [s, s.sub(/ /, '_').downcase] } + [['Air like', '']],
+                {}, :disabled=>@read_only %></dd>
+      <dt><%= f.label :toppings, 'Top it with' %>
+          <%= '(' + link_to_function('add topping', 'roomForNewTopping()') + ')' unless @read_only %></dt>
+      <% @sandwich.toppings.split(/;/).each do |topping| %>
+        <dd><%= text_field_tag 'sandwich[toppings][]', topping, :disabled=>@read_only %></dd>
+      <% end %>
+      <dd><%= text_field_tag 'sandwich[toppings][]', '', :id=>'last_topping', :disabled=>@read_only %></dd>
+    </dl>
+    <% unless @read_only %>
+      <hr>
+      <p>
+        <%= content_tag :button, 'Make!', :class=>'positive' %>
+        <%= content_tag :button, 'Save and continue', :name=>:_method, :value=>:put %>
+      </p>
+    <% end %>
+    <%= hidden_field_tag 'task_url', @task_url %>
+  <% end %>
+  <%= javascript_tag "$('sandwich').focusFirstElement()" %>
+</div>

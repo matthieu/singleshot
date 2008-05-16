@@ -1,0 +1,73 @@
+== Setting up the environment
+
+Singleshot is developed against Rails 2.0.  To get moving you need to first
+install Rails:
+
+  $ gem install rails
+
+
+== Setting up the database
+
+The database is configured in config/databases.yml.  You can change this to
+your specific environment and configuration.  The default configuration uses
+MySQL accessed using sockets, tested on Linux.
+
+We recommend using three different configurations for the three environments:
+development, test and production.  That way you can have data in your
+development database that is not deleted when running tests, and does not
+interfere with production data.
+
+To create all three databases:
+
+  $ rake db:create:all
+  $ rake db:migrate
+  $ rake db:test:clone
+
+
+== Adding people
+
+At the moment you can only add new people to the database using the Rails
+console.  The minimum information required for each person is a valid e-mail
+address and password.  Their nickname (used for login) and full name are
+extracted from the e-mail address, but you can set those separately:
+
+  $ ./script/console
+  >> Person.create :email=>'assaf@apache.org', :password=>'secret'
+  => #<Person id: 1, nickname: "assaf", fullname: "Assaf", email: "assaf@apache.org", language: nil, timezone: nil, password: "688f750858:80fbb9e9817e5638c4ceaba55ab69760276231af...", access_key: "668041114980ae1b3bffda84d6e036e9", site_url: nil, created_at: "2007-11-19 12:40:18", updated_at: "2007-11-19 12:40:18">
+
+
+== Migrations
+
+Rails migrations are a great way to progress from one database schema version
+to another, specifically when moving between milestones and major releases.
+They are a pain when used during the 'research' part.
+
+Each major milestone or version will freeze on the current database schema, so
+all future changes to the schema will require additional migrations.  However,
+work ongoing in trunk should edit existing migrations, which means the
+occassional need to run db:migrate up and down when following development.
+
+If you are writing a migration, make sure to test that it works both ways, test
+it against the code, and then run:
+
+  $ rake annotate_models
+
+This task updates the comment in the beginning of each model file to reflect
+the most recent database schema.
+
+
+== Getting Involved
+
+The development model is explain->spec->code.
+
+Everything starts with an explanation, which eventually will turn into the
+official documentation.  You can find those in the doc/pages directory.  The
+file format is Textile.
+
+Specifications are written using RSpec.  MVC, plugins and other libraries are
+speced in the various sub-directories of specs.  User stories are speced in the
+stories directory.
+
+The code lives mostly under app, which generic code residing in lib, and
+occassionally extracted into plugins under vendor/plugins.  3rd party plugins
+are also there.

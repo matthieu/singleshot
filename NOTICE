@@ -1,0 +1,30 @@
+=========================================================================
+==  NOTICE file for use with the Apache License, Version 2.0,          ==
+==  in this case for the Apache Buildr distribution.                   ==
+=========================================================================
+
+Apache Singleshot
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+
+COPYRIGHT NOTICES
+-----------------
+
+prototype.js, copyright of Sam Stephenson, licensed under the MIT license.
+http://www.prototypejs.org
+
+script.aculo.us, copyright of Thomas Fuchs, Ivan Krstic, Jon Tirsen and Sammi
+Williams, licensed under the MIT license.
+http://script.aculo.us/
+
+RSpec on Rails, licensed under the MIT license:
+RSpec, Copyright (c) 2005-2007 The RSpec Development Team
+ARTS, Copyright (c) 2006 Kevin Clark, Jake Howerton
+ZenTest, Copyright (c) 2001-2006 Ryan Davis, Eric Hodel, Zen Spider Software
+AssertSelect, Copyright (c) 2006 Assaf Arkin
+http://rspec.info/
+
+Silk icon set, copyright of Mark James, licensed under the Creative Commons
+Attribution 2.5 License.
+http://www.famfamfam.com/lab/icons/silk/
