@@ -1,73 +1,79 @@
 == Setting up the environment
 
-Singleshot is developed against Rails 2.0.  To get moving you need to first
-install Rails:
+Singleshot is developed against Rails 2.1.  To get moving you need to first
+install Rails 2.1 RC1 or later.
 
-  $ gem install rails
+To get the latest copy use one of the following:
+
+$ svn checkout http://svn.apache.org/repos/asf/ode/sandbox/singleshot
+$ git svn clone http://svn.apache.org/repos/asf/ode/sandbox/singleshot
+$ git clone git://github.com/Assaf/singleshot.git
+
+To setup you development environment, specifically installing all the necessary
+Gems and setting up the development and test databases, run the setup task:
+
+$ rake setup
+
+This will also create a default account using your user name and the password
+'secret'
+
+To get started:
+
+$ rake run
+
+Point your browser to http://localhost:3000 and login with your user name and
+password.
 
 
 == Setting up the database
 
-The database is configured in config/databases.yml.  You can change this to
-your specific environment and configuration.  The default configuration uses
-MySQL accessed using sockets, tested on Linux.
-
-We recommend using three different configurations for the three environments:
-development, test and production.  That way you can have data in your
-development database that is not deleted when running tests, and does not
-interfere with production data.
-
-To create all three databases:
-
-  $ rake db:create:all
-  $ rake db:migrate
-  $ rake db:test:clone
-
-
-== Adding people
-
-At the moment you can only add new people to the database using the Rails
-console.  The minimum information required for each person is a valid e-mail
-address and password.  Their nickname (used for login) and full name are
-extracted from the e-mail address, but you can set those separately:
-
-  $ ./script/console
-  >> Person.create :email=>'assaf@apache.org', :password=>'secret'
-  => #<Person id: 1, nickname: "assaf", fullname: "Assaf", email: "assaf@apache.org", language: nil, timezone: nil, password: "688f750858:80fbb9e9817e5638c4ceaba55ab69760276231af...", access_key: "668041114980ae1b3bffda84d6e036e9", site_url: nil, created_at: "2007-11-19 12:40:18", updated_at: "2007-11-19 12:40:18">
+The database is configured in config/databases.yml.  The development and test
+database is set to use SQLite3, so there's no need for extra setup.  For
+production you should consider using something else.
 
 
 == Migrations
 
 Rails migrations are a great way to progress from one database schema version
-to another, specifically when moving between milestones and major releases.
-They are a pain when used during the 'research' part.
+to another in production.  Each major milestone or release will include a new
+set of migrations so production database can be updated by running rake
+db:migrate.
 
-Each major milestone or version will freeze on the current database schema, so
-all future changes to the schema will require additional migrations.  However,
-work ongoing in trunk should edit existing migrations, which means the
-occassional need to run db:migrate up and down when following development.
+Migrations are not used to move from one schema to another during daily
+development progress.  The database schema will just change and you'll have to
+recreate the entire database.
 
-If you are writing a migration, make sure to test that it works both ways, test
-it against the code, and then run:
+Those changes are recorded in the form of migration, but to update run:
 
-  $ rake annotate_models
+$ rake db:rebuild
 
-This task updates the comment in the beginning of each model file to reflect
-the most recent database schema.
+This task will recreate the entire development and test database.  In addition,
+it uses the annotate-models Gems to, well, annotate the Rails models with the
+most recent database schema.
+
+To recreate the dummy data used for development:
+
+$ rake db:populate
 
 
 == Getting Involved
 
-The development model is explain->spec->code.
+The official specification for Singleshot is written using RSpec.  Please use
+RSpec to specify the expected behavior and fill it up with test cases, from
+which we can build/fix/refactor the implementation.
 
-Everything starts with an explanation, which eventually will turn into the
-official documentation.  You can find those in the doc/pages directory.  The
-file format is Textile.
+Documentation goes in the doc/pages directory, uses the Textile markup syntax,
+and is considered part of the source code and each official release.  We use
+these files to generate the Web site and PDF documentation.
 
-Specifications are written using RSpec.  MVC, plugins and other libraries are
-speced in the various sub-directories of specs.  User stories are speced in the
-stories directory.
+A reference for Textile is available here:
+http://hobix.com/textile/
 
-The code lives mostly under app, which generic code residing in lib, and
-occassionally extracted into plugins under vendor/plugins.  3rd party plugins
-are also there.
+
+== License
+
+:include:LICENSE
+
+== Notice
+
+:include:NOTICE
