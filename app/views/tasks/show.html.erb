@@ -1,15 +1,35 @@
-<% @title = @task.title %>
-<body id='task'>
-  <div id='task_bar'>
-    <div id='summary'>
-      <span class='column prepend-1'><%= link_to 'Singleshot', root_url, :title=>'Switch back to dashboard' %></span>
-      <span class='column prepend-1'><%= task_bar_vitals(@task) %></span>
-      <span class='column push-0 append-1 last'><%= task_bar_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded')" %></span>
-    </div>
-    <div id='expanded' style='display:none'>
-      Nothing to see ... move right along.
+<% # TODO: trim
+@title = @task.title %>
+<div id='task_bar'>
+  <div id='summary'>
+    <h1><%= link_to 'Singleshot', root_url %></h1>
+    <div class='vitals'><%= task_vitals(@task) %></div>
+    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded')", :class=>'button-to' %></div>
+  </div>
+  <div id='expanded' style='display:none'>
+    <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics'), :rel=>'alternate', :title=>'Add this task to your calendar' %>
+    <%= link_to image_tag('feed.png') + ' Activities', activity_task_url(@task), :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+    <dl>
+      <dt>Task</dt><dd><%= h(@task.title) %></dd>
+      <dt>Description</dt><dd><%= h(@task.description) %></dd>
+      <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
+      <dt>Recent activity</dt>
+      <dd>
+        <ol class='activities hfeed'>
+          <% for activity in @activities %>
+            <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
+              <%= link_to activity.person.fullname, activity.person.identity %>
+              <%= activity.action %>
+              <%= link_to activity.task.title, task_url(activity.task), :rel=>'bookmark' %>
+            <% end %>
+          <% end %>
+        </ol>
+      </dd>
+    </dl>
+    <div class='actions' style='text-align:right'>
+      <%= task_actions(@task) %>
     </div>
   </div>
-  <%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
-  <%= javascript_tag 'Singleshot.taskView()' %>
-</body>
+</div>
+<%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
+<%= javascript_tag 'Singleshot.taskView()' %>

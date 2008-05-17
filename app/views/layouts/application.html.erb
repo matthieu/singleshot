@@ -23,12 +23,12 @@
         <li><%= link_to 'Activity', activity_url %></a></li>
         <li><a href='#'>Start &hellip;</a></li>
       </ul>
-      <% if @alternate %>
-        <ul class='alternate'>
-          <li id='atom'><%= link_to image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :title=>'Subscribe with your feed reader' %></li>
-          <li id='ical'><%= link_to image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :title=>'Add this link to your calendar' %></li>
-        </ul>
-      <% end %>
+      <ul class='alternate'>
+        <%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM],
+                                      :rel=>'alternate', :title=>'Subscribe with your feed reader') if @alternate && @alternate[Mime::ATOM] %>
+        <%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS],
+                                      :rel=>'alternate', :title=>'Add to your calendar') if @alternate && @alternate[Mime::ICS] %>
+      </ul>
     </div>
     <div id='main'>
 <%= yield %>

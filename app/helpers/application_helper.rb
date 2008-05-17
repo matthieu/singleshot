@@ -19,7 +19,7 @@ module ApplicationHelper
       'Today'
     elsif date == today - 1.day
       'Yesterday'
-    elsif date.cweek == today.cweek
+    elsif date > today && date < today.next_week
       date.strftime('%A')
     elsif date.year == today.year
       date.strftime('%B %d')

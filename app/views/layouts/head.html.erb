@@ -2,11 +2,13 @@
   <head>
     <title>Singleshot<%= " &mdash; #{escape_once(@title)}" if @title %></title>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag 'screen', 'buttons', 'default', :cache=>true %>
+    <%= stylesheet_link_tag 'default', :cache=>true %>
     <%= stylesheet_link_tag 'print', :media=>'print', :cache=>true %>
     <% @alternate.each do |mime, url| %>
       <%= auto_discovery_link_tag mime.to_sym, url %>
     <% end if @alternate %>
   </head>
+  <body>
 <%= yield %>
+  </body>
 </html>

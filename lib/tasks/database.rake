@@ -16,7 +16,7 @@ namespace :db do
     end
 
     puts "Populating database for #{you.identity}"
-    url = 'http://localhost:3001/sandwhich'
+    url = 'http://localhost:3001/sandwich'
     other = Person.identify('anon') || Person.create(:email=>'anon@apache.org')
     create = lambda do |attributes|
       attributes = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,

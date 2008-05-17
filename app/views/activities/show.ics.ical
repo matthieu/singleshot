@@ -1,9 +1,8 @@
 calendar.prodid = 'Apache Singleshot'
 for activity in @activities
   calendar.event do |event|
-    event.dtstamp activity.created_at
-    event.dtstart activity.created_at.to_date
     event.summary "#{activity.person.fullname} #{activity.action} #{activity.task.title}"
+    event.description activity.task.description
     event.url task_url(activity.task)
   end
 end

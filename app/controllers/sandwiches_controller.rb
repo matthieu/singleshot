@@ -2,6 +2,8 @@ class SandwichesController < ApplicationController
 
   before_filter :instance
   before_filter :update_instance, :only=>[:update, :create]
+  skip_filter :authenticate
+  layout false
 
   def show
     @read_only = true unless params['perform'] == 'true'
