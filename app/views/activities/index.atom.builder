@@ -1,4 +1,4 @@
-atom_feed :root_url=>activity_url do |feed|
+atom_feed :root_url=>activities_url do |feed|
   feed.title 'Singleshot: Activities'
   feed.updated @activities.first.created_at
 

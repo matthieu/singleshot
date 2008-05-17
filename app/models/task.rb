@@ -179,20 +179,20 @@ class Task < ActiveRecord::Base
 
 
   # --- Activities ---
+ 
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at', :extend=>Activity::GroupByDay
 
   after_save do |task|
-    task.activities =  Activity.from_changes_to(task) unless task.state == 'reserved'
+    task.activities.push Activity.from_changes_to(task) unless task.state == 'reserved'
   end
-
-  attr_accessor :activities
 
   def save(person = nil)
     super
-    activities.each do |activity|
+    activities.select(&:new_record?).each do |activity|
       activity.task = self
       activity.person ||= person
       activity.save if activity.person
-    end if activities
+    end
   end
 
  

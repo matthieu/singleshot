@@ -7,8 +7,10 @@
     <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded')", :class=>'button-to' %></div>
   </div>
   <div id='expanded' style='display:none'>
-    <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics'), :rel=>'alternate', :title=>'Add this task to your calendar' %>
-    <%= link_to image_tag('feed.png') + ' Activities', activity_task_url(@task), :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+    <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
+                :rel=>'alternate', :title=>'Add this task to your calendar' %>
+    <%= link_to image_tag('feed.png') + ' Activities', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
+                :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
     <dl>
       <dt>Task</dt><dd><%= h(@task.title) %></dd>
       <dt>Description</dt><dd><%= h(@task.description) %></dd>
@@ -16,7 +18,7 @@
       <dt>Recent activity</dt>
       <dd>
         <ol class='activities hfeed'>
-          <% for activity in @activities %>
+          <% for activity in @task.activities %>
             <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
               <%= link_to activity.person.fullname, activity.person.identity %>
               <%= activity.action %>

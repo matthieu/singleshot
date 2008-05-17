@@ -1,10 +1,10 @@
 class TasksController < ApplicationController
 
-  access_key_authentication :only=>[:index, :activity]
+  access_key_authentication :only=>[:index, :show]
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :authenticate, :except=>[:show, :update, :complete, :destroy]
-  instance :task, :only=>[:show, :activity, :update, :complete, :destroy], :check=>:instance_accessible
+  instance :task, :only=>[:show, :update, :complete, :destroy], :check=>:instance_accessible
   before_filter :forbid_reserved, :except=>[:update, :destroy]
 
   def index
@@ -16,30 +16,13 @@ class TasksController < ApplicationController
   def show
     @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     respond_to do |format|
-      format.html do
-        @activities = Activity.for_task(@task)
-        render :layout=>'head'
-      end
+      format.html { render :layout=>'head' }
       format.xml  { render :xml=>@task }
       format.json { render :json=>@task }
       format.ics  do
         @tasks = [@task]
-        #render :action=>'index'
+        render :action=>'index'
       end
-    end
-  end
-
-  def activity
-    @title = "Activities &mdash; #{@task.title}"
-    @alternate = { Mime::ATOM=>formatted_activity_task_url(@task, :atom, :access_key=>authenticated.access_key),
-                   Mime::ICS=>formatted_activity_task_url(@task, :ics, :access_key=>authenticated.access_key) }
-    @activities = Activity.for_task(@task)
-    respond_to do |want|
-      want.html do
-        @days = @activities.group_by_day
-        render :template=>'activities/show'
-      end
-      want.any { render :template=>'activities/show' }
     end
   end
 

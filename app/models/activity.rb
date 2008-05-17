@@ -50,7 +50,5 @@ class Activity < ActiveRecord::Base
       :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>GroupByDay } }
   named_scope :for_dates,
     lambda { |dates| { :conditions=>{ :created_at=>dates } } }
-  named_scope :for_task,
-    lambda { |task| { :conditions=>{ :task_id=>task }, :include=>[:task, :person], :order=>'activities.created_at', :extend=>GroupByDay } }
 
 end
