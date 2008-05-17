@@ -6,7 +6,7 @@
       <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
           <%= link_to h(activity.person.fullname), activity.person.identity %>
           <%= activity.action %>
-          <%= link_to h(truncate(activity.task.title, 100)), task_url(activity.task), :rel=>'bookmark' %>
+          the task <%= link_to h(truncate(activity.task.title, 100)), task_url(activity.task), :rel=>'bookmark' %>
         <% end %>
       <% end %>
     </li>

@@ -93,7 +93,7 @@ class Stakeholder < ActiveRecord::Base
       old_set = stakeholders.select { |sh| sh.role == role }
       stakeholders.delete old_set.reject { |sh| new_set.include?(sh.person) }
       (new_set - old_set.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-      #changed_attributes[role] = old_set unless changed_attributes.has_key?(role)
+      changed_attributes[role] = old_set.first if SINGULAR_ROLES.include?(role.to_s) && !changed_attributes.has_key?(role)
     end
 
   end

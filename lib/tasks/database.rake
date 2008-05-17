@@ -18,11 +18,13 @@ namespace :db do
     puts "Populating database for #{you.identity}"
     url = 'http://localhost:3001/sandwich'
     other = Person.identify('anon') || Person.create(:email=>'anon@apache.org')
+    Activity.delete_all
+    Stakeholder.delete_all
+    Task.delete_all
     create = lambda do |attributes|
       attributes = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
-                     :frame_url=>url, :state=>'ready' }.merge(attributes || {})
-      task = Task.new(attributes)
-      task.save(you)
+                     :frame_url=>url, :state=>'ready', :modified_by=>you }.merge(attributes || {})
+      Task.create!(attributes)
     end
     #create = lambda { |attributes| { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
     #                                  :frame_url=>url, :state=>'ready' }.merge(attributes || {}) }
@@ -36,7 +38,7 @@ namespace :db do
     # - observer
     # - admin
     create[:creator=>you]
-    create[:owner=>you]
+    create[:creator=>you, :owner=>you]
     create[:observers=>you]
     create[:admins=>you]
     # Tasks in which we are only or one of many potential owners.

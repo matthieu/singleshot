@@ -180,22 +180,33 @@ class Task < ActiveRecord::Base
 
   # --- Activities ---
  
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at', :extend=>Activity::GroupByDay
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Activity::Grouping
 
-  after_save do |task|
-    task.activities.push Activity.from_changes_to(task) unless task.state == 'reserved'
-  end
+  # Attribute recording person who created/modified this task.  Not persisted,
+  # but used to log activities associated with this task.
+  attr_accessor :modified_by
 
-  def save(person = nil)
-    super
-    activities.select(&:new_record?).each do |activity|
-      activity.task = self
-      activity.person ||= person
-      activity.save if activity.person
+  before_save :unless=>lambda { |task| task.state == 'reserved' } do |task|
+    Activity.log task, task.modified_by do |log|
+      if task.changes['state']
+        from, to = *task.changes['state']
+        log.add task.creator, 'created' if task.creator && (from.nil? || from == 'reserved')
+        log.add 'resumed' if from == 'suspended'
+        case to
+        when 'ready'
+          log.add task.changes['owner'].first, 'released' if from == 'active'
+        when 'active' then log.add task.owner, 'is owner of'
+        when 'suspended' then log.add 'suspended'
+        when 'completed' then log.add task.owner, 'completed'
+        when 'cancelled' then log.add 'cancelled'
+        end
+      else
+        log.add 'modified'
+      end
     end
   end
 
- 
+
   # --- Completion and cancellation ---
 
   validates_url :outcome_url, :if=>:outcome_url
