@@ -4,9 +4,9 @@
       <h3><%= relative_date(day.first) %></h3>
       <% for activity in day.last %>
       <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
-          <%= link_to activity.person.fullname, activity.person.identity %>
+          <%= link_to h(activity.person.fullname), activity.person.identity %>
           <%= activity.action %>
-          <%= link_to activity.task.title, task_url(activity.task), :rel=>'bookmark' %>
+          <%= link_to h(truncate(activity.task.title, 100)), task_url(activity.task), :rel=>'bookmark' %>
         <% end %>
       <% end %>
     </li>

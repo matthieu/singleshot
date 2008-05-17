@@ -6,21 +6,21 @@ class Activity < ActiveRecord::Base
       returning [] do |activities|
         if task.changes['state']
           from, to = *task.changes['state']
-          activities << new(:action=>'created', :person=>task.creator) if task.creator && from.nil? || from == 'reserved'
-          activities << new(:action=>'resumed') if from == 'suspended'
+          activities << new(:action=>'created the task', :person=>task.creator) if task.creator && from.nil? || from == 'reserved'
+          activities << new(:action=>'resumed the task') if from == 'suspended'
           case to
           when 'ready'
           when 'active'
-            activities << new(:action=>'own', :person=>task.owner)
+            activities << new(:action=>'is now owner of the task', :person=>task.owner)
           when 'suspended'
-            activities << new(:action=>'suspended')
+            activities << new(:action=>'suspended the task')
           when 'completed'
-            activities << new(:action=>'completed', :person=>task.owner)
+            activities << new(:action=>'completed the task', :person=>task.owner)
           when 'cancelled'
-            activities << new(:action=>'cancelled')
+            activities << new(:action=>'cancelled the task')
           end
         else
-          activities << new(:action=>'modified')
+          activities << new(:action=>'modified the task')
         end
       end
     end
