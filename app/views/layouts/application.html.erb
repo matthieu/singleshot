@@ -11,12 +11,10 @@
   <body>
     <div id='header'>
       <h1><%= link_to 'Singleshot', root_url %></h1>
-      <ul id='personal'>
-        <li><a href='#'>Help</a></li>
-        <li><a href='#'>Settings</a></li>
+      <ul class='links'>
         <li><%= link_to 'Logout', session_url(:method=>:delete) %></li>
       </ul>
-      <ul id='navigation'>
+      <ul class='tabs'>
         <li><%= link_to '➠ Tasks', tasks_url %></li>
         <li><%= link_to 'Following', following_tasks_url %></a></li>
         <li><%= link_to 'Completed', completed_tasks_url %></a></li>

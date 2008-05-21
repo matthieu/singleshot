@@ -6,7 +6,7 @@
 #  id           :integer         not null, primary key
 #  title        :string(255)     not null
 #  description  :string(255)     not null
-#  priority     :integer(1)      default(1), not null
+#  priority     :integer(1)      not null
 #  due_on       :date
 #  state        :string(255)     not null
 #  frame_url    :string(255)

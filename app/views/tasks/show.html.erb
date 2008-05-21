@@ -1,12 +1,12 @@
 <% # TODO: trim
 @title = @task.title %>
 <div id='task_bar'>
-  <div id='summary'>
+  <div class='summary'>
     <h1><%= link_to 'Singleshot', root_url %></h1>
     <div class='vitals'><%= task_vitals(@task) %></div>
-    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded')", :class=>'button-to' %></div>
+    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded', 'Less options')", :class=>'button-to' %></div>
   </div>
-  <div id='expanded' style='display:none'>
+  <div id='expanded' class='expanded' style='display:none'>
     <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
                 :rel=>'alternate', :title=>'Add this task to your calendar' %>
     <%= link_to image_tag('feed.png') + ' Activities', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
@@ -27,6 +27,10 @@
           <% end %>
         </ol>
       </dd>
+      <%= admins = @task.admins.map { |admin| link_to_person(admin) }
+          content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
+      <%= observers = @task.observers.map { |admin| link_to_person(admin) }
+          content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
     </dl>
     <div class='actions' style='text-align:right'>
       <%= task_actions(@task) %>

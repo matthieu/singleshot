@@ -1,27 +1,8 @@
 module ActionView
   class ICalBuilder
 
-    class Component
-
-      def initialize(request, record = nil)
-        @properties = {}
-        if record
-          uid "#{request.host}:#{record.class}/#{record.id}"
-          dtstamp record.created_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:created_at)
-          last_modified record.updated_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:updated_at)
-          sequence record.send(record.class.locking_column) if record.locking_enabled?
-        end
-      end
-
+    module Properties
       attr_accessor :properties
-
-      def to_ical
-        # TODO: escaping for values
-        # TODO: break up long lines
-        # TODO: all other conformance requirements
-        properties = @properties.map { |name, value| property(name, value) }
-        "BEGIN:#{self.class.const_get :NAME}\n#{properties.join("\n")}\nEND:#{self.class.const_get :NAME}"
-      end
 
     private
 
@@ -46,6 +27,29 @@ module ActionView
         options[:value] = args.first
         @properties[name] = options
       end
+    end
+
+    class Component
+
+      include Properties
+
+      def initialize(request, record = nil)
+        @properties = {}
+        if record
+          uid "#{request.host}:#{record.class}/#{record.id}"
+          dtstamp record.created_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:created_at)
+          last_modified record.updated_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:updated_at)
+          sequence record.send(record.class.locking_column) if record.locking_enabled?
+        end
+      end
+
+      def to_ical
+        # TODO: escaping for values
+        # TODO: break up long lines
+        # TODO: all other conformance requirements
+        properties = @properties.map { |name, value| property(name, value) }
+        ["BEGIN:#{self.class.const_get :NAME}", properties, "END:#{self.class.const_get :NAME}"].flatten.join("\n")
+      end
 
     end
 
@@ -62,12 +66,14 @@ module ActionView
 
     end
 
+    include Properties
+
     def initialize(request)
       @request =request
+      @properties = { :method=>'PUBLISH' }
       @components = []
     end
 
-    attr_accessor :prodid
     attr_reader :components
 
     def event(record = nil)
@@ -86,8 +92,15 @@ module ActionView
 
     def to_ical
       # TODO: user's timezone
-      "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:#{prodid}\n#{@components.map(&:to_ical).join("\n")}\nEND:VCALENDAR\n"
+      properties = @properties.map { |name, value| property(name, value) }
+      components = @components.map(&:to_ical)
+      ['BEGIN:VCALENDAR', 'VERSION:2.0', properties, components, 'END:VCALENDAR'].flatten.join("\n")
     end
+
+    def content_type
+      "#{Mime::ICS};method=#{properties[:method]}"
+    end
+
   end
 
 
@@ -101,9 +114,9 @@ module ActionView
 
       def compile(template)
         content_type_handler = (@view.send!(:controller).respond_to?(:response) ? "controller.response" : "controller")
-        "#{content_type_handler}.content_type ||= Mime::ICS\n" +
         "calendar = ::ActionView::ICalBuilder.new(request)\n" +
         template.source +
+        "#{content_type_handler}.content_type ||= calendar.content_type\n" +
         "\ncalendar.to_ical\n"
       end
 

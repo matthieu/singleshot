@@ -3,7 +3,7 @@ class Tasks < ActiveRecord::Migration
     create_table :tasks do |t|
       t.string    :title,        :null=>false
       t.string    :description,  :null=>false
-      t.integer   :priority,     :null=>false, :default=>1, :limit=>1
+      t.integer   :priority,     :null=>false, :limit=>1
       t.date      :due_on,       :null=>true
       t.string    :state,        :null=>false
       t.string    :frame_url,    :null=>true

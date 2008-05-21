@@ -1,3 +1,15 @@
+# == Schema Information
+# Schema version: 20080506015153
+#
+# Table name: activities
+#
+#  id         :integer         not null, primary key
+#  person_id  :integer         not null
+#  task_id    :integer         not null
+#  action     :string(255)     not null
+#  created_at :datetime        not null
+#
+
 class Activity < ActiveRecord::Base
 
   belongs_to :person
