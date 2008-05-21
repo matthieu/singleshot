@@ -5,7 +5,7 @@ class Tasks < ActiveRecord::Migration
       t.string    :description,  :null=>false
       t.integer   :priority,     :null=>false, :limit=>1
       t.date      :due_on,       :null=>true
-      t.string    :state,        :null=>false
+      t.string    :status,       :null=>false
       t.string    :frame_url,    :null=>true
       t.string    :outcome_url,  :null=>true
       t.string    :outcome_type, :null=>true
@@ -14,7 +14,7 @@ class Tasks < ActiveRecord::Migration
       t.integer   :version,      :null=>false, :default=>0
       t.timestamps
     end
-    add_index :tasks, [:state, :updated_at]
+    add_index :tasks, [:status, :updated_at]
   end
 
   def self.down

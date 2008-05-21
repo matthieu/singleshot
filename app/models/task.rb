@@ -8,7 +8,7 @@
 #  description  :string(255)     not null
 #  priority     :integer(1)      not null
 #  due_on       :date
-#  state        :string(255)     not null
+#  status       :string(255)     not null
 #  frame_url    :string(255)
 #  outcome_url  :string(255)
 #  outcome_type :string(255)
@@ -27,7 +27,7 @@ class Task < ActiveRecord::Base
   def initialize(attributes = {}) #:nodoc:
     super
     self.description ||= ''
-    self.state = attributes[:state] == 'ready' ? 'ready' : 'reserved'
+    self.status = attributes[:status] == 'reserved' ? 'reserved' : 'ready'
     self.data ||= {}
     self.access_key = MD5.hexdigest(OpenSSL::Random.random_bytes(128))
   end
@@ -46,70 +46,67 @@ class Task < ActiveRecord::Base
   end
 
 
-  # --- Task state ---
+  # --- Task status ---
 
-  # A task can be in one of these states:
-  # - reserved  -- Task exists but is not yet ready or active.
-  # - ready     -- Task is ready and can be claimed by owner.
-  # - active    -- Task is performed by its owner.
-  # - suspended -- Task is suspended.
-  # - completed -- Task has completed.
-  # - cancelled -- Task was cancelled.
-  #
-  # A task can start in reserved state and remain there until populated with
-  # enough information to transition to the ready state.  From ready state, a
-  # stakeholder can claim the task, transitioning it to the active state.  The
-  # task transitions back to ready if stakeholder releases that claim.
+  # A task can report one of these statuses:
+  # * reserved  -- Task exists but is not yet ready or active.
+  # * ready     -- Task is ready and can be claimed by owner.
+  # * active    -- Task is performed by its owner.
+  # * suspended -- Task is suspended.
+  # * completed -- Task has completed.
+  # * cancelled -- Task was cancelled.
+  
+  # A task can start as reserved and remain there until populated with enough
+  # information to transition to ready.  From ready, a stakeholder can claim
+  # the task, transitioning it to active.  The task transitions back to ready
+  # if stakeholder releases that claim.
   #
   # Task can transition from ready/active to suspended and back.  Task can
-  # transition to completed state only from active state, and transition to
-  # cancelled state from any other state but completed.  Completed and
-  # cancelled are terminal states.
-  STATES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
+  # transition to completed only from active, and transition to cancelled from
+  # any other state but completed.  Completed and cancelled are terminal
+  # states.
+  STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed',
+  'cancelled']
 
   # Cannot change in mass update.
-  attr_protected :state
-  validates_inclusion_of :state, :in=>STATES
+  attr_protected :status
+  validates_inclusion_of :status, :in=>STATUSES
 
-  STATES.each do |state|
-    define_method "#{state}?" do
-      self.state == state
+  # Check method for each status (active?, completed?, etc).
+  STATUSES.each do |status|
+    define_method "#{status}?" do
+      self.status == status
     end
   end
 
   before_validation_on_update do |task|
-    task.state = 'ready' if task.state == 'reserved'
+    task.status = 'ready' if task.status == 'reserved'
   end
 
   before_validation do |task|
-    case task.state
+    case task.status
     when 'ready', 'reserved'
       task.owner = task.potential_owners.first unless task.owner || task.potential_owners.size > 1
-      task.state = 'active' if task.owner
+      task.status = 'active' if task.owner
     when 'active'
-      task.state = 'ready' unless task.owner
+      task.status = 'ready' unless task.owner
     end
   end
 
   validate do |task|
-    changes = task.changes['state']
+    changes = task.changes['status']
     from, to = changes.first, changes.last if changes
     if from == 'completed' 
-      task.errors.add :state, 'Cannot change state of completed task.'
+      task.errors.add :status, 'Cannot change status of completed task.'
     elsif from == 'cancelled'
-      task.errors.add :state, 'Cannot change state of cancelled task.'
+      task.errors.add :status, 'Cannot change status of cancelled task.'
     elsif to == 'reserved'
-      task.errors.add :state, 'Cannot change state to reserved.' unless from.nil?
+      task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
     elsif to == 'completed'
-      task.errors.add :state, 'Only owner can complete task.' unless task.owner
-      task.errors.add :state, 'Cannot change to completed from any state but active.' unless from =='active'
+      task.errors.add :status, 'Only owner can complete task.' unless task.owner
+      task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
     end
   end
-
-  def status
-    state
-  end
-
 
 
   # -- Common task attributes --
@@ -156,11 +153,11 @@ class Task < ActiveRecord::Base
     { :joins=>:stakeholders, :conditions=>["stakeholders.person_id=? and stakeholders.role='owner'", person.id] }
   }
 
-  named_scope :pending, :conditions=>["tasks.state IN ('ready', 'active') AND involved.role IN ('owner', 'potential')"],
+  named_scope :pending, :conditions=>["tasks.status IN ('ready', 'active') AND involved.role IN ('owner', 'potential')"],
     :order=>'involved.role, priority ASC, tasks.created_at' do
     def prioritized
       today = Date.today
-      prioritize = lambda { |task| [task.state == 'active' ? 0 : 1, task.due_on && task.due_on <= today ? task.due_on - today : 1, task.priority] }
+      prioritize = lambda { |task| [task.status == 'active' ? 0 : 1, task.due_on && task.due_on <= today ? task.due_on - today : 1, task.priority] }
       self.sort { |a, b| prioritize[a] <=> prioritize[b] }
     end
   end
@@ -186,10 +183,10 @@ class Task < ActiveRecord::Base
   # but used to log activities associated with this task.
   attr_accessor :modified_by
 
-  before_save :unless=>lambda { |task| task.state == 'reserved' } do |task|
+  before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
     Activity.log task, task.modified_by do |log|
-      if task.changes['state']
-        from, to = *task.changes['state']
+      if task.changes['status']
+        from, to = *task.changes['status']
         log.add task.creator, 'created' if task.creator && (from.nil? || from == 'reserved')
         log.add 'resumed' if from == 'suspended'
         case to
@@ -259,7 +256,7 @@ class Task < ActiveRecord::Base
 
   # Returns true if this person can cancel this task.
   def can_cancel?(person)
-    return false if state == 'completed' || state == 'cancelled'
+    return false if completed? || cancelled?
     #return true if person.admin? || admin?(person)
     #return owner?(person) if cancellation == :owner
     return true if admin?(person)

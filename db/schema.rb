@@ -52,7 +52,7 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.string   "description",                               :null => false
     t.integer  "priority",     :limit => 1,                 :null => false
     t.date     "due_on"
-    t.string   "state",                                     :null => false
+    t.string   "status",                                    :null => false
     t.string   "frame_url"
     t.string   "outcome_url"
     t.string   "outcome_type"
@@ -63,6 +63,6 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.datetime "updated_at"
   end
 
-  add_index "tasks", ["state", "updated_at"], :name => "index_tasks_on_state_and_updated_at"
+  add_index "tasks", ["status", "updated_at"], :name => "index_tasks_on_status_and_updated_at"
 
 end
