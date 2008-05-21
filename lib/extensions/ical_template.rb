@@ -1,104 +1,85 @@
 module ActionView
-  class ICalBuilder
+  class ICalBuilder < BlankSlate
 
-    module Properties
-      attr_accessor :properties
+    module Encoding
 
     private
 
-      def property(name, value)
-        value = { :value=>value } unless Hash === value
-        name.to_s.underscore.upcase +
-          value.except(:value).map { |name, value| ";#{name.to_s.underscore}=#{stringify(value)}" }.join +
-          ":#{stringify(value[:value])}"
+      def method_missing(name, *args)
+        params = args.extract_options!
+        write name, args, params
       end
 
+      # Write a content line the specified name, value and parameters.
+      # Names are automatically converted to upper case with dash separators.
+      def write(name, value, params = {})
+        write_line name.to_s.underscore.upcase +
+          params.map { |name, value| ";#{name.to_s.underscore.upcase}=#{stringify(value)}" }.join +
+          ":#{stringify(value)}"
+      end
+
+      # Write a content line, observing the 75 character limit and unfolding rules.
+      def write_line(line)
+        if line.size <= 75
+          @output << "#{line}\r\n"
+        else
+          @output << "#{line[0...75]}\r\n"
+          write_line " #{line[75..-1]}"
+        end
+      end
+
+      # Convert Ruby value into most appropriate iCal representation.
       def stringify(value)
         case value
-        when String then value
+        when Array then value.map { |item| stringify(item) }.join(',')
         when Date then value.strftime('%Y%m%d')
         when Time then value.strftime(value.utc? ? '%Y%m%dT%H%M%SZ' : '%Y%m%dT%H%M%S')
         else value.to_s
         end
       end
 
-      def method_missing(name, *args)
-        options = args.extract_options!
-        options[:value] = args.first
-        @properties[name] = options
+    end
+
+
+    include Encoding
+
+    def initialize(request, output = nil)
+      @request = request
+      @output = output || StringIO.new
+      write 'BEGIN', 'VCALENDAR'
+      write 'VERSION', '2.0'
+      yield self
+      write 'END', 'VCALENDAR'
+    end
+
+    def event(record, &block)
+      component 'vevent', record, &block
+    end
+
+    def todo(record, &block)
+      component 'vtodo', record, &block
+    end
+
+    def journal(record, &block)
+      component 'vjournal', record, &block
+    end
+
+    def to_s
+      @output.respond_to?(:string) ? @output.string : @output.to_s
+    end
+
+  private
+
+    def component(type, record)
+      write 'BEGIN', type.upcase
+      if record
+        uid           MD5.hexdigest([@request.host, record.class, record.id, record.created_at].join(':'))
+        dtstamp       record.created_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:created_at)
+        last_modified record.updated_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:updated_at)
+        sequence      record.send(record.class.locking_column) if record.locking_enabled?
       end
-    end
-
-    class Component
-
-      include Properties
-
-      def initialize(request, record = nil)
-        @properties = {}
-        if record
-          uid "#{request.host}:#{record.class}/#{record.id}"
-          dtstamp record.created_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:created_at)
-          last_modified record.updated_at.utc.strftime('%Y%m%dT%H%M%SZ') if record.respond_to?(:updated_at)
-          sequence record.send(record.class.locking_column) if record.locking_enabled?
-        end
-      end
-
-      def to_ical
-        # TODO: escaping for values
-        # TODO: break up long lines
-        # TODO: all other conformance requirements
-        properties = @properties.map { |name, value| property(name, value) }
-        ["BEGIN:#{self.class.const_get :NAME}", properties, "END:#{self.class.const_get :NAME}"].flatten.join("\n")
-      end
-
-    end
-
-    class Event < Component
-
-      NAME = 'VEVENT'
-
-    end
-
-
-    class Todo < Component
-
-      NAME = 'VTODO'
-
-    end
-
-    include Properties
-
-    def initialize(request)
-      @request =request
-      @properties = { :method=>'PUBLISH' }
-      @components = []
-    end
-
-    attr_reader :components
-
-    def event(record = nil)
-      returning Event.new(@request, record) do |event|
-        yield event if block_given?
-        @components << event
-      end
-    end
-
-    def todo(record = nil)
-      returning Todo.new(@request, record) do |todo|
-        yield todo if block_given?
-        @components << todo
-      end
-    end
-
-    def to_ical
-      # TODO: user's timezone
-      properties = @properties.map { |name, value| property(name, value) }
-      components = @components.map(&:to_ical)
-      ['BEGIN:VCALENDAR', 'VERSION:2.0', properties, components, 'END:VCALENDAR'].flatten.join("\n")
-    end
-
-    def content_type
-      "#{Mime::ICS};method=#{properties[:method]}"
+      yield self
+      write 'END', type.upcase
     end
 
   end
@@ -114,10 +95,13 @@ module ActionView
 
       def compile(template)
         content_type_handler = (@view.send!(:controller).respond_to?(:response) ? "controller.response" : "controller")
-        "calendar = ::ActionView::ICalBuilder.new(request)\n" +
-        template.source +
-        "#{content_type_handler}.content_type ||= calendar.content_type\n" +
-        "\ncalendar.to_ical\n"
+        <<-RUBY
+        #{content_type_handler}.content_type ||= "#{Mime::ICS};method=PUBLISH"
+        ical = ActionView::ICalBuilder.new controller.request do |calendar|
+          #{template.source}
+        end
+        ical.to_s
+        RUBY
       end
 
       def cache_fragment(block, name = {}, options = nil)

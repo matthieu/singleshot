@@ -7,8 +7,7 @@
 #  task_id    :integer         not null
 #  person_id  :integer         not null
 #  role       :string(255)     not null
-#  created_at :datetime
-#  updated_at :datetime
+#  created_at :datetime        not null
 #
 
 # Represents a stakeholder in the task.  Identifies the person and their role.

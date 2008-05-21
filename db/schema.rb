@@ -39,13 +39,8 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.integer  "task_id",    :null => false
     t.integer  "person_id",  :null => false
     t.string   "role",       :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
   end
-
-  add_index "stakeholders", ["person_id", "role"], :name => "index_stakeholders_on_person_id_and_role"
-  add_index "stakeholders", ["task_id", "role"], :name => "index_stakeholders_on_task_id_and_role"
-  add_index "stakeholders", ["task_id", "person_id", "role"], :name => "index_stakeholders_on_task_id_and_person_id_and_role", :unique => true
 
   create_table "tasks", :force => true do |t|
     t.string   "title",                                     :null => false
@@ -62,7 +57,5 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
-
-  add_index "tasks", ["status", "updated_at"], :name => "index_tasks_on_status_and_updated_at"
 
 end

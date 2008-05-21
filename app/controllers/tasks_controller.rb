@@ -8,6 +8,8 @@ class TasksController < ApplicationController
   before_filter :forbid_reserved, :except=>[:update, :destroy]
 
   def index
+    @title = 'Tasks'
+    @subtitle = 'Tasks you are performing or can claim for your own.'
     @alternate = { Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.with_stakeholders.for_stakeholder(authenticated).pending.prioritized
@@ -20,6 +22,7 @@ class TasksController < ApplicationController
       format.xml  { render :xml=>@task }
       format.json { render :json=>@task }
       format.ics  do
+        @title = @task.title
         @tasks = [@task]
         render :action=>'index'
       end

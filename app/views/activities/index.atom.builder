@@ -1,5 +1,6 @@
 atom_feed :root_url=>activities_url do |feed|
-  feed.title 'Singleshot: Activities'
+  feed.title @title
+  feed.subtitle @subtitle
   feed.updated @activities.first.created_at
 
   for activity in @activities

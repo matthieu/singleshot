@@ -5,6 +5,7 @@ class ActivitiesController < ApplicationController
 
   def index
     @title = 'Activities'
+    @subtitle = 'Track activity in tasks you participate in or observe.'
     @alternate = { Mime::ATOM=>formatted_activities_url(:format=>:atom, :access_key=>authenticated.access_key),
                    Mime::ICS=>formatted_activities_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @activities = Activity.for_stakeholder(authenticated)
@@ -19,7 +20,8 @@ class ActivitiesController < ApplicationController
   end
 
   def show
-    @title = "Activities &mdash; #{@task.title}"
+    @title = "Activities - #{@task.title}"
+    @subtitle = "Track all activities in the task #{@task.title}"
     @alternate = { Mime::ATOM=>formatted_activity_url(@task, :atom, :access_key=>authenticated.access_key),
                    Mime::ICS=>formatted_activity_url(@task, :ics, :access_key=>authenticated.access_key) }
     @activities = @task.activities
