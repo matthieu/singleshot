@@ -3,10 +3,15 @@ module ApplicationHelper
 
   # Returns a link to a person using their full name as the link text and site URL
   # (or profile, if unspecified) as the reference.
-  def link_to_person(person, options = {})
+  def link_to_person(person, *args)
+    options = args.extract_options!
     fullname = h(person.fullname)
-    person.identity ? link_to(fullname, person.identity, options.reverse_merge(:title=>"See #{fullname}'s profile")) :
-      content_tag('span', fullname, options)
+    if person.url
+      options.update :rel=>args.first if args.first
+      link_to(fullname, person.url, options.merge(:title=>"See #{fullname}'s profile"))
+    else
+      content_tag('span', fullname)
+    end
   end
 
   # Returns Person object for currently authenticated user.

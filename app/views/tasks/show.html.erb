@@ -27,9 +27,9 @@
           <% end %>
         </ol>
       </dd>
-      <%= admins = @task.admins.map { |admin| link_to_person(admin) }
+      <%= admins = @task.admins.map { |person| link_to_person(person, :admin) }
           content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
-      <%= observers = @task.observers.map { |admin| link_to_person(admin) }
+      <%= observers = @task.observers.map { |person| link_to_person(person, :observer) }
           content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
     </dl>
     <div class='actions' style='text-align:right'>

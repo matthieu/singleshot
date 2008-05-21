@@ -113,4 +113,8 @@ class Person < ActiveRecord::Base
     save! unless new_record?
   end
 
+  def url
+    read_attribute(:identity)
+  end
+
 end

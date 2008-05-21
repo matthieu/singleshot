@@ -13,8 +13,8 @@ module TaskHelper
 
   def task_vitals(task)
     vitals = ['Created ' + relative_date_abbr(task.created_at, :class=>'published')]
-    vitals.first << ' by ' + link_to_person(task.creator) if task.creator
-    vitals << (task.status == 'completed' ? "completed by " : "assigned to ") + link_to_person(task.owner) if task.owner
+    vitals.first << ' by ' + link_to_person(task.creator, :creator) if task.creator
+    vitals << (task.status == 'completed' ? "completed by " : "assigned to ") + link_to_person(task.owner, :owner) if task.owner
     vitals << "due #{relative_date_abbr(task.due_on)}" if task.due_on
     vitals.to_sentence
   end
