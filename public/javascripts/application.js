@@ -12,7 +12,7 @@ var Singleshot = {
   expand: function(event, target, alternative) {
     event = event || window.event;
     var source = Event.element(event);
-    target = $(target);
+    target = $$(target).first() || $(target);
     if (target.visible()) {
       source.innerHTML = source.originalText; 
       target.hide();

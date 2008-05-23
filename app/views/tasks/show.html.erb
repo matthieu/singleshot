@@ -4,17 +4,18 @@
   <div class='summary'>
     <h1><%= link_to 'Singleshot', root_url %></h1>
     <div class='vitals'><%= task_vitals(@task) %></div>
-    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, 'expanded', 'Less options')", :class=>'button-to' %></div>
+    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %></div>
   </div>
-  <div id='expanded' class='expanded' style='display:none'>
+  <div class='expanded' style='display:none'>
     <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
-                :rel=>'alternate', :title=>'Add this task to your calendar' %>
-    <%= link_to image_tag('feed.png') + ' Activities', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
-                :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+        :rel=>'alternate', :title=>'Add this task to your calendar' %>
+    <%= link_to image_tag('feed.png') + ' Activity', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
+        :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+    <h2><%= h(@task.title) %></h2>
+    <div class='description'><%= h(@task.description) %></div>
     <dl>
-      <dt>Task</dt><dd><%= h(@task.title) %></dd>
-      <dt>Description</dt><dd><%= h(@task.description) %></dd>
       <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
+      <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>
       <dt>Recent activity</dt>
       <dd>
         <ol class='activities hfeed'>
@@ -32,7 +33,8 @@
       <%= observers = @task.observers.map { |person| link_to_person(person, :observer) }
           content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
     </dl>
-    <div class='actions' style='text-align:right'>
+    <div class='actions'>
+      <%= button_to 'Some action' %>
       <%= task_actions(@task) %>
     </div>
   </div>

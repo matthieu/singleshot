@@ -270,7 +270,7 @@ ol.activities li.activity {
 #task_bar div.summary div.actions {
   display: inline;
   position: absolute;
-  right: 2em;
+  right: 3em;
   top: 0.5em;
 }
 #task_bar div.summary .button-to {
@@ -283,17 +283,6 @@ ol.activities li.activity {
   border-top: 1px solid #ccc;
   margin: 0;
 }
-#task_bar div.expanded dt {
-  font-weight: bold;
-  display: inline;
-  float: left;
-}
-#task_bar div.expanded dd {
-  margin: 0 0 1em 10em;
-}
-#task_bar div.expanded dd ol.activities {
-  margin: 0;
-}
 #task_bar div.expanded a[rel=alternate] {
   float: right;
   padding-left: 1em;
@@ -304,6 +293,31 @@ ol.activities li.activity {
   vertical-align: bottom;
   margin: 0.1em;
 }
+#task_bar div.expanded h2 {
+  font-size: 1.2em;
+  margin: 0 0 1em 0;
+}
+#task_bar div.expanded div.description {
+  margin: 1em 0 1em 0;
+}
+#task_bar div.expanded dl {
+}
+#task_bar div.expanded dt {
+  font-weight: bold;
+  display: inline;
+  float: left;
+}
+#task_bar div.expanded dd {
+  margin: 0 0 1em 10em;
+}
+#task_bar div.expanded ol.activities {
+  margin: 0;
+  padding: 0;
+}
+#task_bar div.expanded div.actions {
+  text-align: right;
+}
+
 
 iframe#task_frame {
   border:0;

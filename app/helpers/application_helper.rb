@@ -5,7 +5,7 @@ module ApplicationHelper
   # (or profile, if unspecified) as the reference.
   def link_to_person(person, *args)
     options = args.extract_options!
-    fullname = h(person.fullname)
+    fullname = person == authenticated ? 'you' : h(person.fullname)
     if person.url
       options.update :rel=>args.first if args.first
       link_to(fullname, person.url, options.merge(:title=>"See #{fullname}'s profile"))
