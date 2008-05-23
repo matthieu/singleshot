@@ -31,16 +31,17 @@ namespace 'db' do
 
     def create(attributes)
       retract Task, Stakeholder, Activity
-      attributes = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
-                     :frame_url=>'http://localhost:3001/sandwich', :modified_by=>Person.find_by_identity(ENV['USER']) }.
-                     merge(attributes || {})
-      Task.create!(attributes)
+      you = Person.find_by_identity(ENV['USER']) 
+      defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
+                   :frame_url=>'http://localhost:3001/sandwich', :modified_by=>you,
+                   :potential_owners=>you }
+      Task.create! defaults.merge(attributes || {})
     end
 
 
     # Tasks you should not see.
-    create :title=>'You will not see this task since this task is reserved.', :status=>'reserved', :creator=>you
-    create :title=>'You will not see this task since you are not a stakeholder.'
+    create :title=>'You will not see this task since this task is reserved.', :status=>'reserved', :creator=>you, :potential_owners=>[]
+    create :title=>'You will not see this task since you are not a stakeholder.', :potential_owners=>[]
     # Tasks in which we are:
     # - creator
     # - owner

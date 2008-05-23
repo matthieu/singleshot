@@ -147,7 +147,8 @@ class Task < ActiveRecord::Base
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
 
   named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :conditions=>['involved.person_id=?', person.id], :include=>:stakeholders }
+    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :conditions=>["involved.person_id=? AND tasks.status != 'reserved'", person.id],
+      :include=>:stakeholders }
   }
   named_scope :for_owner,       lambda { |person|
     { :joins=>:stakeholders, :conditions=>["stakeholders.person_id=? and stakeholders.role='owner'", person.id] }

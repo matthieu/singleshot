@@ -33,6 +33,19 @@ module ApplicationHelper
     end
   end
 
+  def relative_time(time)
+    diff = Time.now - time
+    if diff < 1.minute
+      'this minute'
+    elsif diff < 1.hour
+      "#{(diff / 1.minute).round} minutes ago"
+    elsif diff < 1.day
+      "#{(diff / 1.hour).round} hours ago"
+    elsif diff < 1.month
+      "#{(diff / 1.day).round} days ago"
+    end
+  end
+
   def relative_date_abbr(date, options = {})
     content_tag 'abbr', relative_date(date), options.merge(:title=>date.to_date.to_s)
   end
