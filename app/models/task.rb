@@ -154,15 +154,6 @@ class Task < ActiveRecord::Base
     { :joins=>:stakeholders, :conditions=>["stakeholders.person_id=? and stakeholders.role='owner'", person.id] }
   }
 
-  named_scope :pending, :conditions=>["tasks.status IN ('ready', 'active') AND involved.role IN ('owner', 'potential')"],
-    :order=>'involved.role, priority ASC, tasks.created_at' do
-    def prioritized
-      today = Date.today
-      prioritize = lambda { |task| [task.status == 'active' ? 0 : 1, task.due_on && task.due_on <= today ? task.due_on - today : 1, task.priority] }
-      self.sort { |a, b| prioritize[a] <=> prioritize[b] }
-    end
-  end
-
 
   # --- Priority and ordering ---
   
@@ -175,27 +166,54 @@ class Task < ActiveRecord::Base
     due_on && due_on < Date.today
   end
 
+  module Ranking
+    # Tasks are ranked by the following rules:
+    # - Tasks you're performing (owner of) always rank higher than all other tasks.
+    # - Tasks available to you rank higher than tasks not available to you
+    # - Over due tasks always rank higher than today's tasks
+    # - And today's tasks always rank higher than task with no due date
+    # - High priority tasks always rank higher than lower priority tasks
+    # - Older tasks rank higher than more recently created tasks
+    def rank_for(person)
+      today = Date.today
+      # Calculating an absolute rank value is tricky if not impossible, so instead we construct
+      # an array of values and compare these arrays against each other.  To create an array we
+      # need a person's name, so we can ranked their owned tasks higher.
+      rank = lambda { |task|
+        [ person == task.owner ? 1 : 0, task.can_claim?(person) ? 1 : 0,
+          (task.due_on && task.due_on <= today) ? today - task.due_on : -1,
+          -task.priority, today - task.created_at.to_date ] }
+      self.sort { |a,b| rank[b] <=> rank[a] }
+    end
+  end
+
 
   # --- Activities ---
  
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Activity::Grouping
 
-  # Attribute recording person who created/modified this task.  Not persisted,
-  # but used to log activities associated with this task.
-  attr_accessor :modified_by
+  # Associate person with all modifications done on this task.
+  # This results in activities linked to the person and task when
+  # the task is saved.
+  def modified_by(person)
+    @modified_by = person
+    self
+  end
 
-  before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
-    Activity.log task, task.modified_by do |log|
-      if task.changes['status']
-        from, to = *task.changes['status']
-        log.add task.creator, 'created' if task.creator && (from.nil? || from == 'reserved')
+  before_save :log_activities, :unless=>lambda { |task| task.status == 'reserved' }
+
+  def log_activities
+    Activity.log self, @modified_by do |log|
+      if changes['status']
+        from, to = *changes['status']
+        log.add creator, 'created' if creator && (from.nil? || from == 'reserved')
         log.add 'resumed' if from == 'suspended'
         case to
         when 'ready'
-          log.add task.changes['owner'].first, 'released' if from == 'active'
-        when 'active' then log.add task.owner, 'is owner of'
+          log.add changes['owner'].first, 'released' if from == 'active'
+        when 'active' then log.add owner, 'is owner of'
         when 'suspended' then log.add 'suspended'
-        when 'completed' then log.add task.owner, 'completed'
+        when 'completed' then log.add owner, 'completed'
         when 'cancelled' then log.add 'cancelled'
         end
       else
@@ -203,7 +221,8 @@ class Task < ActiveRecord::Base
       end
     end
   end
-
+  private :log_activities
+  
 
   # --- Completion and cancellation ---
 
@@ -321,4 +340,7 @@ class Task < ActiveRecord::Base
     (stakeholders.map { |sh| sh.person } + [owner, creator].compact).uniq.find { |person| token_for(person) == token }
   end
 
+
+  named_scope :pending, :conditions=>["tasks.status IN ('ready', 'active') AND involved.role IN ('owner', 'potential')"],
+    :order=>'involved.role, priority ASC, tasks.created_at', :extend=>Ranking
 end

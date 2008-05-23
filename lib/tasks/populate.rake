@@ -33,9 +33,8 @@ namespace 'db' do
       retract Task, Stakeholder, Activity
       you = Person.find_by_identity(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
-                   :frame_url=>'http://localhost:3001/sandwich', :modified_by=>you,
-                   :potential_owners=>you }
-      Task.create! defaults.merge(attributes || {})
+                   :frame_url=>'http://localhost:3001/sandwich', :potential_owners=>you }
+      Task.new(defaults.merge(attributes || {})).modified_by(you).save!
     end
 
 
