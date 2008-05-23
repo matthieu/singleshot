@@ -16,8 +16,6 @@ abbr {
 
 /** Forms and controls **/
 
-/** Form controls **/
-
 input[type=text], input[type=password], select {
   padding: 0.3em;
   border: 1px solid #ccc;

@@ -1,12 +1,9 @@
 module TaskHelper
 
-  def task_actions(task)
-    manage = task.admin?(authenticated)
-    cancel = task.can_cancel?(authenticated)
-    claim = task.can_claim?(authenticated)
-    actions = [
-      manage && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Managed this task', :disabled=>!manage),
-      claim && button_to('Claim', task_owner_url(task, 'owner'=>authenticated.identity), :method=>:put, :title=>'Claim task', :disabled=>!claim),
+  def quick_actions(task)
+    [ task.admin?(authenticated) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
+      task.can_claim?(authenticated) && button_to('Claim', task_owner_url(task, 'owner'=>authenticated.identity),
+                                                                          :method=>:put, :title=>'Claim task')
     ].select { |action| action }.join(' ')
   end
 

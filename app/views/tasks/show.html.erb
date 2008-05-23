@@ -4,7 +4,7 @@
   <div class='summary'>
     <h1><%= link_to 'Singleshot', root_url %></h1>
     <div class='vitals'><%= task_vitals(@task) %></div>
-    <div class='actions'><%= task_actions(@task) %> <%= link_to_function 'More Options', "Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %></div>
+    <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %></div>
   </div>
   <div class='expanded' style='display:none'>
     <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
@@ -35,7 +35,7 @@
     </dl>
     <div class='actions'>
       <%= button_to 'Some action' %>
-      <%= task_actions(@task) %>
+      <%= quick_actions(@task) %>
     </div>
   </div>
 </div>
