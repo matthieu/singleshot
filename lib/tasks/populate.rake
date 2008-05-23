@@ -11,18 +11,21 @@ namespace 'db' do
     end
 
     puts "Populating database for #{you.identity}"
-    other = Person.identify('anon') || Person.create(:email=>'anon@apache.org')
     Activity.delete_all
     Stakeholder.delete_all
     Task.delete_all
 
+    def other
+      Person.identify('anon') || Person.create(:email=>'anon@apache.org')
+    end
     def retract(*models)
+      models = Task, Stakeholder, Activity if models.empty?
       models.each do |model|
         model.all.each do |record|
-          change = ['created_at = ?', record.created_at - 4.hours]
+          change = ['created_at = ?', record.created_at - 2.hour]
           if record.respond_to?(:updated_at)
             change.first << ', updated_at = ?'
-            change << record.updated_at - 1.hours
+            change << record.updated_at - 2.hour
           end
           model.update_all change, :id=>record.id 
         end
@@ -30,10 +33,10 @@ namespace 'db' do
     end
 
     def create(attributes)
-      retract Task, Stakeholder, Activity
+      retract 
       you = Person.find_by_identity(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
-                   :frame_url=>'http://localhost:3001/sandwich', :potential_owners=>you }
+                   :frame_url=>'http://localhost:3001/sandwich', :potential_owners=>[you, other] }
       Task.new(defaults.merge(attributes || {})).modified_by(you).save!
     end
 
@@ -47,13 +50,12 @@ namespace 'db' do
     # - observer
     # - admin
     create :creator=>you
-    create :creator=>you, :owner=>you
+    create :creator=>you ; retract ; Task.last.modified_by(you).update_attributes :owner=>you
     create :observers=>you
     create :admins=>you
     # Tasks in which we are only or one of many potential owners.
     create :potential_owners=>you
-    create :potential_owners=>[you, other]
-    create :owner=>other, :potential_owners=>you
+    create :potential_owners=>[you, other] ; retract ; Task.last.update_attributes :owner=>other
     # High priority should show first.
     create :owner=>you, :priority=>Task::PRIORITIES.first
     # Over-due before due today before anything else.

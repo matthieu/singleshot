@@ -12,7 +12,7 @@ class TasksController < ApplicationController
     @subtitle = 'Tasks you are performing or can claim for your own.'
     @alternate = { Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
-    @tasks = Task.for_stakeholder(authenticated).pending.with_stakeholders.rank_for(authenticated)
+    @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
   end
 
   def show

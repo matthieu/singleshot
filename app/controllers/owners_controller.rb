@@ -28,8 +28,7 @@ class OwnersController < ApplicationController
 private
 
   def set_task
-    @task = Task.find(params['task_id'])
-    @task.modified_by = authenticated
+    @task = Task.for_stakeholder(authenticated).find(params['task_id']).modified_by(authenticated)
   end
 
 end

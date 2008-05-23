@@ -21,9 +21,9 @@ module ApplicationHelper
     date = date.to_date
     today = Date.today
     if date == today
-      'Today'
+      'today'
     elsif date == today - 1.day
-      'Yesterday'
+      'yesterday'
     elsif date > today && date < today.next_week
       date.strftime('%A')
     elsif date.year == today.year

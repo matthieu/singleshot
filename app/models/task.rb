@@ -22,6 +22,7 @@
 require 'openssl'
 require 'md5'
 
+
 class Task < ActiveRecord::Base
 
   def initialize(attributes = {}) #:nodoc:
@@ -65,8 +66,7 @@ class Task < ActiveRecord::Base
   # transition to completed only from active, and transition to cancelled from
   # any other state but completed.  Completed and cancelled are terminal
   # states.
-  STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed',
-  'cancelled']
+  STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
 
   # Cannot change in mass update.
   attr_protected :status
@@ -85,7 +85,7 @@ class Task < ActiveRecord::Base
 
   before_validation do |task|
     case task.status
-    when 'ready', 'reserved'
+    when 'ready'
       task.owner = task.potential_owners.first unless task.owner || task.potential_owners.size > 1
       task.status = 'active' if task.owner
     when 'active'
@@ -144,29 +144,30 @@ class Task < ActiveRecord::Base
   include Stakeholder::Accessors
   include Stakeholder::Validation
 
+  # Eager loading of stakeholders associated with each task.
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
-
+  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
   named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :conditions=>["involved.person_id=? AND tasks.status != 'reserved'", person.id],
-      :include=>:stakeholders }
-  }
-  named_scope :for_owner,       lambda { |person|
-    { :joins=>:stakeholders, :conditions=>["stakeholders.person_id=? and stakeholders.role='owner'", person.id] }
-  }
+    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
+      :conditions=>["(involved.person_id=? AND involved.role != 'excluded')", person.id] } }
 
 
   # --- Priority and ordering ---
   
   # Task priority: 1 is the highest, 3 the lowest, average is the default.
   PRIORITIES = 1..3
-  before_validation { |task| task.priority ||= (PRIORITIES.min + PRIORITIES.max) >> 1 }
   validates_inclusion_of :priority, :in=>PRIORITIES
+  before_validation do |task|
+    task.priority ||= (PRIORITIES.min + PRIORITIES.max) >> 1
+  end
 
   def over_due?
     due_on && due_on < Date.today
   end
 
-  module Ranking
+  # Scopes can use this to add ranking methods on returned records.
+  module RankingMethods
+
     # Tasks are ranked by the following rules:
     # - Tasks you're performing (owner of) always rank higher than all other tasks.
     # - Tasks available to you rank higher than tasks not available to you
@@ -185,12 +186,13 @@ class Task < ActiveRecord::Base
           -task.priority, today - task.created_at.to_date ] }
       self.sort { |a,b| rank[b] <=> rank[a] }
     end
+
   end
 
 
   # --- Activities ---
  
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Activity::Grouping
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Activity::GroupingMethods
 
   # Associate person with all modifications done on this task.
   # This results in activities linked to the person and task when
@@ -201,7 +203,6 @@ class Task < ActiveRecord::Base
   end
 
   before_save :log_activities, :unless=>lambda { |task| task.status == 'reserved' }
-
   def log_activities
     Activity.log self, @modified_by do |log|
       if changes['status']
@@ -341,6 +342,22 @@ class Task < ActiveRecord::Base
   end
 
 
-  named_scope :pending, :conditions=>["tasks.status IN ('ready', 'active') AND involved.role IN ('owner', 'potential')"],
-    :order=>'involved.role, priority ASC, tasks.created_at', :extend=>Ranking
+
+
+
+
+
+
+
+
+
+  # --- Finders and named scopes ---
+
+  # Pending tasks are:
+  # - Active tasks owned by the person
+  # - Ready tasks that can be claimed by the person
+  named_scope :pending, :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
+    :conditions=>["(tasks.status = 'ready' AND involved.role = 'potential') OR (tasks.status = 'active' AND involved.role = 'owner')"],
+    :extend=>RankingMethods
+
 end

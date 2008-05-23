@@ -1,7 +1,6 @@
 class ActivitiesController < ApplicationController
 
   access_key_authentication :only=>[:index, :show]
-  instance :task, :only=>[:show]
 
   def index
     @title = 'Activities'
@@ -20,6 +19,7 @@ class ActivitiesController < ApplicationController
   end
 
   def show
+    @task = Task.for_stakeholder(authenticated).find(params[:id])
     @title = "Activities - #{@task.title}"
     @subtitle = "Track all activities in the task #{@task.title}"
     @alternate = { Mime::ATOM=>formatted_activity_url(@task, :atom, :access_key=>authenticated.access_key),

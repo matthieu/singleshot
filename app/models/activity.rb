@@ -17,7 +17,7 @@ class Activity < ActiveRecord::Base
 
   attr_readonly :person, :task, :action
 
-  module Grouping
+  module GroupingMethods
     def group_by_day
       self.inject([]) do |days, activity|
         created = activity.created_at.to_date
@@ -32,7 +32,7 @@ class Activity < ActiveRecord::Base
   named_scope :for_stakeholder,
     lambda { |person| { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
       :conditions=>["involved.person_id=? AND involved.role != 'excluded'", person.id],
-      :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Grouping } }
+      :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>GroupingMethods } }
   named_scope :for_dates,
     lambda { |dates| { :conditions=>{ :created_at=>dates } } }
 
