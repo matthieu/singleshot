@@ -6,7 +6,7 @@
       <h3 class='entry-title priority_<%= task.priority %> <%= 'overdue' if task.over_due? %>'>
         <%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>'View/perform task' %></h3>
       <div class='entry-content'>
-        <p class='description'><%= h(task.description) %></p>
+        <p class='description'><%= truncate(strip_tags(task.description), 500) %></p>
         <p class='vitals'><%= task_vitals(task) %></p>
       </div>
     <% end %>

@@ -35,7 +35,7 @@ namespace 'db' do
     def create(attributes)
       retract 
       you = Person.find_by_identity(ENV['USER']) 
-      defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraph,
+      defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n"),
                    :frame_url=>'http://localhost:3001/sandwich', :potential_owners=>[you, other] }
       Task.new(defaults.merge(attributes || {})).modified_by(you).save!
     end

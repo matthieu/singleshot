@@ -4,7 +4,7 @@ calendar.x_wr_caldesc @subtitle
 for task in @tasks
   calendar.todo task do |todo|
     todo.summary task.title
-    todo.description task.description
+    todo.description strip_tags(task.description)
     todo.url task_url(task)
     todo.due task.due_on if task.due_on
     todo.priority [1,5,9][task.priority - 1]

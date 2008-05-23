@@ -6,7 +6,6 @@ module TaskHelper
     claim = task.can_claim?(authenticated)
     actions = [
       manage && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Managed this task', :disabled=>!manage),
-      cancel && button_to('Cancel', task_url(task), :method=>:delete, :title=>'Cancel this task', :disabled=>!cancel),
       claim && button_to('Claim', task_owner_url(task, 'owner'=>authenticated.identity), :method=>:put, :title=>'Claim task', :disabled=>!claim),
     ].select { |action| action }.join(' ')
   end

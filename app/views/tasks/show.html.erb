@@ -12,7 +12,7 @@
     <%= link_to image_tag('feed.png') + ' Activity', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
         :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
     <h2><%= h(@task.title) %></h2>
-    <div class='description'><%= h(@task.description) %></div>
+    <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
     <dl>
       <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
       <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>

@@ -161,6 +161,10 @@ class Task < ActiveRecord::Base
     task.priority ||= (PRIORITIES.min + PRIORITIES.max) >> 1
   end
 
+  def high_priority?
+    priority == PRIORITIES.min
+  end
+
   def over_due?
     due_on && due_on < Date.today
   end
