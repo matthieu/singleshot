@@ -2,7 +2,6 @@
 @title = @task.title %>
 <div id='task_bar'>
   <div class='summary'>
-    <h1><%= link_to 'Singleshot', root_url %></h1>
     <div class='vitals'><%= task_vitals(@task) %></div>
     <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %></div>
   </div>
