@@ -4,8 +4,8 @@
 # Table name: stakeholders
 #
 #  id         :integer         not null, primary key
-#  task_id    :integer         not null
-#  person_id  :integer         not null
+#  task_id    :integer
+#  person_id  :integer
 #  role       :string(255)     not null
 #  created_at :datetime        not null
 #

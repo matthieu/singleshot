@@ -1,8 +1,8 @@
-class Stakeholders < ActiveRecord::Migration
+class CreateStakeholders < ActiveRecord::Migration
   def self.up
     create_table 'stakeholders' do |t|
-      t.integer   'task_id',    :null=>false
-      t.integer   'person_id',  :null=>false
+      t.belongs_to 'task'
+      t.belongs_to 'person'
       t.string    'role',       :null=>false
       t.datetime  'created_at', :null=>false
     end

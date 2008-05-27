@@ -12,8 +12,8 @@
 ActiveRecord::Schema.define(:version => 20080506015153) do
 
   create_table "activities", :force => true do |t|
-    t.integer  "person_id",  :null => false
-    t.integer  "task_id",    :null => false
+    t.integer  "person_id"
+    t.integer  "task_id"
     t.string   "action",     :null => false
     t.datetime "created_at", :null => false
   end
@@ -36,8 +36,8 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
   add_index "people", ["identity"], :name => "index_people_on_identity", :unique => true
 
   create_table "stakeholders", :force => true do |t|
-    t.integer  "task_id",    :null => false
-    t.integer  "person_id",  :null => false
+    t.integer  "task_id"
+    t.integer  "person_id"
     t.string   "role",       :null => false
     t.datetime "created_at", :null => false
   end
