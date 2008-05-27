@@ -5,10 +5,6 @@ class ApplicationController < ActionController::Base
 
   helper :all # include all helpers, all the time
 
-  # See ActionController::RequestForgeryProtection for details
-  # Uncomment the :secret if you're not using the cookie session store
-  protect_from_forgery # :secret => '{secret}}'
-
   # See ActionController::Base for details 
   # Uncomment this to filter the contents of submitted sensitive data parameters
   # from your application log (in this case, all fields with names like "password"). 
@@ -20,6 +16,10 @@ class ApplicationController < ActionController::Base
   # Turn sessions off for everything but HTML and AJAX.  This also forces HTTP Basic or access key
   # authentication on all other content types (JSON, iCal, etc).
   session :off, :if=>lambda { |req| !(req.format.html? || req.xhr?) }
+
+  # See ActionController::RequestForgeryProtection for details
+  # Uncomment the :secret if you're not using the cookie session store
+  protect_from_forgery # :secret => '{secret}}'
 
   before_filter :authenticate
 

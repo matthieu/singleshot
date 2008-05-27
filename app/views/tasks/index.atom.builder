@@ -8,7 +8,6 @@ atom_feed :root_url=>tasks_url do |feed|
       entry.content :type=>'html' do |content|
         content.text! sanitize(simple_format(task.description))
         content.text! "<p><em>#{task_vitals(task)}</em></p>"
-        content.text! "<div>#{quick_actions(task)}</div>"
       end
     end
   end
