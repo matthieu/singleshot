@@ -17,8 +17,8 @@ class ApplicationController < ActionController::Base
 
   # --- Authentication ---
 
-  # Turn sessions off for everything but HTML and AJAX.  This also forces HTTP Basic Authentication
-  # on all other type of requests (JSON, iCal, etc).
+  # Turn sessions off for everything but HTML and AJAX.  This also forces HTTP Basic or access key
+  # authentication on all other content types (JSON, iCal, etc).
   session :off, :if=>lambda { |req| !(req.format.html? || req.xhr?) }
 
   before_filter :authenticate
@@ -56,22 +56,27 @@ class ApplicationController < ActionController::Base
     @authenticated = Person.find_by_access_key(params[:access_key]) or raise ActiveRecord::RecordNotFound
   end
 
+=begin
   # Raise to return 403 (Forbidden) with optional error message.
   class NotAuthorized < Exception
   end
   rescue_responses[NotAuthorized.name] = :forbidden
-
-  # Returns Person object for currently authenticated user.
-  attr_reader :authenticated
+=end
 
 
   # --- Authenticated user ---
 
+  # Returns Person object for currently authenticated user.
+  attr_reader :authenticated
+
   # Returns language code for currently authenticated user (may be nil).
   def language
-    authenticated.language
+    authenticated.language if authenticated
   end
 
-  # TODO: Add timezone support when upgrading to Rails 2.1.
+  # Set time zone for currently authenticated user.
+  before_filter do |controller|
+    Time.zone = controller.authenticated.timezone rescue nil
+  end
 
 end
