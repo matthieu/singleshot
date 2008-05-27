@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
 
-  access_key_authentication :only=>[:index, :show]
+  access_key_authentication :only=>[:index, :completed, :following, :show]
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :authenticate, :except=>[:show, :update, :complete, :destroy]
@@ -8,12 +8,53 @@ class TasksController < ApplicationController
   before_filter :forbid_reserved, :except=>[:update, :destroy]
 
   def index
-    @title = 'Tasks'
-    @subtitle = 'Tasks you are performing or can claim for your own.'
+    @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
     @alternate = { Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
+    respond_to do |format|
+      format.html
+      # TODO: format.xml
+      # TODO: format.json
+      format.atom
+      format.ics
+    end
   end
+
+  def completed
+    @title, @subtitle = 'Completed', 'Completed tasks'
+    @alternate = { Mime::ATOM=>formatted_completed_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+                   Mime::ICS=>formatted_completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
+    respond_to do |format|
+      format.html do 
+        @days = @tasks.group_by { |task| task.updated_at.to_date }
+        render :template=>'tasks/by_day'
+      end
+      # TODO: format.xml
+      # TODO: format.json
+      format.atom { render :action=>'index' }
+      format.ics  { render :action=>'ics' }
+    end
+  end
+
+  def following
+    @title, @subtitle = 'Following', 'Tasks you created, observing or managing.'
+    @alternate = { Mime::ATOM=>formatted_following_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+                   Mime::ICS=>formatted_following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
+    respond_to do |format|
+      format.html do 
+        @days = @tasks.group_by { |task| task.updated_at.to_date }
+        render :template=>'tasks/by_day'
+      end
+      # TODO: format.xml
+      # TODO: format.json
+      format.atom { render :action=>'index' }
+      format.ics  { render :action=>'ics' }
+    end
+  end
+
 
   def show
     @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }

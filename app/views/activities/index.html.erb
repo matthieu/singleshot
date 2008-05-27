@@ -1,7 +1,7 @@
 <ol class='activities hfeed'>
   <% for day in @days %>
     <li class='day'>
-      <h3><%= relative_date(day.first) %></h3>
+      <h3 class='date'><%= relative_date(day.first).titleize %></h3>
       <% for activity in day.last %>
       <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
           <%= link_to h(activity.person.fullname), activity.person.identity %>

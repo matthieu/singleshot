@@ -225,6 +225,14 @@ div#errorExplanation p, div#errorExplanation ul {
 #main ol.tasks li.task p.vitals {
   color: #808080;
 }
+#main ol.tasks li.date h2 {
+  font-size: 1.4em;
+}
+#main ol.tasks li.date ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 
 
 /** Activities **/

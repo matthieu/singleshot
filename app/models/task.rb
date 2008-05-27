@@ -347,14 +347,6 @@ class Task < ActiveRecord::Base
 
 
 
-
-
-
-
-
-
-
-
   # --- Finders and named scopes ---
 
   # Pending tasks are:
@@ -364,4 +356,11 @@ class Task < ActiveRecord::Base
     :conditions=>["(tasks.status = 'ready' AND involved.role = 'potential') OR (tasks.status = 'active' AND involved.role = 'owner')"],
     :extend=>RankingMethods
 
+  named_scope :completed, lambda { |end_date|
+    { :conditions=>["tasks.status == 'completed' AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
+      :order=>'tasks.updated_at DESC' } }
+
+  named_scope :following, lambda { |end_date|
+    { :conditions=>["involved.role IN ('creator', 'observer', 'admin') AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
+      :order=>'tasks.updated_at DESC' } }
 end

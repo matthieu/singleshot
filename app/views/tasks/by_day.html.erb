@@ -1,0 +1,13 @@
+<ol class='tasks hfeed'>
+  <% for day in @days %>
+    <li class='date'><h2><%= relative_date(day.first).titleize %></h2>
+      <ol>
+        <% for task in day.last %>
+          <% content_tag_for 'li', task, :class=>'hentry' do %>
+            <%= render :partial=>'task', :locals=>{ :task=>task } %>
+          <% end %>
+        <% end %>
+      </ol>
+    </li>
+  <% end %>
+</ol>
