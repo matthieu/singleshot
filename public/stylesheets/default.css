@@ -148,8 +148,8 @@ div#errorExplanation p, div#errorExplanation ul {
   -webkit-border-top-left-radius: 6px;
   -webkit-border-top-right-radius: 6px;
 }
-#header ul.tabs li a:hover {
-  background-color: #002f2f;
+#header ul.tabs li a:hover, #header ul.tabs li a.current {
+  background-color: #044360;
 }
 #header ul.tabs li a .counter {
   position: relative;
