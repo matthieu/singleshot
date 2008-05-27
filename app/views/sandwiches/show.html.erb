@@ -26,7 +26,7 @@
                     {}, :disabled=>@read_only %></dd>
           <dt><%= f.label :toppings, 'Top it with' %>
               <%= '(' + link_to_function('add topping', 'roomForNewTopping()') + ')' unless @read_only %></dt>
-          <% @sandwich.toppings.split(/;/).each do |topping| %>
+            <% @sandwich.toppings.uniq.reject(&:empty?).each do |topping| %>
             <dd><%= text_field_tag 'sandwich[toppings][]', topping, :disabled=>@read_only %></dd>
           <% end %>
           <dd><%= text_field_tag 'sandwich[toppings][]', '', :id=>'last_topping', :disabled=>@read_only %></dd>

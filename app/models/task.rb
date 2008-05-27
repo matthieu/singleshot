@@ -149,7 +149,7 @@ class Task < ActiveRecord::Base
   # Load only tasks that this person is a stakeholder of (owner, observer, etc).
   named_scope :for_stakeholder, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
-      :conditions=>["(involved.person_id=? AND involved.role != 'excluded')", person.id] } }
+      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
 
 
   # --- Priority and ordering ---
@@ -341,8 +341,9 @@ class Task < ActiveRecord::Base
   # by #token_for.  The person is guaranteed to be a stakeholder in the task.
   # Returns nil if the token is invalid or the person is no longer associated with
   # this task.
-  def authorize(token)
-    (stakeholders.map { |sh| sh.person } + [owner, creator].compact).uniq.find { |person| token_for(person) == token }
+  def authenticate(token)
+    ['owner', 'creator', 'admin', 'observer', 'potential_owner'].map { |role| in_role(role) }.flatten.
+      find { |person| token_for(person) == token }
   end
 
 
@@ -363,4 +364,6 @@ class Task < ActiveRecord::Base
   named_scope :following, lambda { |end_date|
     { :conditions=>["involved.role IN ('creator', 'observer', 'admin') AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
       :order=>'tasks.updated_at DESC' } }
+
+  named_scope :visible, :conditions=>["tasks.status != 'reserved'"]
 end

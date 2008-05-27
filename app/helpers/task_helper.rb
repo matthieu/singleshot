@@ -2,7 +2,7 @@ module TaskHelper
 
   def quick_actions(task)
     [ task.admin?(authenticated) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
-      task.can_claim?(authenticated) && button_to('Claim', task_owner_url(task, 'owner'=>authenticated.identity),
+      task.can_claim?(authenticated) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated.identity),
                                                                           :method=>:put, :title=>'Claim task')
     ].select { |action| action }.join(' ')
   end
@@ -16,7 +16,7 @@ module TaskHelper
   end
 
   def task_iframe_url(task, person = authenticated)
-    task_uri = URI(task_url(task))
+    task_uri = URI(task_perform_url(task))
     task_uri.user, task_uri.password = '_token', task.token_for(person)
     uri = URI(task.frame_url)
     uri.query = CGI.parse(uri.query || '').update('perform'=>task.owner?(person), 'task_url'=>task_uri).to_query

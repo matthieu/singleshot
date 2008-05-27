@@ -3,9 +3,8 @@ class TasksController < ApplicationController
   access_key_authentication :only=>[:index, :completed, :following, :show]
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
-  before_filter :authenticate, :except=>[:show, :update, :complete, :destroy]
-  instance :task, :only=>[:show, :update, :complete, :destroy], :check=>:instance_accessible
-  before_filter :forbid_reserved, :except=>[:update, :destroy]
+  before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
+
 
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
@@ -54,6 +53,9 @@ class TasksController < ApplicationController
       format.ics  { render :action=>'ics' }
     end
   end
+
+
+
 
 
   def show
@@ -131,24 +133,8 @@ class TasksController < ApplicationController
 
 private
 
-  # Authenticate and make sure the instance is accessible.  Use this instead of the authentication
-  # filter to allow access control based on token authentication.  Precludes access to cancelled tasks.:w
-
-  def instance_accessible(task)
-    # Use _token authentication (HTTP Basic) to authorize stakeholder associated with task
-    # otherwise use regular authentication.
-    authenticate_with_http_basic do |login, token|
-      @authenticated = instance.authorize(token) if login == '_token'
-    # Task accessible if:
-    # - Authenticated user is stakeholder
-    # - Task has not been cancelled (deleted)
-    end or authenticate
-    task.stakeholder?(authenticated) && !task.cancelled? if authenticated
-  end
-
-  # Return 403 (Forbidden) when accessing a reserved task (show, complete)
-  def forbid_reserved
-    raise ActiveRecord::RecordNotFound if @task && @task.reserved?
+  def set_task
+    @task = Task.for_stakeholder(authenticated).with_stakeholders.find(params[:id])
   end
 
   # Determines the outcome content type based on the request content type.

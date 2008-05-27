@@ -2,7 +2,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resource 'session'
   map.resources 'tasks', :collection=>{ 'following'=>:get, 'completed'=>:get }, :member=>{ 'activity'=>:get },
-    :has_one=>[ 'owner' ]
+    :has_one=>[ 'perform' ]
   map.resources 'activities'
   map.day_activity 'activity/:year/:month/:day', :controller=>'activities', :action=>'show', :year =>/\d{4}/, :month=>/\d{1,2}/, :day=>/\d{1,2}/
   map.root :tasks
