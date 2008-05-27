@@ -1,9 +1,8 @@
-<% # TODO: trim
-@title = @task.title %>
-<div id='task_bar'>
-  <div class='summary'>
+<% div_for @task do %>
+  <div class='bar'>
+    <div class='summary'>
     <div class='vitals'><%= task_vitals(@task) %></div>
-    <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %></div>
+    <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', '▽ More Options', :onclick=>"Singleshot.expand(event, '.expanded', '△ Less options')", :class=>'button-to' %></div>
   </div>
   <div class='expanded' style='display:none'>
     <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
@@ -33,10 +32,11 @@
           content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
     </dl>
     <div class='actions'>
-      <%= button_to 'Some action' %>
       <%= quick_actions(@task) %>
     </div>
   </div>
-</div>
-<%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
-<%= javascript_tag 'Singleshot.taskView()' %>
+
+  </div>
+  <%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
+  <%= javascript_tag 'Singleshot.taskView()' %>
+<% end %>
