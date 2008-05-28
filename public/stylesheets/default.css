@@ -209,9 +209,10 @@ table.tasks tbody td {
   margin: 0;
   border-bottom: 1px solid #ddd;
 }
-table.tasks tbody td.entry-title {
+table.tasks tbody td img {
+  vertical-align: middle;
 }
-table.tasks tbody .overdue td {
+table.tasks tbody .overdue td, table.tasks tbody .overdue td a {
   color: red;
 }
 table.tasks tbody td .priority_1 {

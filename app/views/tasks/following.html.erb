@@ -11,7 +11,7 @@
     <% for task in @tasks %>
       <% content_tag_for 'tr', task, :class=>'hentry' + (task.over_due? ? ' overdue' : '') do %>
         <td class='status'><%= task.status.titleize %></td>
-        <td class='entry-title'><%= '⚠  ' if task.over_due? %><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></h3></td>
+        <td class='entry-title'><%= '⚠  ' if task.over_due? %><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></td>
         <td><%= link_to_person task.owner, :owner if task.owner %></td>
         <td><%= abbr_date task.due_on, relative_date(task.due_on).titleize, :class=>(task.over_due? ? 'overdue' : nil) if task.due_on %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
