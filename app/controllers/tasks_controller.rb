@@ -54,16 +54,12 @@ class TasksController < ApplicationController
     end
   end
 
-
-
-
-
   def show
     @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     respond_to do |format|
       format.html { render :layout=>'head' }
-      format.xml  { render :xml=>@task }
-      format.json { render :json=>@task }
+      # TODO: format.xml
+      # TODO: format.json
       format.ics  do
         @title = @task.title
         @tasks = [@task]
@@ -71,6 +67,29 @@ class TasksController < ApplicationController
       end
     end
   end
+
+  def update
+    # TODO: rescue ActiveRecord::ReadOnlyRecord
+    @task.modified_by(authenticated).update_attributes(params)
+
+    # TODO: conditional put
+    raise ActiveRecord::StaleObjectError, 'This task already completed.' if @task.completed?
+    input = params[:task]
+    input[:outcome_type] ||= suggested_outcome_type unless @task.outcome_type
+    filter = @task.filter_update_for(authenticated)
+    raise NotAuthorized, 'You are not allowed to change this task.' unless filter
+    input = filter[input]
+    raise NotAuthorized, 'You cannot make this change.' unless input
+
+    @task.update_attributes! input
+    respond_to do |format|
+      format.html { redirect_to task_url }
+      format.xml  { render :xml=>@task }
+      format.json { render :json=>@task }
+    end
+  end
+
+
 
   def new
     @task = Task.new(:creator=>authenticated)

@@ -28,7 +28,6 @@ class Task < ActiveRecord::Base
   def initialize(attributes = {}) #:nodoc:
     super
     self.description ||= ''
-    self.status = attributes[:status] == 'reserved' ? 'reserved' : 'ready'
     self.data ||= {}
     self.access_key = MD5.hexdigest(OpenSSL::Random.random_bytes(128))
   end
@@ -69,7 +68,6 @@ class Task < ActiveRecord::Base
   STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
 
   # Cannot change in mass update.
-  attr_protected :status
   validates_inclusion_of :status, :in=>STATUSES
 
   # Check method for each status (active?, completed?, etc).
@@ -79,23 +77,22 @@ class Task < ActiveRecord::Base
     end
   end
 
-  before_validation_on_update do |task|
-    task.status = 'ready' if task.status == 'reserved'
-  end
-
   before_validation do |task|
+    # Default status is ready.
+    task.status ||= 'ready' if task.new_record?
     case task.status
     when 'ready'
       task.owner = task.potential_owners.first unless task.owner || task.potential_owners.size > 1
       task.status = 'active' if task.owner
     when 'active'
       task.status = 'ready' unless task.owner
+    when 'completed', 'cancelled'
+      task.readonly! unless task.status_changed?
     end
   end
 
   validate do |task|
-    changes = task.changes['status']
-    from, to = changes.first, changes.last if changes
+    from, to = task.status_change
     if from == 'completed' 
       task.errors.add :status, 'Cannot change status of completed task.'
     elsif from == 'cancelled'
