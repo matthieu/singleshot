@@ -8,10 +8,10 @@ module TaskHelper
   end
 
   def task_vitals(task)
-    vitals = ['Created ' + relative_date_abbr(task.created_at, :class=>'published')]
+    vitals = ['Created ' + abbr_time(task.created_at, relative_date(task.created_at), :class=>'published')]
     vitals.first << ' by ' + link_to_person(task.creator, :creator) if task.creator
     vitals << (task.status == 'completed' ? "completed by " : "assigned to ") + link_to_person(task.owner, :owner) if task.owner
-    vitals << "due #{relative_date_abbr(task.due_on)}" if task.due_on
+    vitals << "due #{relative_date(task.due_on)}" if task.due_on
     vitals.to_sentence
   end
 
@@ -19,6 +19,7 @@ module TaskHelper
     if task.form_perform_url
       task_uri = URI(task_perform_url(task))
       task_uri.user, task_uri.password = '_token', task.token_for(authenticated)
+      # TODO: fix to handle perform/view URLs differently and decide when to pass perform query param.
       uri = URI(task.owner?(authenticated) ? task.form_perform_url : (task.form_view_url || task.form_perform_url)) 
       uri.query = CGI.parse(uri.query || '').update('perform'=>task.owner?(authenticated), 'task_url'=>task_uri).to_query
       uri.to_s

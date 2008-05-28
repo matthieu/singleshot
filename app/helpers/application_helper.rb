@@ -5,10 +5,11 @@ module ApplicationHelper
   # (or profile, if unspecified) as the reference.
   def link_to_person(person, *args)
     options = args.extract_options!
-    fullname = person == authenticated ? 'you' : h(person.fullname)
-    if person.url
+    if person == authenticated  
+      content_tag('span', 'you')
+    elsif person.url
       options.update :rel=>args.first if args.first
-      link_to(fullname, person.url, options.merge(:title=>"See #{fullname}'s profile"))
+      link_to(h(person.fullname), person.url, options.merge(:title=>"See #{h(person.fullname)}'s profile"))
     else
       content_tag('span', fullname)
     end
@@ -34,20 +35,32 @@ module ApplicationHelper
   end
 
   def relative_time(time)
-    diff = Time.now - time
-    if diff < 1.minute
-      'this minute'
-    elsif diff < 1.hour
-      "#{(diff / 1.minute).round} minutes ago"
-    elsif diff < 1.day
-      "#{(diff / 1.hour).round} hours ago"
-    elsif diff < 1.month
-      "#{(diff / 1.day).round} days ago"
+    case age = Time.now - time
+    when 0...2.minute
+      '1 minute'
+    when 2.minute...1.hour
+      '%d minutes' % (age / 1.minute)
+    when 1.hour...2.hour
+      '1 hour'
+    when 2.hour...1.day
+      '%d hours' % (age / 1.hour)
+    when 1.day...2.day
+      '1 day'
+    when 2.day...1.month
+      '%d days' % (age / 1.day)
+    when 1.month...2.month
+      'about 1 month'
+    else
+      '%d months' % (age / 1.month) if age > 0
     end
   end
 
-  def relative_date_abbr(date, options = {})
-    content_tag 'abbr', relative_date(date), options.merge(:title=>date.to_date.to_s)
+  def abbr_date(date, text, options = {})
+    content_tag 'abbr', text, options.merge(:title=>date.to_date.strftime('%Y%m%d'))
+  end
+
+  def abbr_time(time, text, options = {})
+    content_tag 'abbr', text, options.merge(:title=>time.strftime('%Y%m%dT%H:%M:%S'))
   end
 
 end

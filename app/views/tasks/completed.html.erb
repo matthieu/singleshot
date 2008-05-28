@@ -1,0 +1,14 @@
+<ol class='dates'>
+  <% for day, tasks in @days %>
+    <% content_tag_for 'li', day do %>
+      <h2><%= abbr_date day, relative_date(day).capitalize %></h2>
+      <ol class='tasks'>
+        <% for task in tasks %>
+          <% content_tag_for 'li', task do %>
+            <%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %>
+          <% end %>
+        <% end %>
+      </ol>
+    <% end %>
+  <% end %>
+</ol>

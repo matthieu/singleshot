@@ -365,7 +365,7 @@ class Task < ActiveRecord::Base
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :following, lambda { |end_date|
-    { :conditions=>["involved.role IN ('creator', 'observer', 'admin') AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
+    { :conditions=>["involved.role != 'excluded' AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :visible, :conditions=>["tasks.status != 'reserved'"]

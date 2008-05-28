@@ -28,7 +28,6 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html do 
         @days = @tasks.group_by { |task| task.updated_at.to_date }
-        render :template=>'tasks/by_day'
       end
       # TODO: format.xml
       # TODO: format.json
@@ -45,7 +44,6 @@ class TasksController < ApplicationController
     respond_to do |format|
       format.html do 
         @days = @tasks.group_by { |task| task.updated_at.to_date }
-        render :template=>'tasks/by_day'
       end
       # TODO: format.xml
       # TODO: format.json

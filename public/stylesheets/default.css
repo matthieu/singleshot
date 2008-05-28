@@ -1,7 +1,7 @@
 /** Main styles **/
 
 body {
-  font: 10pt "Lucida Grande", Helvetica, Sans;
+  font: 10pt "Lucida Grande", Helvetica, Verdana, Sans;
   color: #000;
   background-color: #fff;
   margin: 0;
@@ -105,7 +105,7 @@ div#errorExplanation p, div#errorExplanation ul {
 #header h1 {
   font-size: 2.2em;
   font-weight: bold;
-  margin: 0 auto 1em auto;
+  margin: 0 auto 0.7em auto;
   float: left;
 }
 #header h1 a {
@@ -114,7 +114,7 @@ div#errorExplanation p, div#errorExplanation ul {
 }
 #header ul.links {
   list-style: none;
-  margin: 0 0 0.5em 0;
+  margin: 0;
   float: right  
 }
 #header ul.links li {
@@ -186,52 +186,58 @@ div#errorExplanation p, div#errorExplanation ul {
 
 /** Tasks list **/
 
-ol.tasks {
-  list-style: none;
-  margin: 2em 3.5em 0 3.5em;
-  padding: 0;
+table.tasks {
+  width: 100%;
+  border-spacing: 0;
+  border-padding: 0;
+  border: none;
+  margin: 0;
+  padding:2em 2.5em 2em 2.5em;
+  font-size: 1.1em;
 }
-ol.tasks li.task {
+table.tasks thead th {
+  text-align: left;
+  font-weight: bold;
+  padding: 0.5em;
+  margin: 0;
   border-bottom: 1px solid #ccc;
-  margin-bottom: 1.5em;
 }
-ol.tasks li.task .entry-title {
-  font-size: 1.2em;
+table.tasks tbody td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.5em;
   margin: 0;
+  border-bottom: 1px solid #ddd;
 }
-ol.tasks li.task .entry-title.priority_1:before {
-  content: '★ ';
+table.tasks tbody td.entry-title {
+}
+table.tasks tbody .overdue td {
   color: red;
 }
-ol.tasks li.task .entry-title.priority_2:before {
-}
-ol.tasks li.task .entry-title.priority_1:before {
-}
-ol.tasks li.task .entry-title.overdue a {
+table.tasks tbody td .priority_1 {
   color: red;
 }
-ol.tasks li.task a {
-  text-decoration: none;
+
+ol.dates {
+  font-size: 1.1em;
+  list-style: none;
+  margin: 2em 3em 2em 3em;
+  padding: 0;
 }
-ol.tasks li.task .description {
-  color: #222;
+ol.dates li.date {
+  padding-bottom: 1em;
 }
-ol.tasks li.task .actions {
-  float: right;
+ol.dates li.date h2 {
+  font-size: 1.2em;
+  border-bottom: 1px solid #ccc;
 }
-ol.tasks li.task .actions form {
-  margin-left: 0.1em;
-}
-ol.tasks li.task p.vitals {
-  color: #808080;
-}
-ol.tasks li.date h2 {
-  font-size: 1.4em;
-}
-ol.tasks li.date ol {
+ol.dates li.date ol.tasks {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+ol.dates li.date ol.tasks li.task {
+  margin: 0 0 1.0em 0;
 }
 
 
@@ -239,11 +245,7 @@ ol.tasks li.date ol {
 
 ol.activities {
   list-style: none;
-  margin: 2em 3.5em 0 3.5em;
   padding: 0;
-}
-ol.activities li.day h3 {
-  border-bottom: 1px solid #ccc;
 }
 ol.activities li.activity {
   margin: 0 0 1.0em 0;
@@ -384,3 +386,6 @@ form.login dl {
 form.login input {
   width: 100%;
 }
+
+
+

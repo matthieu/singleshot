@@ -64,10 +64,10 @@ namespace 'db' do
     create :owner=>you, :due_on=>Time.today - 1.day
     create :owner=>you, :due_on=>Time.today
     create :owner=>you, :due_on=>Time.today + 1.day
-    # Completed, cancelled
-    task = create(:owner=>you)
-    task.status = 'completed'
-    task.save
+    # Completed, cancelled, suspended
+    create(:potential_owners=>[you, other]).update_attributes(:status=>'suspended')
+    create(:owner=>you, :status=>'active').update_attributes(:status=>'completed')
+    create(:owner=>you, :status=>'active').update_attributes(:status=>'cancelled')
   end
 
 end
