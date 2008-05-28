@@ -1,5 +1,7 @@
 require 'spec/interop/test'
 
+ActionView::Base.cache_template_extensions = false
+
 module Spec
   module Rails
 

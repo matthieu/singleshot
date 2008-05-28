@@ -1,11 +1,11 @@
 module Spec
   module Rails
     module VERSION #:nodoc:
-      BUILD_TIME_UTC = 20080527061058
+      BUILD_TIME_UTC = 20080526202855
     end
   end
 end
-=begin
+
 # Verify that the plugin has the same revision as RSpec
 if Spec::Rails::VERSION::BUILD_TIME_UTC != Spec::VERSION::BUILD_TIME_UTC
   raise <<-EOF
@@ -21,4 +21,3 @@ See http://rspec.rubyforge.org/documentation/rails/install.html for details.
 ############################################################################
 EOF
 end
-=end
