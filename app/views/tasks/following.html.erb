@@ -1,21 +1,24 @@
 <table class='tasks hfeed'>
   <thead>
-    <th style='width:4em'>Status</th>
+    <th style='width:6em'>Status</th>
     <th>Task</th>
-    <th>Assigned to</th>
-    <th style='width:5em'>Due on</th>
+    <th style='width:7em'>Due on</th>
     <th style='width:4em'>Priority</th>
     <th style='width:6em'>Age</th>
+    <th style='width:7em'>Assigned to</th>
   </thead>
   <tbody>
     <% for task in @tasks %>
-      <% content_tag_for 'tr', task, :class=>'hentry' + (task.over_due? ? ' overdue' : '') do %>
+      <% classes = ['hentry']
+         classes << 'overdue' if task.over_due?
+         classes << 'inactive' if task.cancelled? || task.suspended?
+         content_tag_for 'tr', task, :class=>classes.join(' ') do %>
         <td class='status'><%= task.status.titleize %></td>
         <td class='entry-title'><%= '⚠  ' if task.over_due? %><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></td>
-        <td><%= link_to_person task.owner, :owner if task.owner %></td>
         <td><%= abbr_date task.due_on, relative_date(task.due_on).titleize, :class=>(task.over_due? ? 'overdue' : nil) if task.due_on %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
         <td><%= abbr_time task.created_at, relative_time(task.created_at), :class=>'published' %></td>
+        <td><%= link_to_person task.owner, :owner if task.owner %></td>
       <% end %>
     <% end %>
   </tbody>

@@ -19,10 +19,13 @@ module TaskHelper
     if task.form_perform_url
       task_uri = URI(task_perform_url(task))
       task_uri.user, task_uri.password = '_token', task.token_for(authenticated)
-      # TODO: fix to handle perform/view URLs differently and decide when to pass perform query param.
-      uri = URI(task.owner?(authenticated) ? task.form_perform_url : (task.form_view_url || task.form_perform_url)) 
-      uri.query = CGI.parse(uri.query || '').update('perform'=>task.owner?(authenticated), 'task_url'=>task_uri).to_query
-      uri.to_s
+      if task.can_complete?(authenticated)
+        uri = URI(task.form_perform_url)
+        uri.query = CGI.parse(uri.query || '').update('perform'=>'true', 'task_url'=>task_uri).to_query
+      else
+        uri = URI(task.form_view_url || task.form_perform_url)
+        uri.query = CGI.parse(uri.query || '').update('task_url'=>task_uri).to_query
+      end
       content_tag 'iframe', '', :id=>'task_frame', :src=>uri.to_s
     end
   end

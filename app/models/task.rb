@@ -151,7 +151,7 @@ class Task < ActiveRecord::Base
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
   # Load only tasks that this person is a stakeholder of (owner, observer, etc).
   named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
+    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
       :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
 
 
@@ -212,8 +212,8 @@ class Task < ActiveRecord::Base
   before_save :log_activities, :unless=>lambda { |task| task.status == 'reserved' }
   def log_activities
     Activity.log self, @modified_by do |log|
-      if changes['status']
-        from, to = *changes['status']
+      if status_changed?
+        from, to = status_change
         log.add creator, 'created' if creator && (from.nil? || from == 'reserved')
         log.add 'resumed' if from == 'suspended'
         case to

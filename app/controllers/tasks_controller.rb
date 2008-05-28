@@ -11,12 +11,12 @@ class TasksController < ApplicationController
     @alternate = { Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
-    respond_to do |format|
-      format.html
-      # TODO: format.xml
-      # TODO: format.json
-      format.atom
-      format.ics
+    respond_to do |wants|
+      wants.html
+      # TODO: wants.xml
+      # TODO: wants.json
+      wants.atom
+      wants.ics
     end
   end
 
@@ -25,14 +25,12 @@ class TasksController < ApplicationController
     @alternate = { Mime::ATOM=>formatted_completed_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
-    respond_to do |format|
-      format.html do 
-        @days = @tasks.group_by { |task| task.updated_at.to_date }
-      end
-      # TODO: format.xml
-      # TODO: format.json
-      format.atom { render :action=>'index' }
-      format.ics  { render :action=>'ics' }
+    respond_to do |wants|
+      wants.html { @days = @tasks.group_by { |task| task.updated_at.to_date } }
+      # TODO: wants.xml
+      # TODO: wants.json
+      wants.atom { render :action=>'index' }
+      wants.ics  { render :action=>'ics' }
     end
   end
 
@@ -41,24 +39,22 @@ class TasksController < ApplicationController
     @alternate = { Mime::ATOM=>formatted_following_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>formatted_following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
-    respond_to do |format|
-      format.html do 
-        @days = @tasks.group_by { |task| task.updated_at.to_date }
-      end
-      # TODO: format.xml
-      # TODO: format.json
-      format.atom { render :action=>'index' }
-      format.ics  { render :action=>'ics' }
+    respond_to do |wants|
+      wants.html
+      # TODO: wants.xml
+      # TODO: wants.json
+      wants.atom { render :action=>'index' }
+      wants.ics  { render :action=>'ics' }
     end
   end
 
   def show
     @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
-    respond_to do |format|
-      format.html { render :layout=>'head' }
-      # TODO: format.xml
-      # TODO: format.json
-      format.ics  do
+    respond_to do |wants|
+      wants.html { render :layout=>'head' }
+      # TODO: wants.xml
+      # TODO: wants.json
+      wants.ics  do
         @title = @task.title
         @tasks = [@task]
         render :action=>'index'
@@ -68,8 +64,12 @@ class TasksController < ApplicationController
 
   def update
     # TODO: rescue ActiveRecord::ReadOnlyRecord
-    @task.modified_by(authenticated).update_attributes(params)
+    logger.info @task.inspect
+    logger.info @task.readonly?
+    logger.info params[:task].inspect
+    @task.modified_by(authenticated).update_attributes!(params[:task])
 
+=begin
     # TODO: conditional put
     raise ActiveRecord::StaleObjectError, 'This task already completed.' if @task.completed?
     input = params[:task]
@@ -78,12 +78,12 @@ class TasksController < ApplicationController
     raise NotAuthorized, 'You are not allowed to change this task.' unless filter
     input = filter[input]
     raise NotAuthorized, 'You cannot make this change.' unless input
-
     @task.update_attributes! input
-    respond_to do |format|
-      format.html { redirect_to task_url }
-      format.xml  { render :xml=>@task }
-      format.json { render :json=>@task }
+=end
+    respond_to do |wants|
+      wants.html { flash['highlight'] = dom_id(@task) ; redirect_to :back }
+      # TODO: wants.xml
+      # TODO: wants.json
     end
   end
 
@@ -108,25 +108,6 @@ class TasksController < ApplicationController
     else
       task = Task.reserve!(authenticated)
       render :nothing=>true, :location=>task_url(task), :status=>:see_other
-    end
-  end
-
-
-  def update
-    # TODO: conditional put
-    raise ActiveRecord::StaleObjectError, 'This task already completed.' if @task.completed?
-    input = params[:task]
-    input[:outcome_type] ||= suggested_outcome_type unless @task.outcome_type
-    filter = @task.filter_update_for(authenticated)
-    raise NotAuthorized, 'You are not allowed to change this task.' unless filter
-    input = filter[input]
-    raise NotAuthorized, 'You cannot make this change.' unless input
-
-    @task.update_attributes! input
-    respond_to do |format|
-      format.html { redirect_to task_url }
-      format.xml  { render :xml=>@task }
-      format.json { render :json=>@task }
     end
   end
 

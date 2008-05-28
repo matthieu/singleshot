@@ -18,14 +18,13 @@ namespace 'db' do
     def other
       Person.identify('anon') || Person.create(:email=>'anon@apache.org')
     end
-    def retract(*models)
-      models = Task, Stakeholder, Activity if models.empty?
-      models.each do |model|
+    def Task.delay(duration = 2.hours)
+      for model in [Task, Stakeholder, Activity]
         model.all.each do |record|
-          change = ['created_at = ?', record.created_at - 2.hour]
+          change = ['created_at = ?', record.created_at - duration]
           if record.respond_to?(:updated_at)
             change.first << ', updated_at = ?'
-            change << record.updated_at - 2.hour
+            change << record.updated_at - duration
           end
           model.update_all change, :id=>record.id 
         end
@@ -33,12 +32,16 @@ namespace 'db' do
     end
 
     def create(attributes)
-      retract 
+      Task.delay 
       you = Person.find_by_identity(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
                    :form_perform_url=>'http://localhost:3001/sandwich', :form_completing=>true, :potential_owners=>[you, other] }
       returning Task.new(defaults.merge(attributes || {})) do |task|
         task.modified_by(you).save!
+        def task.delay(duration = 2.hours)
+          Task.delay(duration)
+          self
+        end
       end
     end
 
@@ -52,12 +55,12 @@ namespace 'db' do
     # - observer
     # - admin
     create :creator=>you
-    create :creator=>you ; retract ; Task.last.modified_by(you).update_attributes :owner=>you
+    create(:creator=>you).delay(25.minutes).modified_by(you).update_attributes :owner=>you
     create :observers=>you
     create :admins=>you
     # Tasks in which we are only or one of many potential owners.
     create :potential_owners=>you
-    create :potential_owners=>[you, other] ; retract ; Task.last.update_attributes :owner=>other
+    create(:potential_owners=>[you, other]).delay(45.minutes).update_attributes :owner=>other
     # High priority should show first.
     create :owner=>you, :priority=>Task::PRIORITIES.first
     # Over-due before due today before anything else.
@@ -65,9 +68,9 @@ namespace 'db' do
     create :owner=>you, :due_on=>Time.today
     create :owner=>you, :due_on=>Time.today + 1.day
     # Completed, cancelled, suspended
-    create(:potential_owners=>[you, other]).update_attributes(:status=>'suspended')
-    create(:owner=>you, :status=>'active').update_attributes(:status=>'completed')
-    create(:owner=>you, :status=>'active').update_attributes(:status=>'cancelled')
+    create(:potential_owners=>[you, other]).delay(30.minutes).modified_by(other).update_attributes(:status=>'suspended')
+    create(:owner=>you, :status=>'active').delay(2.hours).modified_by(you).update_attributes(:status=>'completed')
+    create(:owner=>you, :status=>'active').delay(96.minutes).modified_by(other).update_attributes(:status=>'cancelled')
   end
 
 end

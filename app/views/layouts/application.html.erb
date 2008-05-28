@@ -27,5 +27,6 @@
     <div id='footer'>
       <!-- Footer comes here -->
     </div>
+    <%= javascript_tag visual_effect(:highlight, flash['highlight'], :duration => 2) if flash['highlight'] %>
   </body>
 </html>

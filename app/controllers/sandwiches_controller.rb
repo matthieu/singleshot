@@ -7,7 +7,7 @@ class SandwichesController < ApplicationController
   before_filter :instance
 
   def show
-    #@read_only = true unless params['perform'] == 'true'
+    @read_only = true unless params['perform'] == 'true'
   end
 
   def update
@@ -23,11 +23,9 @@ class SandwichesController < ApplicationController
   def create
     @sandwich.update_attributes params['sandwich']
     if @sandwich.save
-
       flash[:success] = 'Changes have been saved.'
-      #redirect_to :action=>'show', :task_url=>@task_url, :perform=>true
+      # TODO: FIX!
       render :text=>"<script>frames.top.location.href='http://localhost:3000/tasks'</script>"
-
     else
       render :action=>'show'
     end

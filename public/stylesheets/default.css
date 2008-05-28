@@ -212,7 +212,10 @@ table.tasks tbody td {
 table.tasks tbody td img {
   vertical-align: middle;
 }
-table.tasks tbody .overdue td, table.tasks tbody .overdue td a {
+table.tasks tbody tr.inactive, table.tasks tbody tr.inactive td a {
+  color: #ccc;
+}
+table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
   color: red;
 }
 table.tasks tbody td .priority_1 {
