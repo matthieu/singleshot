@@ -6,7 +6,9 @@ class CreateTasks < ActiveRecord::Migration
       t.integer   'priority',     :null=>false, :limit=>1
       t.date      'due_on',       :null=>true
       t.string    'status',       :null=>false
-      t.string    'frame_url',    :null=>true
+      t.string    'form_view_url'
+      t.string    'form_perform_url'
+      t.boolean   'form_completing'
       t.string    'outcome_url',  :null=>true
       t.string    'outcome_type', :null=>true
       t.string    'access_key',   :null=>true, :limit=>32

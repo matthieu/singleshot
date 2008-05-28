@@ -51,7 +51,6 @@ module Specs
 
     def default_task(with = {})
       { :title=>'Test this',
-        :frame_url=>'http://test.host/fill_me',
         :outcome_url=>'http://test.host/outcome' }.merge(with)
     end
 

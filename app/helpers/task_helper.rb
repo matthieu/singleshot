@@ -15,12 +15,15 @@ module TaskHelper
     vitals.to_sentence
   end
 
-  def task_iframe_url(task, person = authenticated)
-    task_uri = URI(task_perform_url(task))
-    task_uri.user, task_uri.password = '_token', task.token_for(person)
-    uri = URI(task.frame_url)
-    uri.query = CGI.parse(uri.query || '').update('perform'=>task.owner?(person), 'task_url'=>task_uri).to_query
-    uri.to_s
+  def task_frame(task)
+    if task.form_perform_url
+      task_uri = URI(task_perform_url(task))
+      task_uri.user, task_uri.password = '_token', task.token_for(authenticated)
+      uri = URI(task.owner?(authenticated) ? task.form_perform_url : (task.form_view_url || task.form_perform_url)) 
+      uri.query = CGI.parse(uri.query || '').update('perform'=>task.owner?(authenticated), 'task_url'=>task_uri).to_query
+      uri.to_s
+      content_tag 'iframe', '', :id=>'task_frame', :src=>uri.to_s
+    end
   end
 
 end

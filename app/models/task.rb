@@ -3,20 +3,22 @@
 #
 # Table name: tasks
 #
-#  id           :integer         not null, primary key
-#  title        :string(255)     not null
-#  description  :string(255)     not null
-#  priority     :integer(1)      not null
-#  due_on       :date
-#  status       :string(255)     not null
-#  frame_url    :string(255)
-#  outcome_url  :string(255)
-#  outcome_type :string(255)
-#  access_key   :string(32)
-#  data         :text            not null
-#  version      :integer         default(0), not null
-#  created_at   :datetime
-#  updated_at   :datetime
+#  id               :integer         not null, primary key
+#  title            :string(255)     not null
+#  description      :string(255)     not null
+#  priority         :integer(1)      not null
+#  due_on           :date
+#  status           :string(255)     not null
+#  form_view_url    :string(255)
+#  form_perform_url :string(255)
+#  form_completing  :boolean
+#  outcome_url      :string(255)
+#  outcome_type     :string(255)
+#  access_key       :string(32)
+#  data             :text            not null
+#  version          :integer         default(0), not null
+#  created_at       :datetime
+#  updated_at       :datetime
 #
 
 require 'openssl'
@@ -107,28 +109,32 @@ class Task < ActiveRecord::Base
 
 
   # -- Common task attributes --
-  #
 
-  validates_presence_of :title, :frame_url
-  validates_url :frame_url, :if=>:frame_url
+  validates_presence_of :title
+
 
   # -- View and perform ---
+
+  validates_url :form_perform_url, :if=>:form_perform_url
+  validates_url :form_view_url, :if=>:form_view_url
+
+  before_validation do |record|
+    unless record.form_perform_url
+      record.form_view_url = nil 
+      record.form_completing = nil
+    end
+  end
 
 
   # --- Task data ---
 
-  def data
-    return self[:data] if Hash === self[:data]
-    self[:data] = ActiveSupport::JSON.decode(self[:data] || '')
+  serialize :data
+  before_validation do |record|
+    record.data ||= {}
   end
 
-  def data=(data)
-    raise ArgumentError, 'Must be a hash or nil' unless Hash === data || data.nil?
-    self[:data] = data || {}
-  end
-
-  before_save do |task|
-    task[:data] = task[:data].to_json if task[:data]
+  validate do |record|
+    record.errors.add :data, 'Must be a hash' unless Hash === record.data
   end
 
 
@@ -163,7 +169,7 @@ class Task < ActiveRecord::Base
   end
 
   def over_due?
-    due_on && due_on < Date.today
+    due_on ? due_on < Date.today : false
   end
 
   # Scopes can use this to add ranking methods on returned records.

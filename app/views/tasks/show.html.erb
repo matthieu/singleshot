@@ -1,42 +1,44 @@
 <% div_for @task do %>
   <div class='bar'>
     <div class='summary'>
-    <div class='vitals'><%= task_vitals(@task) %></div>
-    <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', '▽ More Options', :onclick=>"Singleshot.expand(event, '.expanded', '△ Less options')", :class=>'button-to' %></div>
-  </div>
-  <div class='expanded' style='display:none'>
-    <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
-        :rel=>'alternate', :title=>'Add this task to your calendar' %>
-    <%= link_to image_tag('feed.png') + ' Activity', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
-        :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
-    <h2><%= h(@task.title) %></h2>
-    <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
-    <dl>
-      <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
-      <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>
-      <dt>Recent activity</dt>
-      <dd>
-        <ol class='activities hfeed'>
-          <% for activity in @task.activities %>
-            <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
-              <%= link_to activity.person.fullname, activity.person.identity %>
-              <%= activity.action %>
-              <%= link_to activity.task.title, task_url(activity.task), :rel=>'bookmark' %>
+      <div class='vitals'><%= task_vitals(@task) %></div>
+      <div class='actions'><%= quick_actions(@task) %> <%= content_tag 'button', '▽ More Options', :onclick=>"Singleshot.expand(event, '.expanded', '△ Less options')", :class=>'button-to' %></div>
+    </div>
+    <div class='expanded' style='display:none'>
+      <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
+          :rel=>'alternate', :title=>'Add this task to your calendar' %>
+      <%= link_to image_tag('feed.png') + ' Activity', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
+          :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+      <h2><%= h(@task.title) %></h2>
+      <dl>
+        <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
+        <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>
+        <dt>Recent activity</dt>
+        <dd>
+          <ol class='activities hfeed'>
+            <% for activity in @task.activities %>
+              <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
+                <%= link_to activity.person.fullname, activity.person.identity %>
+                <%= activity.action %>
+                <%= link_to activity.task.title, task_url(activity.task), :rel=>'bookmark' %>
+              <% end %>
             <% end %>
-          <% end %>
-        </ol>
-      </dd>
-      <%= admins = @task.admins.map { |person| link_to_person(person, :admin) }
-          content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
-      <%= observers = @task.observers.map { |person| link_to_person(person, :observer) }
-          content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
-    </dl>
-    <div class='actions'>
-      <%= quick_actions(@task) %>
+          </ol>
+        </dd>
+        <%= admins = @task.admins.map { |person| link_to_person(person, :admin) }
+            content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
+        <%= observers = @task.observers.map { |person| link_to_person(person, :observer) }
+            content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
+      </dl>
+      <div class='actions'>
+        <%= quick_actions(@task) %>
+      </div>
     </div>
   </div>
-
-  </div>
-  <%= content_tag 'iframe', nil, :id=>'task_frame', :src=>task_iframe_url(@task) %>
+  <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
+  <%= task_frame @task %>
+  <% unless @task.form_completing %>
+    <div class='completion'><div class='actions'><%= button_to 'Completed', task_url(@task, :status=>'completed'), :title=>'Click when task completed' %></div></div>
+  <% end %>
   <%= javascript_tag 'Singleshot.taskView()' %>
 <% end %>

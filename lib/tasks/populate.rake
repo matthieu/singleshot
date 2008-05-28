@@ -36,7 +36,7 @@ namespace 'db' do
       retract 
       you = Person.find_by_identity(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
-                   :frame_url=>'http://localhost:3001/sandwich', :potential_owners=>[you, other] }
+                   :form_perform_url=>'http://localhost:3001/sandwich', :form_completing=>true, :potential_owners=>[you, other] }
       returning Task.new(defaults.merge(attributes || {})) do |task|
         task.modified_by(you).save!
       end
