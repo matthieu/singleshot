@@ -4,8 +4,8 @@
 # Table name: stakeholders
 #
 #  id         :integer         not null, primary key
-#  task_id    :integer
-#  person_id  :integer
+#  task_id    :integer         not null
+#  person_id  :integer         not null
 #  role       :string(255)     not null
 #  created_at :datetime        not null
 #
@@ -30,6 +30,9 @@ class Stakeholder < ActiveRecord::Base
   # All supported roles.
   ROLES = SINGULAR_ROLES + PLURAL_ROLES
 
+  ACCESSOR_FROM_ROLE = SINGULAR_ROLES.inject({}) { |hash, role| hash.update(role=>role) }.
+    update('potential'=>'potential_owners', 'excluded'=>'excluded_owners', 'observer'=>'observers', 'admin'=>'admins')
+
   # Stakeholder associated with a task.
   belongs_to :task
 
@@ -52,20 +55,23 @@ class Stakeholder < ActiveRecord::Base
     SINGULAR_ROLES.each do |role|
       define_method(role) { in_role(role).first }
       define_method("#{role}?") { |identity| in_role?(role, identity) }
-      define_method("#{role}=") { |identity| set_role role, identity }
+      define_method "#{role}=" do |identity|
+        old_value = in_role(role)
+        new_value = set_role(role, identity)
+        changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
+      end
     end
 
     def creator=(identity)
-      return unless new_record?
+      return creator unless new_record?
       set_role 'creator', identity
     end
 
-    ACCESSORS = { 'potential_owner'=>'potential', 'excluded_owner'=>'excluded', 'observer'=>'observer', 'admin'=>'admin' }
-    ACCESSORS.each do |accessor, role|
-      plural = accessor.pluralize
-      define_method(plural) { in_role(role) }
-      define_method("#{accessor}?") { |identity| in_role?(role, identity) }
-      define_method("#{plural}=") { |identities| set_role role, identities }
+    PLURAL_ROLES.each do |role|
+      accessor = ACCESSOR_FROM_ROLE[role]
+      define_method(accessor) { in_role(role) }
+      define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
+      define_method("#{accessor}=") { |identities| set_role role, identities }
     end
 
     # Returns true if person is a stakeholder in this task: any role except excluded owners list.
@@ -88,11 +94,11 @@ class Stakeholder < ActiveRecord::Base
 
     # Set people associated with this role.
     def set_role(role, identities)
-      new_set = Array(identities).map { |id| Person.identify(id) }
-      old_set = stakeholders.select { |sh| sh.role == role }
-      stakeholders.delete old_set.reject { |sh| new_set.include?(sh.person) }
-      (new_set - old_set.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-      changed_attributes[role] = old_set.first if SINGULAR_ROLES.include?(role.to_s) && !changed_attributes.has_key?(role)
+      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+      keeping = stakeholders.select { |sh| sh.role == role }
+      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+      return new_set
     end
 
   end
@@ -100,24 +106,26 @@ class Stakeholder < ActiveRecord::Base
 
   module Validation
     def self.included(base)
-      base.before_validation_on_create do |record|
-        record.owner = record.potential_owners.first unless record.owner || record.potential_owners.size > 1
-      end
-
-      # Can only have one member of a singular role.
-      SINGULAR_ROLES.each do |role|
-        base.validate do |record|
-          record.errors.add role, "Can only have one #{role}." if record.stakeholders.select { |sh| sh.role == role }.size > 1
+      base.class_eval do
+        before_validation_on_create do |record|
+          record.owner = record.potential_owners.first unless record.owner || record.potential_owners.size > 1
         end
-      end
-      base.validate do |record|
-        creator = record.stakeholders.detect { |sh| sh.role == 'creator' }
-        record.errors.add :creator, 'Cannot change creator.' if record.changed.include?(:creator) && !record.new_record?
-        record.errors.add :owner, "#{record.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-          record.excluded_owner?(record.owner)
-        conflicting = record.potential_owners & record.excluded_owners
-        record.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
-          conflicting.empty?
+
+        # Can only have one member of a singular role.
+        SINGULAR_ROLES.each do |role|
+          validate do |record|
+            record.errors.add role, "Can only have one #{role}." if record.stakeholders.select { |sh| sh.role == role }.size > 1
+          end
+        end
+        validate do |record|
+          creator = record.stakeholders.detect { |sh| sh.role == 'creator' }
+          record.errors.add :creator, 'Cannot change creator.' if record.changed.include?(:creator) && !record.new_record?
+          record.errors.add :owner, "#{record.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
+            record.excluded_owner?(record.owner)
+          conflicting = record.potential_owners & record.excluded_owners
+          record.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
+            conflicting.empty?
+        end
       end
     end
   end

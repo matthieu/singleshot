@@ -20,7 +20,7 @@ config.action_controller.allow_concurrency = true
 
 # These Gems are used for development.
 config.gem 'annotate-models', :lib=>'annotate_models'
-config.gem 'rspec', :lib=>'spec',                     :version=>'~> 1.1.3'
+config.gem 'rspec', :lib=>'spec',                     :version=>'~> 1.1.4'
 # Faker: Used to populate development database with fake data.
 config.gem 'faker',                                   :version=>'~>0.3'
 # SQLite3: Development and test databases use SQLite3 by default.
