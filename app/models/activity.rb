@@ -14,15 +14,19 @@ class Activity < ActiveRecord::Base
 
   belongs_to :person
   belongs_to :task
-  validates_presence_of :task_id
+  validates_presence_of :task
+  validates_presence_of :action
 
-  attr_readonly :person, :task, :action
+  def readonly?
+    !new_record?
+  end
 
   named_scope :for_stakeholder, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
       :conditions=>["involved.person_id=? AND involved.role != 'excluded'", person.id],
       :include=>[:task, :person], :order=>'activities.created_at DESC' } }
   named_scope :for_dates, lambda { |dates|
-    { :conditions=>{ :created_at=>dates } } }
+    range = dates.min.to_time.beginning_of_day..dates.max.to_time.end_of_day
+    { :conditions=>{ :created_at=>range } } }
 
 end
