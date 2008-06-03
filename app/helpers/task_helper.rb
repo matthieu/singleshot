@@ -53,7 +53,7 @@ module TaskHelper
         actions << form_tag(task_url(task), :method=>:put, :class=>'button-to') + 
           '<select name="task[owner]"><option disabled>Select owner ...</option>' +
           options_for_select(others.map { |person| [person.fullname, person.identity] }.sort) +
-          '</select><input type="submit" value="Delegate"></form>'
+          '<option value="">Anyone</option></select><input type="submit" value="Delegate"></form>'
       end
     end
     actions.join

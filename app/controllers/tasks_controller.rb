@@ -64,12 +64,11 @@ class TasksController < ApplicationController
     end
   end
 
+
+
   def update
     # TODO: rescue ActiveRecord::ReadOnlyRecord
-    logger.info @task.inspect
-    logger.info @task.readonly?
-    logger.info params[:task].inspect
-    @task.modified_by(authenticated).update_attributes!(params[:task])
+    @task.modify_by(authenticated).update_attributes!(params[:task])
 
 =begin
     # TODO: conditional put

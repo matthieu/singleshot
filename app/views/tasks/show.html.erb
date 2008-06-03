@@ -12,7 +12,7 @@
     <div class='vitals'>
       <%= task_vitals(@task) %>: <%= content_tag 'span', h(@task.title), :class=>'title', :title=>@task.title %>
     </div>
-    <div class='details' style='display:non'>
+    <div class='details' style='display:none'>
       <dl>
         <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) unless use_description %>
         <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
