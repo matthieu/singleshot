@@ -3,10 +3,16 @@
 //
 var Singleshot = {
   // Returns the SingleShot.TaskView object.
-  taskView: function() {
-    var taskView = new Singleshot.TaskView();
-    Singleshot.taskView = function() { return taskView };
-    return taskView;
+  taskView: function(target) {
+    target = $$(target).first() || $(target);
+    // Adjust lower frame to expand and fit the reminder of the window.
+    // Do it once now, and each time the window is resized.
+    var adjust = function() {
+      target.style.height = window.innerHeight - target.offsetTop;
+    }
+    Event.observe(window, 'resize', adjust);
+    adjust();
+    Singleshot.taskView = function() { };
   },
 
   expand: function(event, target, alternative) {
@@ -27,21 +33,3 @@ var Singleshot = {
     Event.stop(event);
   }
 }
-
-Singleshot.TaskView = Class.create({
-  initialize: function() {
-    this.adjustFrame('task_frame');
-  },
-
-  adjustFrame: function(ifr) {
-    // Adjust lower frame to expand and fit the reminder of the window.
-    // Do it once now, and each time the window is resized.
-    if (ifr = $(ifr)) {
-      var adjust = function() {
-        ifr.style.height = window.innerHeight - ifr.offsetTop;
-      }
-      Event.observe(window, 'resize', adjust);
-      adjust();
-    }
-  }
-});

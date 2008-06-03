@@ -1,0 +1,9 @@
+<ol class='activities'> 
+  <% for activity in activities %>
+    <% content_tag_for 'li', activity, :class=>'hentry' do %>
+      <%= format = today && activity.created_at.to_date < today ? '%b %d' : '%I:%M%p'
+          abbr_time activity.created_at, activity.created_at.strftime(format), :class=>'published' %>
+      <span class='entry-title'><%= activity_to_html activity, :person=>{:class=>'author'}, :task=>{:rel=>'bookmark'} %></span>
+    <% end %>
+  <% end %>
+</ol>

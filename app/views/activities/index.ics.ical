@@ -4,7 +4,7 @@ calendar.x_wr_caldesc @subtitle
 for activity in @activities
   calendar.event activity do |event|
     event.dtstart activity.created_at
-    event.summary "#{activity.person.fullname} #{activity.action} #{activity.task.title}"
+    event.summary activity_to_text(activity)
     event.description truncate(strip_tags(activity.task.description), 250)
     event.url task_url(activity.task)
   end

@@ -5,14 +5,9 @@ module ApplicationHelper
   # (or profile, if unspecified) as the reference.
   def link_to_person(person, *args)
     options = args.extract_options!
-    if person == authenticated  
-      content_tag('span', 'you')
-    elsif person.url
-      options.update :rel=>args.first if args.first
-      link_to(h(person.fullname), person.url, options.merge(:title=>"See #{h(person.fullname)}'s profile"))
-    else
-      content_tag('span', fullname)
-    end
+    options[:class] = "#{options[:class]} fn url"
+    person.url ? link_to(h(person.fullname), person.url, options.merge(:title=>"See #{person.fullname}'s profile")) :
+      content_tag('span', fullname, options)
   end
 
   # Returns Person object for currently authenticated user.
@@ -34,8 +29,8 @@ module ApplicationHelper
     end
   end
 
-  def relative_time(time)
-    case age = Time.now - time
+  def age(time, ago = true)
+    text = case age = Time.now - time
     when 0...2.minute
       '1 minute'
     when 2.minute...1.hour
@@ -49,18 +44,64 @@ module ApplicationHelper
     when 2.day...1.month
       '%d days' % (age / 1.day)
     when 1.month...2.month
-      'about 1 month'
+      '1 month'
     else
       '%d months' % (age / 1.month) if age > 0
+    end
+    text && ago ? "#{text} ago" : text
+  end
+
+  def relative_time(time)
+    case age = Time.now - time
+    when 0...2.minute
+      'this minute'
+    when 2.minute...1.hour
+      '%d minutes ago' % (age / 1.minute)
+    when 1.hour...2.hour
+      'this hour'
+    when 2.hour...1.day
+      '%d hours ago' % (age / 1.hour)
+    when 1.day...2.day
+      'yesterday'
+    when 2.day...1.month
+      '%d days ago' % (age / 1.day)
+    when 1.month...2.month
+      'about 1 month'
+    else
+      '%d months ago' % (age / 1.month) if age > 0
     end
   end
 
   def abbr_date(date, text, options = {})
-    content_tag 'abbr', text, options.merge(:title=>date.to_date.strftime('%Y%m%d'))
+    content_tag 'abbr', text, options.merge(:title=>date.to_date.strftime('%Y-%m-%d'))
   end
 
   def abbr_time(time, text, options = {})
-    content_tag 'abbr', text, options.merge(:title=>time.strftime('%Y%m%dT%H:%M:%S'))
+    content_tag 'abbr', text, options.merge(:title=>time.iso8601)
+  end
+
+  def group_by_dates(activities, attr = :updated_at)
+    activities.inject([]) do |groups, activity|
+      date, today = activity.send(attr).to_date, Date.today
+      group = if date == today
+        'today'
+      elsif date == today.yesterday
+        'yesterday'
+      elsif date.cweek == today.cweek
+        date.strftime('%A')
+      elsif date.year == today.year
+        date.strftime('%b %d')
+      else
+        date.strftime('%b %d, %Y')
+      end
+      previous = groups.last
+      if previous && previous.first == group
+        previous.last << activity
+        groups
+      else
+        groups.push([group, [activity]])
+      end
+    end
   end
 
 end

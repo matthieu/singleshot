@@ -1,17 +1,9 @@
+<% by_date = group_by_dates(@activities, :created_at) %>
 <ol class='dates hfeed'>
-  <% for day, activities in @days %>
-    <% content_tag_for 'li', day do %>
-      <h2><%= abbr_date day, relative_date(day).capitalize %></h2>
-      <ol class='activities'>
-        <% for activity in activities %>
-          <% content_tag_for 'li', activity, :class=>'hentry entry-title' do %>
-            <%= link_to h(activity.person.fullname), activity.person.url, :class=>'author fn url' %>
-            <%= activity.action %> the task
-            <%= link_to h(truncate(activity.task.title, 100)), task_url(activity.task),
-                  :rel=>'bookmark', :title=>truncate(strip_tags(activity.task.description), 250) %>
-          <% end %>
-        <% end %>
-      </ol>
-    <% end %>
+  <% for date, activities in by_date %>
+    <li class='date'>
+      <h2><%= date.humanize %></h2>
+      <%= render :partial=>'activities', :locals=>{ :activities=>activities } %>
+    </li>
   <% end %>
 </ol>

@@ -1,14 +1,16 @@
-<ol class='dates'>
-  <% for day, tasks in @days %>
-    <% content_tag_for 'li', day do %>
-      <h2><%= abbr_date day, relative_date(day).capitalize %></h2>
-      <ol class='tasks'>
-        <% for task in tasks %>
-          <% content_tag_for 'li', task do %>
-            <%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %>
+<% by_date = group_by_dates(@tasks, :updated_at) %>
+<ol class='dates hfeed'>
+  <% for date, tasks in by_date %>
+    <li class='date'>
+      <h2><%= date.humanize %></h2>
+        <ol class='tasks'> 
+          <% for task in tasks %>
+            <% content_tag_for 'li', task, :class=>'hentry' do %>
+              <%= abbr_time task.updated_at, task.updated_at.strftime('%I:%M%p'), :class=>'updated' %>
+              <%= link_to h(task.title), task_url(task), :rel=>'bookmark', :class=>'entry-title', :title=>truncate(strip_tags(task.description), 250) %>
+            <% end %>
           <% end %>
-        <% end %>
-      </ol>
-    <% end %>
+        </ol>
+    </li>
   <% end %>
 </ol>

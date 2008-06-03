@@ -8,11 +8,22 @@ module TaskHelper
   end
 
   def task_vitals(task)
-    vitals = ['Created ' + abbr_time(task.created_at, relative_date(task.created_at), :class=>'published')]
-    vitals.first << ' by ' + link_to_person(task.creator, :creator) if task.creator
-    vitals << (task.status == 'completed' ? "completed by " : "assigned to ") + link_to_person(task.owner, :owner) if task.owner
-    vitals << "due #{relative_date(task.due_on)}" if task.due_on
-    vitals.to_sentence
+    case task.status
+    when 'ready', 'active'
+      vitals = [ 'Created ' + abbr_time(task.created_at, relative_time(task.created_at), :class=>'published') ]
+      vitals.first << ' by ' + link_to_person(task.creator, :creator) if task.creator
+      vitals << 'assigned to ' + link_to_person(task.owner, :owner) if task.owner
+      vitals << 'high priority' if task.high_priority?
+      vitals << 'due ' + abbr_date(task.due_on, relative_date(task.due_on)) if task.due_on
+      vitals.to_sentence
+    when 'active'
+    when 'suspended'
+      return "Suspended"
+    when 'completed'
+      "Completed on #{task.updated_at.to_date.to_s(:long)} by #{link_to_person task.owner, :owner}"
+    when 'cancelled'
+      "Cancelled on #{task.updated_at.to_date.to_s(:long)}"
+    end
   end
 
   def task_frame(task)

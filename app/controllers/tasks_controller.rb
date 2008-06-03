@@ -26,7 +26,7 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
-      wants.html { @days = @tasks.group_by { |task| task.updated_at.to_date } }
+      wants.html
       # TODO: wants.xml
       # TODO: wants.json
       wants.atom { render :action=>'index' }
@@ -49,6 +49,7 @@ class TasksController < ApplicationController
   end
 
   def show
+    @title = @task.title
     @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     respond_to do |wants|
       wants.html { render :layout=>'head' }

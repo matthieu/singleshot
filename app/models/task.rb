@@ -199,7 +199,7 @@ class Task < ActiveRecord::Base
 
   # --- Activities ---
  
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :extend=>Activity::GroupingMethods
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC'
 
   # Associate person with all modifications done on this task.
   # This results in activities linked to the person and task when
@@ -209,27 +209,38 @@ class Task < ActiveRecord::Base
     self
   end
 
-  before_save :log_activities, :unless=>lambda { |task| task.status == 'reserved' }
-  def log_activities
-    Activity.log self, @modified_by do |log|
-      if status_changed?
-        from, to = status_change
-        log.add creator, 'created' if creator && (from.nil? || from == 'reserved')
-        log.add 'resumed' if from == 'suspended'
+  before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
+    task.log_activities do |log|
+      if task.status_changed?
+        from, to = task.status_change
+        log.add task.creator, 'created' if from.nil? || from == 'reserved'
         case to
         when 'ready'
-          log.add changes['owner'].first, 'released' if from == 'active'
-        when 'active' then log.add owner, 'is owner of'
-        when 'suspended' then log.add 'suspended'
-        when 'completed' then log.add owner, 'completed'
-        when 'cancelled' then log.add 'cancelled'
+          log.add nil, 'resumed' if from == 'suspended'
+          log.add task.changes['owner'].first, 'released' if from == 'active'
+        when 'active'
+          log.add nil, 'resumed' if from == 'suspended'
+          log.add task.owner, 'is owner of'
+        when 'suspended' then log.add nil, 'suspended'
+        when 'completed' then log.add task.owner, 'completed'
+        when 'cancelled' then log.add nil, 'cancelled'
         end
       else
-        log.add 'modified'
+        log.add nil, 'modified'
       end
     end
   end
-  private :log_activities
+
+  def log_activities
+    log = Hash.new
+    def log.add(person, action)
+      self[person] = Array(self[person]).push(action)
+    end
+    yield log
+    log.each do |person, actions|
+      activities.build :person=>person || @modified_by, :action=>actions.to_sentence
+    end
+  end
   
 
   # --- Completion and cancellation ---
@@ -365,7 +376,7 @@ class Task < ActiveRecord::Base
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :following, lambda { |end_date|
-    { :conditions=>["involved.role != 'excluded' AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
+    { :conditions=>["tasks.updated_at >= ?", end_date || Date.today - 7.days],
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :visible, :conditions=>["tasks.status != 'reserved'"]

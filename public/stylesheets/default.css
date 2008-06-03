@@ -194,6 +194,7 @@ table.tasks {
   margin: 0;
   padding:2em 2.5em 2em 2.5em;
   font-size: 1.1em;
+  table-layout: fixed;
 }
 table.tasks thead th {
   text-align: left;
@@ -208,12 +209,15 @@ table.tasks tbody td {
   padding: 0.5em;
   margin: 0;
   border-bottom: 1px solid #ddd;
+  text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
 }
 table.tasks tbody td img {
   vertical-align: middle;
 }
 table.tasks tbody tr.inactive, table.tasks tbody tr.inactive td a {
-  color: #ccc;
+  color: #888;
 }
 table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
   color: red;
@@ -221,6 +225,9 @@ table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
 table.tasks tbody td .priority_1 {
   color: red;
 }
+
+
+/** Chronological list **/
 
 ol.dates {
   font-size: 1.1em;
@@ -243,6 +250,11 @@ ol.dates li.date ol.tasks {
 ol.dates li.date ol.tasks li.task {
   margin: 0 0 1.0em 0;
 }
+ol.dates li.date abbr.updated {
+  color: #666;
+  font-size: 0.8em;
+  margin-right: 0.6em;
+}
 
 
 /** Activities **/
@@ -254,52 +266,75 @@ ol.activities {
 ol.activities li.activity {
   margin: 0 0 1.0em 0;
 }
+ol.activities li.activity abbr.published {
+  color: #666;
+  font-size: 0.8em;
+  margin-right: 0.6em;
+}
 
 
 /** Single task **/
+
+
+table.summary {
+  width: 100%;
+  border-spacing: 0;
+  border-padding: 0;
+  border: none;
+  margin: 0;
+  padding:0 2.5em 0 2.5em;
+  table-layout: fixed;
+  font-size: 1.1em;
+}
+table.summary td {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap; 
+}
+table.summary td.title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; 
+}
+table.summary td.actions {
+  text-align: right;
+}
+
+
+
+
 
 div.task {
   margin: 0;
   padding: 0;
 }
-
 div.task div.bar {
-  position:absolute;
+  position: absolute;
   width: 100%;
-  margin:0;
-  padding:0;
+  margin: 0;
+  padding: 0;
   border-bottom: solid 2px #046380;
   background-color: #e0e0e0;
 }
 
-div.task div.bar div.summary {
-  height:2em;
-  padding-top:0.3em;
-  padding: 0.5em 3em 3px 3em;
+div.task div.bar div.vitals {
+  margin: 0.6em 0em 0 3em;
+  font-size: 1.1em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
-div.task div.bar div.summary h1 {
-  margin: 0;
-  font-size: 1.5em;
+div.task div.bar div.vitals span.title {
+  font-weight: bold;
+}
+div.task div.bar div.bar-actions {
   display: inline;
+  background: #e0e0e0;
+  float: right;
+  margin: 0.5em 2.5em 0.5em 0;
 }
-div.task div.bar div.summary h1 a {
-  color: #000;
-  text-decoration: none;
-}
-div.task div.bar div.summary a {
-  text-decoration: none;
-}
-div.task div.bar div.summary div.vitals {
-  padding-top: 0.3em;
-}
-div.task div.bar div.summary div.actions {
-  display: inline;
-  position: absolute;
-  right: 3em;
-  top: 0.5em;
-}
-div.task div.bar div.summary .button-to {
-  margin-left: 1em;
+div.task div.bar div.bar-actions .button-to {
+  margin-left: 0.6em;
 }
 
 div.task div.bar div.expanded {
@@ -349,7 +384,7 @@ div.task iframe {
   width: 100%;
   height: 0;
   padding: 0;
-  margin: 0;
+  margin: 3em 0 0 0;
   background: transparent;
 }
 
