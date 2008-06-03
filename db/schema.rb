@@ -43,19 +43,19 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
   end
 
   create_table "tasks", :force => true do |t|
-    t.string   "title",                                         :null => false
-    t.string   "description",                                   :null => false
-    t.integer  "priority",         :limit => 1,                 :null => false
+    t.string   "title",                                        :null => false
+    t.string   "description",                                  :null => false
+    t.integer  "priority",        :limit => 1,                 :null => false
     t.date     "due_on"
-    t.string   "status",                                        :null => false
-    t.string   "form_view_url"
-    t.string   "form_perform_url"
+    t.string   "status",                                       :null => false
+    t.string   "perform_url"
+    t.string   "details_url"
     t.boolean  "form_completing"
     t.string   "outcome_url"
     t.string   "outcome_type"
-    t.string   "access_key",       :limit => 32
-    t.text     "data",                                          :null => false
-    t.integer  "version",                        :default => 0, :null => false
+    t.string   "access_key",      :limit => 32
+    t.text     "data",                                         :null => false
+    t.integer  "version",                       :default => 0, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

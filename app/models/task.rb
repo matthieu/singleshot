@@ -3,22 +3,22 @@
 #
 # Table name: tasks
 #
-#  id               :integer         not null, primary key
-#  title            :string(255)     not null
-#  description      :string(255)     not null
-#  priority         :integer(1)      not null
-#  due_on           :date
-#  status           :string(255)     not null
-#  form_view_url    :string(255)
-#  form_perform_url :string(255)
-#  form_completing  :boolean
-#  outcome_url      :string(255)
-#  outcome_type     :string(255)
-#  access_key       :string(32)
-#  data             :text            not null
-#  version          :integer         default(0), not null
-#  created_at       :datetime
-#  updated_at       :datetime
+#  id              :integer         not null, primary key
+#  title           :string(255)     not null
+#  description     :string(255)     not null
+#  priority        :integer(1)      not null
+#  due_on          :date
+#  status          :string(255)     not null
+#  perform_url     :string(255)
+#  details_url     :string(255)
+#  form_completing :boolean
+#  outcome_url     :string(255)
+#  outcome_type    :string(255)
+#  access_key      :string(32)
+#  data            :text            not null
+#  version         :integer         default(0), not null
+#  created_at      :datetime
+#  updated_at      :datetime
 #
 
 require 'openssl'
@@ -69,6 +69,7 @@ class Task < ActiveRecord::Base
   # states.
   STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
 
+
   # Cannot change in mass update.
   validates_inclusion_of :status, :in=>STATUSES
 
@@ -84,16 +85,21 @@ class Task < ActiveRecord::Base
     task.status ||= 'ready' if task.new_record?
     case task.status
     when 'ready'
+      # When task first created, if we only have one potential owner, pick them as owner.
       task.owner = task.potential_owners.first unless task.owner || task.potential_owners.size > 1
+      # Assigned task => active.
       task.status = 'active' if task.owner
     when 'active'
+      # Unassigned task => ready.
       task.status = 'ready' unless task.owner
     when 'completed', 'cancelled'
+      # Cannot modify completed/cancelled tasks.
       task.readonly! unless task.status_changed?
     end
   end
 
   validate do |task|
+    # Check state transitions.
     from, to = task.status_change
     if from == 'completed' 
       task.errors.add :status, 'Cannot change status of completed task.'
@@ -115,15 +121,52 @@ class Task < ActiveRecord::Base
 
   # -- View and perform ---
 
-  validates_url :form_perform_url, :if=>:form_perform_url
-  validates_url :form_view_url, :if=>:form_view_url
+  # Some tasks are performed offline, for example, calling a customer.  Other
+  # tasks are performed online, in which case we would like to include the UI
+  # for performing the task as part of the task page.
+  #
+  # There are two views for each task.  One view presented to the task owner
+  # for performing the task, the other view, presented to everyone else only
+  # provides details about the task.
+  #
+  # Some forms are integrated with the task manager, these know how to update
+  # the task status and mark the task as completed.  For all other forms, we
+  # need to include a button to mark the task as completed.
+  #
+  # We handle these cases through several combinations of rendering
+  # information.  Some tasks are rendered using only the task description (e.g.
+  # offline tasks).  Other tasks provide a URL for performing the task, using
+  # the description for everyone else.  Last, some tasks provide both a URL for
+  # performing the task and a URL for viewing task details.
+  class Rendering
 
-  before_validation do |record|
-    unless record.form_perform_url
-      record.form_view_url = nil 
-      record.form_completing = nil
+    MAPPING = [%w{perform_url perform_url}, %w{details_url details_url}, %w{form_completing completing}]
+    attr_reader :perform_url, :details_url, :completing
+
+    def initialize(perform_url, details_url, completing)
+      @perform_url = perform_url
+      @details_url = details_url if perform_url
+      @completing = perform_url && completing || false
     end
+
+    # True if rendering the task using only the task description.
+    def use_description?(performing)
+      performing ? perform_url.nil? : details_url.nil?
+    end
+
+    # True if we need to include button to mark task as completed.
+    def use_completion_button?
+      !perform_url || !completing
+    end
+
   end
+
+  composed_of :rendering, :class_name=>Rendering.to_s, :mapping=>Rendering::MAPPING do |hash|
+    Rendering.new(hash[:perform_url], hash[:details_url], hash[:completing])
+  end
+
+  validates_url :perform_url, :allow_nil=>true
+  validates_url :details_url, :allow_nil=>true
 
 
   # --- Task data ---
@@ -143,9 +186,6 @@ class Task < ActiveRecord::Base
   # Stakeholders and people (as stakeholders) associated with this task.
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all
   attr_protected :stakeholders
- 
-  include Stakeholder::Accessors
-  include Stakeholder::Validation
 
   # Eager loading of stakeholders associated with each task.
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
@@ -153,6 +193,81 @@ class Task < ActiveRecord::Base
   named_scope :for_stakeholder, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
       :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
+
+  # Task creator and owner.  Adds three methods for each role:
+  # * {role}          -- Returns person associated with this role, or nil.
+  # * {role}?(person) -- Returns true if person associated with this role.
+  # * {role}= person  -- Assocaites person with this role (can be nil).
+  Stakeholder::SINGULAR_ROLES.each do |role|
+    define_method(role) { in_role(role).first }
+    define_method("#{role}?") { |identity| in_role?(role, identity) }
+    define_method "#{role}=" do |identity|
+      old_value = in_role(role)
+      new_value = set_role(role, identity)
+      changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
+    end
+  end
+
+  def creator=(identity)
+    return creator unless new_record?
+    set_role 'creator', identity
+  end
+
+  ACCESSOR_FROM_ROLE = { 'potential'=>'potential_owners', 'excluded'=>'excluded_owners', 'observer'=>'observers', 'admin'=>'admins' }
+  ACCESSOR_FROM_ROLE.default = lambda { |role| role }
+
+  # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
+  # * {plural}            -- Returns people associated with this role.
+  # * {singular}?(person) -- Returns true if person associated with this role.
+  # * {plural}= people    -- Assocaites people with this role.
+  Stakeholder::PLURAL_ROLES.each do |role|
+    accessor = ACCESSOR_FROM_ROLE[role]
+    define_method(accessor) { in_role(role) }
+    define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
+    define_method("#{accessor}=") { |identities| set_role role, identities }
+  end
+
+  # Returns true if person is a stakeholder in this task: any role except excluded owners list.
+  def stakeholder?(person)
+    stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
+  end
+
+  # Return all people in this role.
+  def in_role(role)
+    stakeholders.select { |sh| sh.role == role }.map(&:person)
+  end
+
+  # Return true if person in this role.
+  def in_role?(role, identity)
+    person = Person.identify(identity)
+    stakeholders.any? { |sh| sh.role == role && sh.person == person }
+  end
+
+  # Set people associated with this role.
+  def set_role(role, identities)
+    new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+    keeping = stakeholders.select { |sh| sh.role == role }
+    stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+    (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+    return new_set
+  end
+
+  # Can only have one member of a singular role.
+  validate do |record|
+    Stakeholder::SINGULAR_ROLES.each do |role|
+      record.errors.add role, "Can only have one #{role}." if record.stakeholders.select { |sh| sh.role == role }.size > 1
+    end
+  end
+
+  validate do |record|
+    creator = record.stakeholders.detect { |sh| sh.role == 'creator' }
+    record.errors.add :creator, 'Cannot change creator.' if record.changed.include?(:creator) && !record.new_record?
+    record.errors.add :owner, "#{record.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
+      record.excluded_owner?(record.owner)
+    conflicting = record.potential_owners & record.excluded_owners
+    record.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
+      conflicting.empty?
+  end
 
 
   # --- Priority and ordering ---
@@ -217,7 +332,7 @@ class Task < ActiveRecord::Base
         case to
         when 'ready'
           log.add nil, 'resumed' if from == 'suspended'
-          log.add task.changes['owner'].first, 'released' if from == 'active'
+          log.add nil, 'released' if from == 'active'
         when 'active'
           log.add nil, 'resumed' if from == 'suspended'
           log.add task.owner, 'is owner of'

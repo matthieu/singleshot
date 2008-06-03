@@ -38,7 +38,8 @@
             <%= content_tag :button, 'Save and continue', :name=>:_method, :value=>:put %>
           </p>
         <% end %>
-        <%= hidden_field_tag 'task_url', @task_url %>
+        <%= hidden_field_tag 'task_url', params['task_url'] %>
+        <%= hidden_field_tag 'complete_url', params['complete_url'] %>
       <% end %>
       <%= javascript_tag "$('sandwich').focusFirstElement()" %>
     </div>

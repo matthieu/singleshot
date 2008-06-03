@@ -5,7 +5,7 @@
 #
 #  id         :integer         not null, primary key
 #  person_id  :integer
-#  task_id    :integer
+#  task_id    :integer         not null
 #  action     :string(255)     not null
 #  created_at :datetime        not null
 #

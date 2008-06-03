@@ -22,7 +22,7 @@ describe Stakeholder do
   end
 
   it 'should have supported role' do
-    Stakeholder::ROLES.each do |role|
+    Stakeholder::ALL_ROLES.each do |role|
       Stakeholder.create(:person=>@person, :task=>@task, :role=>role).should have(:no).errors
     end
   end
@@ -49,8 +49,8 @@ shared_examples_for 'singular role' do
   end
 
   it 'should not exist unless specified' do
-    Task.create default_task.except(@role)
-    Task.first.send(@role).should be_nil
+    Task.create! default_task.except(@role)
+    Task.last.send(@role).should be_nil
   end
 
   it 'should accept person at task creation' do
@@ -58,14 +58,14 @@ shared_examples_for 'singular role' do
   end
 
   it 'should return person when loading task' do
-    Task.create default_task.merge(@role=>person('foo'))
-    Task.first.send(@role).should eql(person('foo'))
+    Task.create! default_task.merge(@role=>person('foo'))
+    Task.last.send(@role).should eql(person('foo'))
   end
 
   it 'should identify person in role' do
-    Task.create default_task.merge(@role=>person('foo'))
-    Task.first.send("#{@role}?", person('foo')).should be_true
-    Task.first.send("#{@role}?", person('bar')).should be_false
+    Task.create! default_task.merge(@role=>person('foo'))
+    Task.last.send("#{@role}?", person('foo')).should be_true
+    Task.last.send("#{@role}?", person('bar')).should be_false
   end
 end
 
@@ -75,15 +75,15 @@ describe Task, 'creator' do
   it_should_behave_like 'singular role'
 
   it 'should not allow changing creator' do
-    Task.create default_task.merge(:creator=>person('creator'))
-    Task.first.update_attributes :creator=>person('other')
-    Task.first.creator.should == person('creator')
+    Task.create! default_task.merge(:creator=>person('creator'))
+    Task.last.update_attributes :creator=>person('other')
+    Task.last.creator.should == person('creator')
   end
 
   it 'should not allow setting creator on existing task' do
-    Task.create default_task
-    Task.first.update_attributes :creator=>person('creator')
-    Task.first.creator.should be_nil
+    Task.create! default_task
+    Task.last.update_attributes :creator=>person('creator')
+    Task.last.creator.should be_nil
   end
 
 end
@@ -94,44 +94,44 @@ describe Task, 'owner' do
   it_should_behave_like 'singular role'
 
   it 'should allow changing owner on existing task' do
-    Task.create default_task.merge(:owner=>person('owner'))
-    Task.first.update_attributes! :owner=>person('other')
-    Task.first.owner.should == person('other')
+    Task.create! default_task.merge(:owner=>person('owner'))
+    Task.last.update_attributes! :owner=>person('other')
+    Task.last.owner.should == person('other')
   end
 
   it 'should only store one owner association for task' do
-    Task.create default_task.merge(:owner=>person('owner'))
-    Task.first.update_attributes! :owner=>person('other')
-    Stakeholder.find(:all, :conditions=>{:task_id=>Task.first.id}).size.should == 1
+    Task.create! default_task.merge(:owner=>person('owner'))
+    Task.last.update_attributes! :owner=>person('other')
+    Stakeholder.find(:all, :conditions=>{:task_id=>Task.last.id}).size.should == 1
   end
 
   it 'should allow setting owner to nil' do
-    Task.create default_task.merge(:owner=>person('owner'))
-    Task.first.update_attributes! :owner=>nil
-    Task.first.owner.should be_nil
+    Task.create! default_task.merge(:owner=>person('owner'))
+    Task.last.update_attributes! :owner=>nil
+    Task.last.owner.should be_nil
   end
 
   it 'should not allow owner if listed in excluded owners' do
-    Task.create default_task.merge(:excluded_owners=>person('excluded'))
-    lambda { Task.first.update_attributes! :owner=>person('excluded') }.should raise_error
-    Task.first.owner.should be_nil
+    Task.create! default_task.merge(:excluded_owners=>person('excluded'))
+    lambda { Task.last.update_attributes! :owner=>person('excluded') }.should raise_error
+    Task.last.owner.should be_nil
   end
 
   it 'should be potential owner if task created with one potential owner' do
-    Task.create default_task.merge(:potential_owners=>person('foo'))
-    Task.first.owner.should == person('foo')
+    Task.create! default_task.merge(:potential_owners=>person('foo'))
+    Task.last.owner.should == person('foo')
   end
 
   it 'should not be potential owner if task created with more than one' do
-    Task.create default_task.merge(:potential_owners=>people('foo', 'bar'))
-    Task.first.owner.should be_nil
+    Task.create! default_task.merge(:potential_owners=>people('foo', 'bar'))
+    Task.last.owner.should be_nil
   end
 
   it 'should not be potential owner if task updated to have no owner' do
-    Task.create default_task.merge(:potential_owners=>person('foo'))
-    Task.first.update_attributes! :owner=>person('bar')
-    Task.first.update_attributes! :owner=>nil
-    Task.first.owner.should be(nil)
+    Task.create! default_task.merge(:potential_owners=>person('foo'))
+    Task.last.update_attributes! :owner=>person('bar')
+    Task.last.update_attributes! :owner=>nil
+    Task.last.owner.should be(nil)
   end
 end
 
@@ -148,8 +148,8 @@ shared_examples_for 'plural role' do
   end
 
   it 'should not exist unless specified' do
-    Task.create default_task.except(@role)
-    Task.first.send(@role).should be_empty
+    Task.create! default_task.except(@role)
+    Task.last.send(@role).should be_empty
   end
 
   it 'should accept list of people at task creation' do
@@ -157,53 +157,53 @@ shared_examples_for 'plural role' do
   end
 
   it 'should list of people when loading task' do
-    Task.create default_task.merge(@role=>@people)
-    Task.first.send(@role).should == @people
+    Task.create! default_task.merge(@role=>@people)
+    Task.last.send(@role).should == @people
   end
 
   it 'should accept single person' do
-    Task.create default_task.merge(@role=>person('foo'))
-    Task.first.send(@role).should == [person('foo')]
+    Task.create! default_task.merge(@role=>person('foo'))
+    Task.last.send(@role).should == [person('foo')]
   end
 
   it 'should accept empty list' do
     Task.create(default_task.merge(@role=>[]))
-    Task.first.send(@role).should be_empty
+    Task.last.send(@role).should be_empty
   end
 
   it 'should accept empty list and discard all stakeholders' do
-    Task.create default_task.merge(@role=>@people)
-    Task.first.update_attributes! @role=>[]
-    Task.first.send(@role).should be_empty
+    Task.create! default_task.merge(@role=>@people)
+    Task.last.update_attributes! @role=>[]
+    Task.last.send(@role).should be_empty
   end
 
   it 'should accept nil and treat it as empty list' do
-    Task.create default_task.merge(@role=>@people)
-    Task.first.update_attributes! @role=>nil
-    Task.first.send(@role).should be_empty
+    Task.create! default_task.merge(@role=>@people)
+    Task.last.update_attributes! @role=>nil
+    Task.last.send(@role).should be_empty
   end
 
   it 'should allow adding stakeholders' do
-    Task.create default_task.merge(@role=>person('foo'))
-    Task.first.update_attributes! @role=>[person('foo'), person('bar')]
-    Task.first.send(@role).should == [person('foo'), person('bar')]
+    Task.create! default_task.merge(@role=>person('foo'))
+    Task.last.update_attributes! @role=>[person('foo'), person('bar')]
+    Task.last.send(@role).should == [person('foo'), person('bar')]
   end
 
   it 'should add each person only once' do
-    Task.create default_task.merge(@role=>([person('foo')] *3))
-    Task.first.send(@role).size.should == 1
+    Task.create! default_task.merge(@role=>([person('foo')] *3))
+    Task.last.send(@role).size.should == 1
   end
 
   it 'should allow removing stakeholders' do
-    Task.create default_task.merge(@role=>[person('foo'), person('bar')])
-    Task.first.update_attributes! @role=>person('bar')
-    Task.first.send(@role).should == [person('bar')]
+    Task.create! default_task.merge(@role=>[person('foo'), person('bar')])
+    Task.last.update_attributes! @role=>person('bar')
+    Task.last.send(@role).should == [person('bar')]
   end
 
   it 'should identify person in role' do
-    Task.create default_task.merge(@role=>person('foo'))
-    Task.first.send("#{@role.to_s.singularize}?", person('foo')).should be_true
-    Task.first.send("#{@role.to_s.singularize}?", person('bar')).should be_false
+    Task.create! default_task.merge(@role=>person('foo'))
+    Task.last.send("#{@role.to_s.singularize}?", person('foo')).should be_true
+    Task.last.send("#{@role.to_s.singularize}?", person('bar')).should be_false
   end
 end
 

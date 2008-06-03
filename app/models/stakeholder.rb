@@ -27,11 +27,7 @@ class Stakeholder < ActiveRecord::Base
   # * observer  -- Watches and receives notifications about the task.
   PLURAL_ROLES = ['potential', 'excluded', 'observer', 'admin']
 
-  # All supported roles.
-  ROLES = SINGULAR_ROLES + PLURAL_ROLES
-
-  ACCESSOR_FROM_ROLE = SINGULAR_ROLES.inject({}) { |hash, role| hash.update(role=>role) }.
-    update('potential'=>'potential_owners', 'excluded'=>'excluded_owners', 'observer'=>'observers', 'admin'=>'admins')
+  ALL_ROLES = SINGULAR_ROLES + PLURAL_ROLES
 
   # Stakeholder associated with a task.
   belongs_to :task
@@ -41,93 +37,7 @@ class Stakeholder < ActiveRecord::Base
   validates_presence_of :person
 
   # Role for this stakeholder.
-  validates_inclusion_of :role, :in=>ROLES
-
+  validates_inclusion_of :role, :in=>ALL_ROLES
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
-
-
-  # Task creator and owner.  Adds three methods for each role:
-  # * {role}          -- Returns person associated with this role, or nil.
-  # * {role}?(person) -- Returns true if person associated with this role.
-  # * {role}= person  -- Assocaites person with this role (can be nil).
-  module Accessors
-
-    SINGULAR_ROLES.each do |role|
-      define_method(role) { in_role(role).first }
-      define_method("#{role}?") { |identity| in_role?(role, identity) }
-      define_method "#{role}=" do |identity|
-        old_value = in_role(role)
-        new_value = set_role(role, identity)
-        changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
-      end
-    end
-
-    def creator=(identity)
-      return creator unless new_record?
-      set_role 'creator', identity
-    end
-
-    PLURAL_ROLES.each do |role|
-      accessor = ACCESSOR_FROM_ROLE[role]
-      define_method(accessor) { in_role(role) }
-      define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
-      define_method("#{accessor}=") { |identities| set_role role, identities }
-    end
-
-    # Returns true if person is a stakeholder in this task: any role except excluded owners list.
-    def stakeholder?(person)
-      stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
-    end
-
-  private
-
-    # Return all people in this role.
-    def in_role(role)
-      stakeholders.select { |sh| sh.role == role }.map(&:person)
-    end
-
-    # Return true if person in this role.
-    def in_role?(role, identity)
-      person = Person.identify(identity)
-      stakeholders.any? { |sh| sh.role == role && sh.person == person }
-    end
-
-    # Set people associated with this role.
-    def set_role(role, identities)
-      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
-      keeping = stakeholders.select { |sh| sh.role == role }
-      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
-      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-      return new_set
-    end
-
-  end
-
-
-  module Validation
-    def self.included(base)
-      base.class_eval do
-        before_validation_on_create do |record|
-          record.owner = record.potential_owners.first unless record.owner || record.potential_owners.size > 1
-        end
-
-        # Can only have one member of a singular role.
-        SINGULAR_ROLES.each do |role|
-          validate do |record|
-            record.errors.add role, "Can only have one #{role}." if record.stakeholders.select { |sh| sh.role == role }.size > 1
-          end
-        end
-        validate do |record|
-          creator = record.stakeholders.detect { |sh| sh.role == 'creator' }
-          record.errors.add :creator, 'Cannot change creator.' if record.changed.include?(:creator) && !record.new_record?
-          record.errors.add :owner, "#{record.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-            record.excluded_owner?(record.owner)
-          conflicting = record.potential_owners & record.excluded_owners
-          record.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
-            conflicting.empty?
-        end
-      end
-    end
-  end
 
 end

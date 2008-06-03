@@ -275,40 +275,11 @@ ol.activities li.activity abbr.published {
 
 /** Single task **/
 
-
-table.summary {
-  width: 100%;
-  border-spacing: 0;
-  border-padding: 0;
-  border: none;
-  margin: 0;
-  padding:0 2.5em 0 2.5em;
-  table-layout: fixed;
-  font-size: 1.1em;
-}
-table.summary td {
-  margin: 0;
-  padding: 0;
-  white-space: nowrap; 
-}
-table.summary td.title {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap; 
-}
-table.summary td.actions {
-  text-align: right;
-}
-
-
-
-
-
 div.task {
   margin: 0;
   padding: 0;
 }
-div.task div.bar {
+div.task div.header {
   position: absolute;
   width: 100%;
   margin: 0;
@@ -317,66 +288,52 @@ div.task div.bar {
   background-color: #e0e0e0;
 }
 
-div.task div.bar div.vitals {
+div.task div.header div.vitals {
   margin: 0.6em 0em 0 3em;
   font-size: 1.1em;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
-div.task div.bar div.vitals span.title {
+div.task div.header div.vitals span.title {
   font-weight: bold;
 }
-div.task div.bar div.bar-actions {
+div.task div.header div.actions {
   display: inline;
   background: #e0e0e0;
   float: right;
   margin: 0.5em 2.5em 0.5em 0;
 }
-div.task div.bar div.bar-actions .button-to {
+div.task div.header div.actions .button-to {
   margin-left: 0.6em;
 }
 
-div.task div.bar div.expanded {
+div.task div.header div.details {
   clear: both;
-  padding: 2em 3em 2em 3em;
+  padding: 0em 3em 2em 3em;
   border-top: 1px solid #ccc;
   margin: 0;
 }
-div.task div.bar div.expanded a[rel=alternate] {
+div.task div.header div.details a[rel=alternate] {
   float: right;
   padding-left: 1em;
   text-decoration: none;
 }
-div.task div.bar div.expanded a[rel=alternate] img {
+div.task div.header div.details a[rel=alternate] img {
   border: none;
   vertical-align: bottom;
   margin: 0.1em;
 }
-div.task div.bar div.expanded h2 {
-  font-size: 1.2em;
-  margin: 0 0 1em 0;
-}
-div.task div.bar div.expanded dl {
-}
-div.task div.bar div.expanded dt {
+div.task div.header div.details dt {
   font-weight: bold;
-  display: inline;
   float: left;
 }
-div.task div.bar div.expanded dd {
+div.task div.header div.details dd {
   margin: 0 0 1em 10em;
-}
-div.task div.bar div.expanded ol.activities {
-  margin: 0;
-  padding: 0;
-}
-div.task div.bar div.expanded div.actions {
-  text-align: right;
 }
 
 div.task div.description {
-  padding: 3em 3em 1em 3em;
+  padding: 3em;
 }
 
 div.task iframe {
@@ -388,7 +345,7 @@ div.task iframe {
   background: transparent;
 }
 
-div.task div.completion {
+div.task div.footer {
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -397,12 +354,12 @@ div.task div.completion {
   background-color: #e0e0e0;
   border-top: solid 2px #046380;
 }
-div.task div.completion .actions {
+div.task div.footer .actions {
   margin-right: 3em;
   padding-right: 3em;
   text-align: right;
 }
-div.task div.completion .actions .button-to {
+div.task div.footer .actions .button-to {
   margin-left: 1em;
 }
 

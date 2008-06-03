@@ -1,39 +1,43 @@
+<%
+  performing = @task.can_complete?(authenticated)
+  use_description = @task.rendering.use_description?(performing)
+%>
 <% div_for @task do %>
-  <div class='bar'>
-    <div class='bar-actions'>
+  <div class='header'>
+    <div class='actions'>
       <%= quick_actions(@task) %>
-      <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.expanded', 'Less options')", :class=>'button-to' %>
+      <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.header .details', 'Less options')", :class=>'button-to' %>
     </div>
     <div class='vitals'>
       <%= task_vitals(@task) %>: <%= content_tag 'span', h(@task.title), :class=>'title', :title=>@task.title %>
     </div>
-    
-    <div class='expanded' style='display:one'>
-      <div><%= sanitize(simple_format(@task.description)) %></div>
-      <%= link_to image_tag('calendar.png') + ' Calendar', formatted_task_url(@task, 'ics', :access_key=>authenticated.access_key),
-          :rel=>'alternate', :title=>'Add this task to your calendar' %>
-      <%= link_to image_tag('feed.png') + ' Activity', formatted_activity_url(@task, 'atom', :access_key=>authenticated.access_key),
-          :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+    <div class='details' style='display:none'>
+      <%= link_to image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add this task to your calendar' %>
+      <%= link_to image_tag('feed.png') + ' Activity', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
       <dl>
+        <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) unless use_description %>
         <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
         <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>
         <dt>Recent activity</dt>
         <dd><%= render :file=>'activities/_activities', :locals=>{ :today=>Date.today, :activities=>@task.activities } %></dd>
-        <%= admins = @task.admins.map { |person| link_to_person(person, :admin) }
+        <%= admins = @task.admins.map { |person| link_to_person(person, :rel=>:admin) }
             content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
-        <%= observers = @task.observers.map { |person| link_to_person(person, :observer) }
+            <%= observers = @task.observers.map { |person| link_to_person(person, :rel=>:observer) }
             content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
       </dl>
-      <div class='actions'>
-        <%= quick_actions(@task) %>
-      </div>
     </div>
   </div>
 
-  <%= task_frame @task %>
-
-  <% unless @task.form_completing %>
-    <div class='completion'><div class='actions'><%= button_to 'Completed', task_url(@task, :status=>'completed'), :title=>'Click when task completed' %></div></div>
+  <% if use_description %>
+    <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
+  <% else %>
+    <%= task_frame @task, performing %>
+    <%= javascript_tag "Singleshot.taskView('task_frame')" %>
   <% end %>
-  <%= javascript_tag "Singleshot.taskView('task_frame')" %>
+
+  <% if performing && @task.rendering.use_completion_button? %>
+    <div class='footer'>
+      <div class='actions'><%= button_to 'Completed', task_url(@task, :status=>'completed'), :title=>'Click when task completed' %></div>
+    </div>
+  <% end %>
 <% end %>

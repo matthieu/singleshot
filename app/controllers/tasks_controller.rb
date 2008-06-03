@@ -50,7 +50,8 @@ class TasksController < ApplicationController
 
   def show
     @title = @task.title
-    @alternate = { Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    @alternate = { Mime::ICS=>formatted_task_url(@task, :ics, :access_key=>authenticated.access_key),
+                   Mime::ATOM=>formatted_activity_url(@task, :atom, :access_key=>authenticated.access_key) }
     respond_to do |wants|
       wants.html { render :layout=>'head' }
       # TODO: wants.xml
@@ -86,6 +87,10 @@ class TasksController < ApplicationController
       # TODO: wants.xml
       # TODO: wants.json
     end
+  end
+
+  def complete_redirect
+    render :text=>"<script>frames.top.location.href='#{tasks_url}'</script>"
   end
 
 
