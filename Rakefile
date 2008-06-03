@@ -28,6 +28,3 @@ require 'rake/rdoctask'
 
 require 'tasks/rails'
 require(File.join(File.dirname(__FILE__), 'config', 'boot'))
-
-desc 'Run this task first to setup your test/development environment'
-task 'setup'=>['gems:install', 'db:populate']

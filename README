@@ -1,7 +1,7 @@
 == Setting up the environment
 
 Singleshot is developed against Rails 2.1.  To get moving you need to first
-install Rails 2.1 RC1 or later.
+install Rails 2.1 or later.
 
 To get the latest copy use one of the following:
 
@@ -28,8 +28,9 @@ password.
 == Setting up the database
 
 The database is configured in config/databases.yml.  The development and test
-database is set to use SQLite3, so there's no need for extra setup.  For
-production you should consider using something else.
+database is set to use SQLite3, and the SQLite3 drive is installed when running
+rake setup.  For production, you should consider using something else (the
+default configuration is MySQL).
 
 
 == Migrations
@@ -45,11 +46,14 @@ recreate the entire database.
 
 Those changes are recorded in the form of migration, but to update run:
 
-$ rake db:rebuild
+$ rake db:migrate:reset
 
 This task will recreate the entire development and test database.  In addition,
-it uses the annotate-models Gems to, well, annotate the Rails models with the
-most recent database schema.
+we uses the annotate-models Gems to, well, annotate the Rails models with the
+most recent database schema.  So when changing the database schema, follow
+with:
+
+$ rake annotate_models
 
 To recreate the dummy data used for development:
 

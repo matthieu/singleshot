@@ -37,7 +37,7 @@ namespace 'db' do
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
                    :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :completing=>true }, :potential_owners=>[you, other] }
       returning Task.new(defaults.merge(attributes || {})) do |task|
-        task.modified_by(you).save!
+        task.modify_by(you).save!
         def task.delay(duration = 2.hours)
           Task.delay(duration)
           self
@@ -55,7 +55,7 @@ namespace 'db' do
     # - observer
     # - admin
     create :creator=>you
-    create(:creator=>you).delay(25.minutes).modified_by(you).update_attributes :owner=>you
+    create(:creator=>you).delay(25.minutes).modify_by(you).update_attributes :owner=>you
     create :observers=>you
     create :admins=>you
     # Tasks in which we are only or one of many potential owners.
@@ -68,9 +68,9 @@ namespace 'db' do
     create :owner=>you, :due_on=>Time.today
     create :owner=>you, :due_on=>Time.today + 1.day
     # Completed, cancelled, suspended
-    create(:potential_owners=>[you, other]).delay(30.minutes).modified_by(other).update_attributes(:status=>'suspended')
-    create(:owner=>you, :status=>'active').delay(2.hours).modified_by(you).update_attributes(:status=>'completed')
-    create(:owner=>you, :status=>'active').delay(96.minutes).modified_by(other).update_attributes(:status=>'cancelled')
+    create(:potential_owners=>[you, other]).delay(30.minutes).modify_by(other).update_attributes(:status=>'suspended')
+    create(:owner=>you, :status=>'active').delay(2.hours).modify_by(you).update_attributes(:status=>'completed')
+    create(:owner=>you, :status=>'active').delay(96.minutes).modify_by(other).update_attributes(:status=>'cancelled')
   end
 
 end
