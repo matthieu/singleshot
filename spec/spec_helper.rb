@@ -4,7 +4,6 @@ ENV["RAILS_ENV"] = "test"
 require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
 require 'spec/rails'
 require File.expand_path(File.dirname(__FILE__) + "/enhancements")
-require File.expand_path(File.dirname(__FILE__) + "/common")
 
 Spec::Runner.configure do |config|
   config.use_transactional_fixtures = true

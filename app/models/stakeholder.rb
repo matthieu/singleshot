@@ -40,4 +40,8 @@ class Stakeholder < ActiveRecord::Base
   validates_inclusion_of :role, :in=>ALL_ROLES
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
 
+  def readonly?
+    !new_record?
+  end
+
 end

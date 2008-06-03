@@ -1,8 +1,8 @@
 require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/helper'
 
 
 describe Task do
-  include Specs::Tasks
 
   describe 'to_param' do
 
@@ -11,28 +11,28 @@ describe Task do
     end
 
     it 'should begin with task ID' do
-      Task.create!(default_task).to_param.to_i.should == Task.last.id
+      Task.create!(defaults).to_param.to_i.should == Task.last.id
     end
 
     it 'should include task title' do
-      Task.create!(default_task.merge(:title=>'Task Title')).to_param[/^\d+-(.*)/, 1].should == 'Task-Title'
+      Task.create!(defaults(:title=>'Task Title')).to_param[/^\d+-(.*)/, 1].should == 'Task-Title'
     end
 
     it 'should properly encode task title' do
-      Task.create!(default_task.merge(:title=>'Test:encoding, ignoring "unprintable" characters')).
+      Task.create!(defaults(:title=>'Test:encoding, ignoring "unprintable" characters')).
         to_param[/^\d+-(.*)/, 1].should == 'Test-encoding-ignoring-unprintable-characters'
     end
 
     it 'should remove redundant hyphens' do
-      Task.create!(default_task.merge(:title=>'-Test  redundant--hyphens--')).to_param[/^\d+-(.*)/, 1].should == 'Test-redundant-hyphens'
+      Task.create!(defaults(:title=>'-Test  redundant--hyphens--')).to_param[/^\d+-(.*)/, 1].should == 'Test-redundant-hyphens'
     end
 
     it 'should deal gracefully with missing title' do
-      Task.create!(default_task.merge(:title=>'--')).to_param.should =~ /^\d+$/
+      Task.create!(defaults(:title=>'--')).to_param.should =~ /^\d+$/
     end
 
     it 'should leave UTF-8 text alone' do
-      Task.create!(default_task.merge(:title=>'jösé')).to_param[/^\d+-(.*)/, 1].should == 'jösé'
+      Task.create!(defaults(:title=>'jösé')).to_param[/^\d+-(.*)/, 1].should == 'jösé'
     end
 
   end
@@ -41,11 +41,11 @@ describe Task do
   describe 'version' do
 
     it 'should begin at zero' do
-      Task.create!(default_task).version.should == 0 
+      Task.create!(defaults).version.should == 0 
     end
 
     it 'should increment each time task is updated' do
-      Task.create! default_task
+      Task.create! defaults
       lambda { Task.last.update_attributes :priority=>1 }.should change { Task.last.version }.from(0).to(1)
       lambda { Task.last.update_attributes :due_on=>Time.now }.should change { Task.last.version }.from(1).to(2)
     end
@@ -55,20 +55,20 @@ describe Task do
   describe 'etag' do
 
     it 'should be hex digest' do
-      Task.create!(default_task).etag.should =~ /^[0-9a-f]{32}$/
+      Task.create!(defaults).etag.should =~ /^[0-9a-f]{32}$/
     end
 
     it 'should remain the same if task not modified' do
-      Task.create! default_task
+      Task.create! defaults
       Task.last.etag.should == Task.last.etag
     end
 
     it 'should be different for two different tasks' do
-      Task.create!(default_task).etag.should_not == Task.create(default_task).etag
+      Task.create!(defaults).etag.should_not == Task.create(defaults).etag
     end
 
     it 'should change whenever task is saved' do
-      Task.create! default_task
+      Task.create! defaults
       lambda { Task.last.update_attributes! :priority=>1 }.should change { Task.last.etag }
       lambda { Task.last.update_attributes! :due_on=>Time.now }.should change { Task.last.etag }
     end
@@ -78,37 +78,8 @@ describe Task do
 
   describe 'status' do
 
-    def task_with_status(status, attributes = nil)
-      attributes ||= {}
-      attributes = attributes.reverse_merge(:admins=>person('admin'))
-      task = case status
-      when 'active'
-        Task.create!(default_task.merge(attributes).merge(:status=>'active', :owner=>person('owner')))
-      when 'completed' # Start as active, modified by owner.
-        active = task_with_status('active', attributes)
-        active.modify_by(person('owner')).update_attributes! :status=>'completed'
-        active
-      when 'cancelled', 'suspended' # Start as active, modified by admin.
-        active = task_with_status('active', attributes)
-        active.modify_by(person('admin')).update_attributes! :status=>status
-        active
-      else
-        Task.create!(default_task.merge(attributes).merge(:status=>status))
-      end
-
-      def task.transition_to(status, attributes = nil)
-        attributes ||= {}
-        modify_by(attributes.delete(:modified_by) || Person.identify('admin')).update_attributes attributes.merge(:status=>status)
-        self
-      end
-      def task.can_transition?(status, attributes = nil)
-        transition_to(status, attributes).errors_on(:status).empty?
-      end
-      task
-    end
-
     it 'should start as ready' do
-      Task.create!(default_task).status.should == 'ready'
+      Task.create!(defaults).status.should == 'ready'
     end
 
     it 'should only accept supported value' do
@@ -116,7 +87,7 @@ describe Task do
     end
 
     it 'should allow starting in reserved' do
-      Task.create!(default_task.merge(:status=>'reserved')).status.should == 'reserved'
+      Task.create!(defaults(:status=>'reserved')).status.should == 'reserved'
     end
 
     it 'should not transition to reserved from any other status' do
@@ -126,19 +97,19 @@ describe Task do
     end
 
     it 'should start as ready if started as active but not associated with owner' do
-      Task.create!(default_task.merge(:status=>'active')).status.should == 'ready'
+      Task.create!(defaults(:status=>'active')).status.should == 'ready'
     end
 
     it 'should start as active if started as ready and associated with owner' do
-      Task.create!(default_task.merge(:owner=>person('owner'))).status.should == 'active'
+      Task.create!(defaults(:owner=>person('owner'))).status.should == 'active'
     end
 
     it 'should start as active if started as ready and associated with one potential owner' do
-      Task.create!(default_task.merge(:potential_owners=>people('owner'))).status.should == 'active'
+      Task.create!(defaults(:potential_owners=>people('owner'))).status.should == 'active'
     end
 
     it 'should start as ready if started as ready and associated with several potential owners' do
-      Task.create!(default_task.merge(:potential_owners=>people('foo', 'bar'))).status.should == 'ready'
+      Task.create!(defaults(:potential_owners=>people('foo', 'bar'))).status.should == 'ready'
     end
 
     it 'should transition from ready to active when associated with owner' do
@@ -152,7 +123,7 @@ describe Task do
     end
 
     it 'should not accept suspended as initial value' do
-      Task.create(default_task.merge(:status=>'suspended')).should have(1).error_on(:status)
+      Task.create(defaults(:status=>'suspended')).should have(1).error_on(:status)
     end
 
     it 'should transition from ready to suspended' do
@@ -212,11 +183,11 @@ describe Task do
   describe 'title' do
 
     it 'should be required' do
-      Task.new(default_task.except(:title)).should have(1).error_on(:title)
+      Task.new(defaults.except(:title)).should have(1).error_on(:title)
     end
 
     it 'should not be empty' do
-      Task.new(default_task.merge(:title=>' ')).should have(1).error_on(:title)
+      Task.new(defaults.merge(:title=>' ')).should have(1).error_on(:title)
     end
 
   end
@@ -225,20 +196,20 @@ describe Task do
   describe 'priority' do
 
     it 'should default to 2' do
-      Task.create(default_task.except(:priority)).priority.should == 2
+      Task.create(defaults.except(:priority)).priority.should == 2
     end
 
     it 'should allow values from 1 to 3' do
       priorities = Array.new(5) { |i| i }
-      priorities.map { |p| Task.new(default_task.merge(:priority=>p)).valid? }.should eql([false] + [true] * 3 + [false])
+      priorities.map { |p| Task.new(defaults(:priority=>p)).valid? }.should eql([false] + [true] * 3 + [false])
     end
 
     it 'should accept string value' do
-      Task.create(default_task.merge(:priority=>'1')).priority.should == 1
+      Task.create(defaults(:priority=>'1')).priority.should == 1
     end
 
     it 'should accept nil and reset to default' do
-      Task.create default_task.merge(:priority=>1)
+      Task.create defaults(:priority=>1)
       lambda { Task.last.update_attributes! :priority=>nil }.should change { Task.last.priority }.to(2)
     end
 
@@ -263,35 +234,35 @@ describe Task do
   describe 'due_on' do
 
     it 'should not be required' do
-      Task.create(default_task.except(:due_on)).should have(:no).errors
+      Task.create(defaults.except(:due_on)).should have(:no).errors
     end
 
     it 'should accept time and return date' do
       now = Time.now
-      Task.create! default_task.merge(:due_on=>now)
+      Task.create! defaults(:due_on=>now)
       Task.last.due_on.should == now.to_date
     end
 
     it 'should accept date and return it' do
       today = Date.today
-      Task.create! default_task.merge(:due_on=>today)
+      Task.create! defaults(:due_on=>today)
       Task.last.due_on.should == today
     end
 
     it 'should accept ISO 8601 date string and return date' do
       today = Date.today
-      Task.create! default_task.merge(:due_on=>today.to_s)
+      Task.create! defaults(:due_on=>today.to_s)
       Task.last.due_on.should == today
     end
 
     it 'should accept ISO 8601 time string and return date' do
       now = Time.now
-      Task.create! default_task.merge(:due_on=>now.iso8601)
+      Task.create! defaults(:due_on=>now.iso8601)
       Task.last.due_on.should == now.to_date
     end
 
     it 'should accept blank string and set to nil' do
-      Task.create! default_task.merge(:due_on=>Time.now)
+      Task.create! defaults(:due_on=>Time.now)
       Task.last.update_attributes :due_on=>''
       Task.last.due_on.should be_nil
     end
@@ -320,15 +291,14 @@ describe Task do
   end
 
 
-  describe 'ranking'
+  #pending 'ranking'
 
-  describe 'modified_by'
+  #pending 'modified_by'
 
-  describe 'activities'
+  #pending 'with_stakeholders'
 
-  describe 'with_stakeholders'
+  #pending 'for_stakeholder'
 
-  describe 'for_stakeholder'
 
   describe 'data' do
 
@@ -337,23 +307,23 @@ describe Task do
     end
 
     it 'should return nothing for new task' do
-      Task.create default_task.except(:data)
+      Task.create defaults.except(:data)
       Task.last.data.should == {}
     end
 
     it 'should accept argument for mass assignment' do
-      Task.create default_task
+      Task.create defaults
       lambda { Task.last.update_attributes :data=>{'foo'=>'bar'} }.should change { Task.last.data }.to('foo'=>'bar')
     end
 
     it 'should accept nil' do
-      Task.create default_task.merge(:data=>{'foo'=>'bar'})
+      Task.create defaults(:data=>{'foo'=>'bar'})
       lambda { Task.last.update_attributes :data=>nil }.should change { Task.last.data }.to({})
     end
 
     it 'should reject any other value' do
-      Task.create(default_task.merge(:data=>[])).should have(1).error_on(:data)
-      Task.create(default_task.merge(:data=>'string')).should have(1).error_on(:data)
+      Task.create(defaults(:data=>[])).should have(1).error_on(:data)
+      Task.create(defaults(:data=>'string')).should have(1).error_on(:data)
     end
 
   end
@@ -396,7 +366,6 @@ end
 
 
 describe Task, 'frame_url' do
-  include Specs::Tasks
   it_should_behave_like 'Task url'
 
   before :all do
@@ -411,7 +380,6 @@ end
 
 
 describe Task, 'outcome_url' do
-  include Specs::Tasks
   it_should_behave_like 'Task url'
 
   before :all do
@@ -426,10 +394,9 @@ end
 
 
 describe Task, 'outcome_type' do
-  include Specs::Tasks
 
   def outcome_values(mime_type)
-    default_task.merge(:outcome_url=>'http://test.host/outcome', :outcome_type=>mime_type)
+    defaults(:outcome_url=>'http://test.host/outcome', :outcome_type=>mime_type)
   end
 
   it 'should be ignored unless outcome URL specified' do
@@ -482,12 +449,11 @@ end
 
 
 describe Task, 'token' do
-  include Specs::Tasks
 
   before :each do
     @creator = person('creator')
     @owner = person('owner')
-    @task = Task.new(default_task.merge(:creator=>@creator, :owner=>@owner))
+    @task = Task.new(defaults(:creator=>@creator, :owner=>@owner))
     @creator_token = @task.token_for(@creator)
     @owner_token = @task.token_for(@owner)
   end
@@ -523,7 +489,6 @@ end
 
 
 describe Task, 'stakeholder?' do
-  include Specs::Tasks
 
   before :all do
     @task = Task.new(@roles = all_roles)
@@ -563,62 +528,10 @@ describe Task, 'stakeholders' do
 end
 
 
-describe Task, 'version' do
-  include Specs::Tasks
-
-  before :each do
-    @task = Task.create!(default_task)
-  end
-
-  it 'should start at zero' do
-    @task.version.should eql(0)
-  end
-
-  it 'should increment when task saved' do
-    5.times do |n|
-      lambda { @task.save }.should change(@task, :version).from(n).to(n + 1)
-    end
-  end
-
-end
-
-
-describe Task, 'etag' do
-  include Specs::Tasks
-
-  before :each do
-    @task = Task.create!(default_task)
-  end
-
-  it 'should return same value if task not udpated' do
-    @task.etag.should eql(@task.etag)
-  end
-
-  it 'should change when task updated' do
-    3.times do
-      lambda { @task.save }.should change(@task, :etag)
-    end
-  end
-
-  it 'should be unique across tasks' do
-    @task.etag.should_not eql(Task.create!(default_task))
-  end
-
-  it 'should be MD5 hash' do
-    2.times do
-      @task.etag.should match(/^[a-f0-9]{32}$/)
-      @task.save
-    end
-  end
-
-end
-
-
 describe Task, 'cancellation' do
-  include Specs::Tasks
 
   before :each do
-    @task = Task.new(default_task.merge(@roles = all_roles))
+    @task = Task.new(defaults(@roles = all_roles))
   end
 
   it 'should default to :admin' do
@@ -646,14 +559,13 @@ end
 
 
 describe Task, 'completion' do
-  include Specs::Tasks
 
   before :all do
     @roles = all_roles
   end
 
   before :each do
-    @task = Task.create(default_task.merge(@roles))
+    @task = Task.create(defaults(@roles))
   end
 
   it 'should allow owner to complete task' do

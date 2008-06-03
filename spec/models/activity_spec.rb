@@ -1,23 +1,24 @@
 require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/helper'
+
 
 describe Activity do
-  include Specs::Tasks
 
   describe 'person' do
     it 'should be part of activity' do
-      Task.create! default_task(:creator=>person('person'))
+      Task.create! defaults(:creator=>person('person'))
       Activity.last.person.should == person('person')
     end
 
     it 'should be optional' do
-      lambda { Task.create! default_task }.should_not raise_error
+      lambda { Task.create! defaults }.should_not raise_error
       Activity.last.person.should be_nil
     end
   end
 
   describe 'task' do
     it 'should be part of activity' do
-      Task.create! default_task
+      Task.create! defaults
       Activity.last.task.should == Task.last
     end
 
@@ -28,41 +29,42 @@ describe Activity do
 
   describe 'action' do
     it 'should be part of activity' do
-      Task.create! default_task
+      Task.create! defaults
       Activity.last.action.should == 'created'
     end
 
     it 'should be required' do
-      Task.create! default_task
+      Task.create! defaults
       Activity.create(:person=>person('person'), :task=>Task.last).should have(1).error_on(:action)
     end
   end
 
   it 'should have created_at timestamp' do
-    Task.create! default_task
+    Task.create! defaults
     Activity.last.created_at.should be_close(Time.now, 2)
   end
   
-  it 'should allow creation but not modification' do
-    Task.create! default_task
+  it 'should be read only' do
+    Task.create! defaults
     lambda { Activity.last.update_attributes! :action=>'updated' }.should raise_error(ActiveRecord::ReadOnlyRecord)
   end
 
   it 'should delete when destroying task' do
-    Task.create! default_task
+    Task.create! defaults
     lambda { Task.last.destroy }.should change(Activity, :count).to(0)
   end
 
   it 'should delete when destroying person' do
-    Task.create! default_task(:creator=>person('creator'))
+    Task.create! defaults(:creator=>person('creator'))
     lambda { person('creator').destroy }.should change(Activity, :count).to(0)
   end
+
 
   describe 'for_dates' do
     it 'should return activities in date range' do
       now = Time.zone.now
       activities = (0..3).each do |i|
-        Task.create! default_task(:creator=>person('creator'))
+        Task.create! defaults(:creator=>person('creator'))
         Activity.update_all ['created_at=?', now - i.day], ['id=?', Activity.last.id]
       end
       min, max = Activity.minimum(:created_at) + 1.day, Activity.maximum(:created_at)
@@ -73,22 +75,23 @@ describe Activity do
     end
   end
 
+
   describe 'for_stakeholder' do
 
     it 'should return activities for tasks associated with person' do
       for role in Stakeholder::ALL_ROLES - ['excluded_owners']
-        Task.create! default_task.merge(Task::ACCESSOR_FROM_ROLE[role]=>person('person'))
+        Task.create! defaults.merge(Task::ACCESSOR_FROM_ROLE[role]=>person('person'))
       end
       Activity.for_stakeholder(person('person')).map(&:task).uniq.size.should == Stakeholder::ALL_ROLES.size - 1
     end
 
     it 'should not return activities for excluded owners' do
-      Task.create! default_task.merge(:excluded_owners=>person('person'))
+      Task.create! defaults.merge(:excluded_owners=>person('person'))
       Activity.for_stakeholder(person('person')).should be_empty
     end
 
     it 'should not return activities for other stakeholders' do
-      Task.create! default_task.merge(:status=>'reserved', :potential_owners=>person('other'))
+      Task.create! defaults.merge(:status=>'reserved', :potential_owners=>person('other'))
       Activity.for_stakeholder(person('person')).should be_empty
     end
 
@@ -100,12 +103,12 @@ describe Activity do
     end
 
     it 'should not return activities for reserved tasks' do
-      Task.create! default_task.merge(:status=>'reserved', :potential_owners=>person('person'))
+      Task.create! defaults.merge(:status=>'reserved', :potential_owners=>person('person'))
       Activity.for_stakeholder(person('person')).should be_empty
     end
 
     it 'should return all activities for a visible task' do
-      Task.create! default_task.merge(:creator=>person('creator'))
+      Task.create! defaults.merge(:creator=>person('creator'))
       Task.last.update_attributes! :owner=>person('owner')
       Activity.for_stakeholder(person('creator')).should == Activity.for_stakeholder(person('owner'))
       Activity.for_stakeholder(person('creator')).map(&:action).should include('created', 'is owner of')
@@ -113,7 +116,7 @@ describe Activity do
     end
 
     it 'should return activities from most recent to last' do
-      Task.create! default_task.merge(:creator=>person('creator'))
+      Task.create! defaults.merge(:creator=>person('creator'))
       Activity.update_all ['created_at=?', Time.zone.now - 5.seconds]
       Task.last.update_attributes! :owner=>person('owner')
       activities = Activity.for_stakeholder(person('creator'))

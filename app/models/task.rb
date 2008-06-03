@@ -82,27 +82,31 @@ class Task < ActiveRecord::Base
   validate do |task|
     # Check state transitions.
     from, to = task.status_change
-    case from # States you cannot transition from.
-    when 'suspended'
-      task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
-    when 'completed'
-      task.errors.add :status, 'Cannot change status of completed task.'
-    when 'cancelled'
-      task.errors.add :status, 'Cannot change status of cancelled task.'
-    end or case to # or, states you cannot transition to.
-    when 'reserved'
-      task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
-    when 'active'
-      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
-      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
-    when 'suspended'
-      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
-    when 'completed'
-      task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
-      task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
-    when 'cancelled'
-      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
+    if case from # States you cannot transition from.
+      when 'suspended'
+        task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
+      when 'completed'
+        task.errors.add :status, 'Cannot change status of completed task.'
+      when 'cancelled'
+        task.errors.add :status, 'Cannot change status of cancelled task.'
+      end
+    else
+      case to # or, states you cannot transition to.
+      when 'reserved'
+        task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
+      when 'active'
+        #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
+        #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
+      when 'suspended'
+        task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
+      when 'completed'
+        task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
+        task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
+      when 'cancelled'
+        task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
+      end
     end
+    task.readonly! if !task.status_changed? && (task.completed? || task.cancelled?)
   end
 
 
@@ -203,9 +207,11 @@ class Task < ActiveRecord::Base
     define_method("#{role}_was") { attribute_was(role) }
   end
 
-  def creator=(identity)
-    set_role 'creator', identity
+  def creator_with_change_check=(creator)
+    changed_attributes['creator'] = creator
+    self.creator_without_change_check = creator if reserved? || new_record?
   end
+  alias_method_chain :creator=, :change_check
 
   ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
                          'observer'=>'observers', 'admin'=>'admins' }
@@ -251,7 +257,7 @@ class Task < ActiveRecord::Base
     Stakeholder::SINGULAR_ROLES.each do |role|
       task.errors.add role, "Can only have one #{role}." if task.stakeholders.select { |sh| sh.role == role }.size > 1
     end
-    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && !task.new_record?
+    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && ![nil, 'reserved'].include?(task.status_was)
     task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
       task.excluded_owner?(task.owner)
     to, from = task.owner_change
