@@ -324,6 +324,8 @@ class Task < ActiveRecord::Base
     self
   end
 
+  LOG_CHANGE_ATTRIBUTES = [:title, :description, :priority, :due_on]
+
   before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
     task.log_activities do |log|
       if task.status_changed?
@@ -335,13 +337,16 @@ class Task < ActiveRecord::Base
           log.add nil, 'released' if from == 'active'
         when 'active'
           log.add nil, 'resumed' if from == 'suspended'
-          log.add task.owner, 'is owner of'
+          log.add task.owner, 'is owner of' if task.changed.include?('owner')
         when 'suspended' then log.add nil, 'suspended'
         when 'completed' then log.add task.owner, 'completed'
         when 'cancelled' then log.add nil, 'cancelled'
         end
-      else
-        log.add nil, 'modified'
+      elsif task.changed.include?('owner')
+        # TODO: get this working!
+        log.add task.owner, 'is owner of'
+      elsif task.changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
+        log.add nil, 'changed'
       end
     end
   end
@@ -423,15 +428,15 @@ class Task < ActiveRecord::Base
   end
 
   def can_suspend?(person)
-    admin?(person) # || person.admin?
+    admin?(person) && active? || ready? # || person.admin?
   end
 
   def can_claim?(person)
     owner.nil? && potential_owner?(person)
   end
 
-  def can_assign_to?(person)
-    !excluded_owner?(person)
+  def can_delegate?(person)
+    (owner?(person) && active?) || (admin?(person) && active? || ready?)
   end
 
   def filter_update_for(person)

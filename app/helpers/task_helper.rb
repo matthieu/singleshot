@@ -40,4 +40,23 @@ module TaskHelper
     content_tag 'iframe', '', :id=>'task_frame', :src=>uri.to_s
   end
 
+  def task_actions(task)
+    actions = []
+    actions << button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :method=>:put, :title=>'Cancel this task') if task.can_cancel?(authenticated)
+    if task.can_suspend?(authenticated)
+      actions << button_to('Suspend', task_url(task, 'task[status]'=>'suspended'), :method=>:put, :title=>'Suspend this task', :disabled=>task.suspended?)
+      actions << button_to('Resume', task_url(task, 'task[status]'=>'active'), :method=>:put, :title=>'Resume this task', :disabled=>!task.suspended?)
+    end
+    if task.can_delegate?(authenticated)
+      others = task.potential_owners - [@task.owner]
+      unless others.empty?
+        actions << form_tag(task_url(task), :method=>:put, :class=>'button-to') + 
+          '<select name="task[owner]"><option disabled>Select owner ...</option>' +
+          options_for_select(others.map { |person| [person.fullname, person.identity] }.sort) +
+          '</select><input type="submit" value="Delegate"></form>'
+      end
+    end
+    actions.join
+  end
+
 end

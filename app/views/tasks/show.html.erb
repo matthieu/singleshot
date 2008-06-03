@@ -4,6 +4,7 @@
 %>
 <% div_for @task do %>
   <div class='header'>
+    <h1><%= link_to 'Singleshot', tasks_url, :title=>'Back to tasks list' %></h1>
     <div class='actions'>
       <%= quick_actions(@task) %>
       <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.header .details', 'Less options')", :class=>'button-to' %>
@@ -11,20 +12,18 @@
     <div class='vitals'>
       <%= task_vitals(@task) %>: <%= content_tag 'span', h(@task.title), :class=>'title', :title=>@task.title %>
     </div>
-    <div class='details' style='display:none'>
-      <%= link_to image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add this task to your calendar' %>
-      <%= link_to image_tag('feed.png') + ' Activity', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe to see changes to this task' %>
+    <div class='details' style='display:non'>
       <dl>
         <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) unless use_description %>
         <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
-        <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on)) if @task.due_on %>
+        <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on).humanize) if @task.due_on %>
         <dt>Recent activity</dt>
-        <dd><%= render :file=>'activities/_activities', :locals=>{ :today=>Date.today, :activities=>@task.activities } %></dd>
-        <%= admins = @task.admins.map { |person| link_to_person(person, :rel=>:admin) }
-            content_tag('dt', 'Admins') + content_tag('dd', admins.to_sentence) unless admins.empty? %>
-            <%= observers = @task.observers.map { |person| link_to_person(person, :rel=>:observer) }
-            content_tag('dt', 'Observers') + content_tag('dd', observers.to_sentence) unless observers.empty? %>
+        <dd>
+          <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe to see changes to this task') %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add this task to your calendar') %></ul>
+          <%= render :file=>'activities/_activities', :locals=>{ :today=>Date.today, :activities=>@task.activities } %>
+        </dd>
       </dl>
+      <div class='actions'><%= task_actions(@task) %></div>
     </div>
   </div>
 

@@ -98,7 +98,7 @@ div#errorExplanation p, div#errorExplanation ul {
 /** Header **/
 
 #header {
-  background-color: #e0e0e0;
+  background-color: #fff;
   padding: 0.5em 3em 3px 3em;
   border-bottom: solid 2px #046380;
 }
@@ -162,22 +162,28 @@ div#errorExplanation p, div#errorExplanation ul {
   -moz-border-radius: 0.3em;
   -webkit-border-top-left-radius: 0.3em;
 }
-
 #header ul.alternate {
-  list-style: none;
-  float: right;
-  position: relative;
   margin-top: -1.3em;
   font-size: 1.2em;
 }
-#header ul.alternate li {
+
+
+/** Feed and calendar links **/
+
+ul.alternate {
+  margin: 0;
+  list-style: none;
+  float: right;
+  position: relative;
+}
+ul.alternate li {
   display: inline;
 }
-#header ul.alternate a {
+ul.alternate a {
   padding-left: 1em;
   text-decoration: none;
 }
-#header ul.alternate img {
+ul.alternate img {
   border: none;
   vertical-align: bottom;
   margin: 0.1em;
@@ -278,6 +284,7 @@ ol.activities li.activity abbr.published {
 div.task {
   margin: 0;
   padding: 0;
+  background-color: #fff;
 }
 div.task div.header {
   position: absolute;
@@ -285,11 +292,19 @@ div.task div.header {
   margin: 0;
   padding: 0;
   border-bottom: solid 2px #046380;
-  background-color: #e0e0e0;
+}
+div.task div.header h1 {
+  display: inline;
+  float: left;
+  font-size: 1.1em;
+  margin: 0.6em 2em 0 2.5em;
+}
+div.task div.header h1 a {
+  color: #000;
 }
 
 div.task div.header div.vitals {
-  margin: 0.6em 0em 0 3em;
+  margin: 0.6em 0 0 0;
   font-size: 1.1em;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -300,7 +315,7 @@ div.task div.header div.vitals span.title {
 }
 div.task div.header div.actions {
   display: inline;
-  background: #e0e0e0;
+  background: #fff;
   float: right;
   margin: 0.5em 2.5em 0.5em 0;
 }
@@ -308,28 +323,32 @@ div.task div.header div.actions .button-to {
   margin-left: 0.6em;
 }
 
-div.task div.header div.details {
+div.task div.details {
   clear: both;
-  padding: 0em 3em 2em 3em;
+  padding: 1em 3em 2em 3em;
   border-top: 1px solid #ccc;
   margin: 0;
+  background-color: #fff;
 }
-div.task div.header div.details a[rel=alternate] {
-  float: right;
-  padding-left: 1em;
-  text-decoration: none;
-}
-div.task div.header div.details a[rel=alternate] img {
-  border: none;
-  vertical-align: bottom;
-  margin: 0.1em;
-}
-div.task div.header div.details dt {
+div.task div.details dt {
   font-weight: bold;
   float: left;
+  position: relative;
+  display: inline;
 }
-div.task div.header div.details dd {
+div.task div.details dd {
   margin: 0 0 1em 10em;
+  min-height: 1.3em;
+}
+div.task div.details ol.activities {
+  margin: 0;
+}
+div.task div.details div.actions {
+  margin: 1em 0 1em 0;
+}
+div.task div.details div.actions select {
+  width: 10em;
+  margin: 0 0.6em 0 0.6em;
 }
 
 div.task div.description {
@@ -351,7 +370,6 @@ div.task div.footer {
   width: 100%;
   margin: 0;
   padding: 0.3em 3em 0.3em 3em;
-  background-color: #e0e0e0;
   border-top: solid 2px #046380;
 }
 div.task div.footer .actions {
