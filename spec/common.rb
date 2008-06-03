@@ -5,13 +5,12 @@ module Specs
     def self.included(base)
       base.after :all do
         Person.delete_all
+        @authenticated = nil
       end
     end
 
     def person(identity)
-      @_people ||= {}
-      @_people[identity.to_s] ||= Person.identify(identity) ||
-        Person.create(:email=>"#{identity}@apache.org", :password=>'secret')
+      Person.identify(identity) || Person.create(:email=>"#{identity}@apache.org", :password=>'secret')
     end
 
     def people(*identities)
@@ -19,7 +18,7 @@ module Specs
     end
 
     def su
-      @_su ||= Person.create(:email=>'super@apache.org', :admin=>true)
+      Person.identify('super') || Person.create(:email=>'super@apache.org', :admin=>true)
     end
 
     def authenticate(person)
@@ -50,9 +49,9 @@ module Specs
       base.send :include, Authentication
     end
 
-    def default_task(with = {})
+    def default_task(attributes = {})
       { :title=>'Test this',
-        :outcome_url=>'http://test.host/outcome' }.merge(with)
+        :outcome_url=>'http://test.host/outcome' }.merge(attributes)
     end
 
     def task_with_status(status, attributes = nil)

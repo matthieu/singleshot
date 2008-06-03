@@ -80,12 +80,17 @@ describe Task do
 
     def task_with_status(status, attributes = nil)
       attributes ||= {}
+      attributes = attributes.reverse_merge(:admins=>person('admin'))
       task = case status
       when 'active'
-        Task.create!(default_task.merge(attributes).merge(:status=>status, :owner=>person('owner')))
-      when 'completed'
-        active = Task.create!(default_task.merge(attributes).merge(:status=>'active', :owner=>person('owner')))
-        active.update_attributes :status=>'completed'
+        Task.create!(default_task.merge(attributes).merge(:status=>'active', :owner=>person('owner')))
+      when 'completed' # Start as active, modified by owner.
+        active = task_with_status('active', attributes)
+        active.modify_by(person('owner')).update_attributes! :status=>'completed'
+        active
+      when 'cancelled', 'suspended' # Start as active, modified by admin.
+        active = task_with_status('active', attributes)
+        active.modify_by(person('admin')).update_attributes! :status=>status
         active
       else
         Task.create!(default_task.merge(attributes).merge(:status=>status))
@@ -93,7 +98,7 @@ describe Task do
 
       def task.transition_to(status, attributes = nil)
         attributes ||= {}
-        update_attributes attributes.merge(:status=>status)
+        modify_by(attributes.delete(:modified_by) || Person.identify('admin')).update_attributes attributes.merge(:status=>status)
         self
       end
       def task.can_transition?(status, attributes = nil)
@@ -146,8 +151,8 @@ describe Task do
       lambda { task.update_attributes :owner=>nil }.should change(task, :status).to('ready')
     end
 
-    it 'should accept suspended as initial value' do
-      Task.create!(default_task.merge(:status=>'suspended')).status.should == 'suspended'
+    it 'should not accept suspended as initial value' do
+      Task.create(default_task.merge(:status=>'suspended')).should have(1).error_on(:status)
     end
 
     it 'should transition from ready to suspended' do
@@ -170,7 +175,7 @@ describe Task do
 
     it 'should only transition to completed from active' do
       for status in Task::STATUSES - ['completed']
-        task_with_status(status).can_transition?('completed').should == (status =='active')
+        task_with_status(status).can_transition?('completed', :modified_by=>person('owner')).should == (status =='active')
       end
     end
 
@@ -185,7 +190,7 @@ describe Task do
     end
 
     it 'should transition to cancelled from any other status but completed' do
-      for status in Task::STATUSES - ['cancelled']
+      for status in Task::STATUSES - ['reserved', 'cancelled']
         task_with_status(status).can_transition?('cancelled').should == (status !='completed')
       end
     end

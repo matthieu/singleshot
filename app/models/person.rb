@@ -117,4 +117,7 @@ class Person < ActiveRecord::Base
     read_attribute(:identity)
   end
 
+  has_many :activities, :dependent=>:delete_all
+  has_many :stakeholders, :dependent=>:delete_all
+
 end

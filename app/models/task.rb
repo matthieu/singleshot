@@ -57,28 +57,12 @@ class Task < ActiveRecord::Base
   # * suspended -- Task is suspended.
   # * completed -- Task has completed.
   # * cancelled -- Task was cancelled.
-  
-  # A task can start as reserved and remain there until populated with enough
-  # information to transition to ready.  From ready, a stakeholder can claim
-  # the task, transitioning it to active.  The task transitions back to ready
-  # if stakeholder releases that claim.
-  #
-  # Task can transition from ready/active to suspended and back.  Task can
-  # transition to completed only from active, and transition to cancelled from
-  # any other state but completed.  Completed and cancelled are terminal
-  # states.
   STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
 
-
-  # Cannot change in mass update.
   validates_inclusion_of :status, :in=>STATUSES
 
   # Check method for each status (active?, completed?, etc).
-  STATUSES.each do |status|
-    define_method "#{status}?" do
-      self.status == status
-    end
-  end
+  STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
 
   before_validation do |task|
     # Default status is ready.
@@ -86,37 +70,40 @@ class Task < ActiveRecord::Base
     case task.status
     when 'ready'
       # When task first created, if we only have one potential owner, pick them as owner.
-      task.owner = task.potential_owners.first unless task.owner || task.potential_owners.size > 1
+      task.owner = task.potential_owners.first if task.owner.nil? && task.potential_owners.size == 1
       # Assigned task => active.
       task.status = 'active' if task.owner
     when 'active'
       # Unassigned task => ready.
       task.status = 'ready' unless task.owner
-    when 'completed', 'cancelled'
-      # Cannot modify completed/cancelled tasks.
-      task.readonly! unless task.status_changed?
     end
   end
 
   validate do |task|
     # Check state transitions.
     from, to = task.status_change
-    if from == 'completed' 
+    case from # States you cannot transition from.
+    when 'suspended'
+      task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
+    when 'completed'
       task.errors.add :status, 'Cannot change status of completed task.'
-    elsif from == 'cancelled'
+    when 'cancelled'
       task.errors.add :status, 'Cannot change status of cancelled task.'
-    elsif to == 'reserved'
+    end or case to # or, states you cannot transition to.
+    when 'reserved'
       task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
-    elsif to == 'completed'
-      task.errors.add :status, 'Only owner can complete task.' unless task.owner
+    when 'active'
+      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
+      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
+    when 'suspended'
+      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
+    when 'completed'
       task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
+      task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
+    when 'cancelled'
+      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
     end
   end
-
-
-  # -- Common task attributes --
-
-  validates_presence_of :title
 
 
   # -- View and perform ---
@@ -169,6 +156,11 @@ class Task < ActiveRecord::Base
   validates_url :details_url, :allow_nil=>true
 
 
+  # -- Common task attributes --
+
+  validates_presence_of :title
+
+
   # --- Task data ---
 
   serialize :data
@@ -206,15 +198,17 @@ class Task < ActiveRecord::Base
       new_value = set_role(role, identity)
       changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
     end
+    define_method("#{role}_changed?") { attribute_changed?(role) }
+    define_method("#{role}_change") { attribute_change(role) }
+    define_method("#{role}_was") { attribute_was(role) }
   end
 
   def creator=(identity)
-    return creator unless new_record?
     set_role 'creator', identity
   end
 
-  ACCESSOR_FROM_ROLE = { 'potential'=>'potential_owners', 'excluded'=>'excluded_owners', 'observer'=>'observers', 'admin'=>'admins' }
-  ACCESSOR_FROM_ROLE.default = lambda { |role| role }
+  ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
+                         'observer'=>'observers', 'admin'=>'admins' }
 
   # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
   # * {plural}            -- Returns people associated with this role.
@@ -252,20 +246,24 @@ class Task < ActiveRecord::Base
     return new_set
   end
 
-  # Can only have one member of a singular role.
-  validate do |record|
+  validate do |task|
+    # Can only have one member of a singular role.
     Stakeholder::SINGULAR_ROLES.each do |role|
-      record.errors.add role, "Can only have one #{role}." if record.stakeholders.select { |sh| sh.role == role }.size > 1
+      task.errors.add role, "Can only have one #{role}." if task.stakeholders.select { |sh| sh.role == role }.size > 1
     end
-  end
-
-  validate do |record|
-    creator = record.stakeholders.detect { |sh| sh.role == 'creator' }
-    record.errors.add :creator, 'Cannot change creator.' if record.changed.include?(:creator) && !record.new_record?
-    record.errors.add :owner, "#{record.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-      record.excluded_owner?(record.owner)
-    conflicting = record.potential_owners & record.excluded_owners
-    record.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
+    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && !task.new_record?
+    task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
+      task.excluded_owner?(task.owner)
+    to, from = task.owner_change
+    if task.potential_owners.empty?
+      # With no potential owners, task must have a set owner.
+      #task.errors.add :owner, "This task intended for one owner." unless task.owner || task.reserved?
+    else
+      # We have a limited set of potential owners, owner must be one of them.
+      #task.errors.add :owner, "#{task.owner.fullname} is not allowd as owner of this task" unless task.owner && task.potential_owners?(task.owner)
+    end
+    conflicting = task.potential_owners & task.excluded_owners
+    task.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
       conflicting.empty?
   end
 
@@ -306,6 +304,8 @@ class Task < ActiveRecord::Base
         [ person == task.owner ? 1 : 0, task.can_claim?(person) ? 1 : 0,
           (task.due_on && task.due_on <= today) ? today - task.due_on : -1,
           -task.priority, today - task.created_at.to_date ] }
+        # involved.role <> 'owner'
+        # tasks.priority, tasks.created_at
       self.sort { |a,b| rank[b] <=> rank[a] }
     end
 
@@ -313,52 +313,42 @@ class Task < ActiveRecord::Base
 
 
   # --- Activities ---
- 
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC'
 
-  # Associate person with all modifications done on this task.
-  # This results in activities linked to the person and task when
-  # the task is saved.
-  def modified_by(person)
-    @modified_by = person
-    self
-  end
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :dependent=>:delete_all
 
   LOG_CHANGE_ATTRIBUTES = [:title, :description, :priority, :due_on]
 
   before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
-    task.log_activities do |log|
-      if task.status_changed?
-        from, to = task.status_change
-        log.add task.creator, 'created' if from.nil? || from == 'reserved'
-        case to
-        when 'ready'
-          log.add nil, 'resumed' if from == 'suspended'
-          log.add nil, 'released' if from == 'active'
-        when 'active'
-          log.add nil, 'resumed' if from == 'suspended'
-          log.add task.owner, 'is owner of' if task.changed.include?('owner')
-        when 'suspended' then log.add nil, 'suspended'
-        when 'completed' then log.add task.owner, 'completed'
-        when 'cancelled' then log.add nil, 'cancelled'
-        end
-      elsif task.changed.include?('owner')
-        # TODO: get this working!
-        log.add task.owner, 'is owner of'
-      elsif task.changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
-        log.add nil, 'changed'
-      end
-    end
-  end
-
-  def log_activities
     log = Hash.new
     def log.add(person, action)
       self[person] = Array(self[person]).push(action)
     end
-    yield log
+    task.log_activities log
     log.each do |person, actions|
-      activities.build :person=>person || @modified_by, :action=>actions.to_sentence
+      task.activities.build :person=>person || task.modified_by, :action=>actions.to_sentence
+    end
+  end
+
+  def log_activities(log)
+    if status_changed?
+      from, to = status_change
+      log.add creator, 'created' if from.nil? || from == 'reserved'
+      case to
+      when 'ready'
+        log.add nil, 'resumed' if from == 'suspended'
+        log.add nil, 'released' if from == 'active'
+      when 'active'
+        log.add nil, 'resumed' if from == 'suspended'
+        log.add owner, 'is owner of' if changed.include?('owner')
+      when 'suspended' then log.add nil, 'suspended'
+      when 'completed' then log.add owner, 'completed'
+      when 'cancelled' then log.add nil, 'cancelled'
+      end
+    elsif changed.include?('owner')
+      # TODO: get this working!
+      log.add owner, 'is owner of'
+    elsif changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
+      log.add nil, 'changed'
     end
   end
   
@@ -411,28 +401,36 @@ class Task < ActiveRecord::Base
 
   # --- Access control ---
 
-  enumerable :cancellation, [:admin, :owner], :default=>:admin
+  # Person who is modifying this task: required to activity logging and access control.
+  attr_reader :modified_by
 
-  # Returns true if this person can cancel this task.
-  def can_cancel?(person)
-    return false if completed? || cancelled?
-    #return true if person.admin? || admin?(person)
-    #return owner?(person) if cancellation == :owner
-    return true if admin?(person)
-    false
+  # Changes the modified_by person and return self.
+  def modify_by(person)
+    @modified_by = person
+    self
   end
 
-  # Returns true if this person can complete this task.
+  after_save do |task|
+    task.modify_by nil
+  end
+
+
+  enumerable :cancellation, [:admin, :owner], :default=>:admin
+
+  def can_cancel?(person)
+    admin?(person) && !completed && !cancelled?
+  end
+
   def can_complete?(person)
     active? && owner?(person)
   end
 
   def can_suspend?(person)
-    admin?(person) && active? || ready? # || person.admin?
+    admin?(person) && (active? || ready? || suspended?)
   end
 
   def can_claim?(person)
-    owner.nil? && potential_owner?(person)
+    owner.nil? && (potential_owners.empty? || potential_owner?(person))
   end
 
   def can_delegate?(person)
