@@ -35,7 +35,7 @@ namespace 'db' do
       Task.delay 
       you = Person.find_by_identity(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
-                   :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :completing=>true }, :potential_owners=>[you, other] }
+                   :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :integrated_ui=>true }, :potential_owners=>[you, other] }
       returning Task.new(defaults.merge(attributes || {})) do |task|
         task.modify_by(you).save!
         def task.delay(duration = 2.hours)

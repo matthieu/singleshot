@@ -8,7 +8,7 @@ class CreateTasks < ActiveRecord::Migration
       t.string    'status',       :null=>false
       t.string    'perform_url'
       t.string    'details_url'
-      t.boolean   'form_completing'
+      t.boolean   'integrated_ui'
       t.string    'outcome_url',  :null=>true
       t.string    'outcome_type', :null=>true
       t.string    'access_key',   :null=>true, :limit=>32

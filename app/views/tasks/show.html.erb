@@ -1,6 +1,10 @@
 <%
   performing = @task.can_complete?(authenticated)
-  use_description = @task.rendering.use_description?(performing)
+  iframe_url = @task.rendering.render_url(performing) {
+    uri = URI(task_perform_url(@task))
+    uri.user, uri.password = '_token', @task.token_for(authenticated)
+    { 'task_url'=>uri.to_s }
+  }
 %>
 <% div_for @task do %>
   <div class='header'>
@@ -16,7 +20,7 @@
     </div>
     <div class='details' style='display:none'>
       <dl>
-        <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) unless use_description %>
+        <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) if iframe_url %>
         <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
         <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on).humanize) if @task.due_on %>
         <dt>Recent activity</dt>
@@ -29,10 +33,10 @@
     </div>
   </div>
 
-  <% if use_description %>
-    <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
-  <% else %>
-    <%= task_frame @task, performing %>
+  <% if iframe_url %>
+    <iframe id='task_frame' src='<%= iframe_url %>'></iframe>
     <%= javascript_tag "Singleshot.setFrameSize('task_frame')" %>
+  <% else %>
+    <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
   <% end %>
 <% end %>

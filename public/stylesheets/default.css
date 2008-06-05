@@ -54,7 +54,7 @@ form.button-to, form.button-to div {
 }
 form.button-to input, a.button-to, button {
   font-size: 1em;
-  font-weight: bold;
+  font-weight: normal;
   border: none;
   padding: 0.3em 0.6em 0.3em 0.6em;
   margin: 0;
@@ -109,10 +109,11 @@ div#errorExplanation p, div#errorExplanation ul {
   border-bottom: solid 2px #055da4;
 }
 #header h1 {
-  font-size: 2.2em;
+  font-size: 2.0em;
   font-weight: bold;
-  margin: 0 auto 0.7em auto;
+  margin: 0 auto 0.6em auto;
   float: left;
+  letter-spacing: -1pt;
 }
 #header h1 a {
   color: #404040;
@@ -125,8 +126,6 @@ div#errorExplanation p, div#errorExplanation ul {
 }
 #header ul.links li {
   display: inline;
-  margin: 0;
-  padding: 0.5em;
 }
 #header ul.links li a {
   text-decoration: none;
@@ -146,20 +145,19 @@ div#errorExplanation p, div#errorExplanation ul {
 }
 #header ul.tabs li a {
   color: #eee;
-  font-size: 1.2em;
-  font-weight: bold;
+  font-size: 1.1em;
   text-decoration: none;
   background-color: #0081d1; 
   padding: 0.3em 0.9em 0.3em 0.9em;
   -moz-border-radius: 4px 4px 0 0;
-  -webkit-border-top-left-radius: 6px;
-  -webkit-border-top-right-radius: 6px;
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-top-right-radius: 4px;
 }
 #header ul.tabs li a:hover, #header ul.tabs li a.current {
   background-color: #055da4;
 }
 #header ul.alternate {
-  margin-top: -1.3em;
+  margin-top: -1.5em;
 }
 
 
@@ -294,10 +292,11 @@ div.task div.header {
   border-bottom: solid 2px #055da4;
 }
 div.task div.header h1 {
-  display: inline;
+  font-size: 2.0em;
+  font-weight: bold;
+  margin: 0.2em 1em 0 1.5em;
   float: left;
-  font-size: 1.5em;
-  margin: 0.6em 2em 0 2.0em;
+  letter-spacing: -1pt;
 }
 div.task div.header h1 a {
   color: #404040;
@@ -307,9 +306,10 @@ div.task div.header div.vitals {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  margin: 0.6em auto 0.6em auto;
 }
 div.task div.header div.vitals p {
-  margin: 0.3em 0 0.3em 0;
+  margin: 0 auto 0.3em auto;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -404,6 +404,3 @@ form.login dl {
 form.login input {
   width: 100%;
 }
-
-
-

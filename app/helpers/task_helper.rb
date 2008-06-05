@@ -26,20 +26,6 @@ module TaskHelper
     end
   end
 
-  def task_frame(task, performing)
-    state_uri = URI(task_perform_url(task))
-    state_uri.user, state_uri.password = '_token', task.token_for(authenticated)
-    params = { 'task_url'=>state_uri.to_s }
-    if performing
-      uri = URI(task.rendering.perform_url)
-      params.update 'complete_url'=>complete_redirect_tasks_url if task.rendering.completing
-    else
-      uri = URI(task.rendering.details_url)
-    end
-    uri.query = CGI.parse(uri.query || '').update(params).to_query
-    content_tag 'iframe', '', :id=>'task_frame', :src=>uri.to_s
-  end
-
   def task_actions(task)
     actions = []
     actions << button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :method=>:put, :title=>'Cancel this task') if task.can_cancel?(authenticated)

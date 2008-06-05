@@ -273,19 +273,25 @@ describe Task do
   describe 'over_due?' do
 
     it 'should be false if task has no due date' do
-      Task.new.over_due?.should be_false
+      Task.create(defaults).over_due?.should be_false
     end
 
     it 'should be false if task due date in the future' do
-      Task.new(:due_on=>Date.tomorrow).over_due?.should be_false
+      Task.create(defaults(:due_on=>Date.tomorrow)).over_due?.should be_false
     end
 
     it 'should be false if task due today' do
-      Task.new(:due_on=>Date.today).over_due?.should be_false
+      Task.create(defaults(:due_on=>Date.today)).over_due?.should be_false
     end
 
     it 'should be true if task due date in the past' do
-      Task.new(:due_on=>Date.yesterday).over_due?.should be_true
+      Task.create(defaults(:due_on=>Date.yesterday)).over_due?.should be_true
+    end
+
+    it 'should be true only if task is ready or active' do
+      for status in Task::STATUSES
+        task_with_status(status, :due_on=>Date.yesterday).over_due?.should == (status == 'ready' || status == 'active')
+      end
     end
 
   end
@@ -330,6 +336,117 @@ describe Task do
 
 end
 
+
+describe Task::Rendering do
+  it 'should store perform_url attribute' do
+    Task.create! defaults(:perform_url=>'http://foobar/')
+    Task.last.rendering.perform_url.should == 'http://foobar/'
+  end
+
+  it 'should store details_url attribute' do
+    Task.create! defaults(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/')
+    Task.last.rendering.details_url.should == 'http://barfoo/'
+  end
+
+  it 'should not have details_url without perform_url' do
+    Task.create! defaults(:details_url=>'http://barfoo/')
+    Task.last.rendering.details_url.should be_nil
+  end
+
+  it 'should store integrated_ui attribute' do
+    Task.create! defaults(:perform_url=>'http://foobar/', :integrated_ui=>true)
+    Task.last.rendering.integrated_ui.should be_true
+  end
+
+  it 'should not have integrated_ui without perform_url' do
+    Task.create! defaults(:integrated_ui=>true)
+    Task.last.rendering.integrated_ui.should be_false
+  end
+
+  it 'should default integrated_ui attribute to false' do
+    Task.create! defaults(:perform_url=>'http://foobar/')
+    Task.last.rendering.integrated_ui.should be_false
+  end
+
+  it 'should use completion button if no perform_url' do
+    Task.create! defaults
+    Task.last.rendering.use_completion_button?.should be_true
+  end
+
+  it 'should use completion button if perform_url but no integrated_ui' do
+    Task.create! defaults(:perform_url=>'http://foobar/')
+    Task.last.rendering.use_completion_button?.should be_true
+  end
+
+  it 'should not use completion button if perform_url and integrated_ui' do
+    Task.create! defaults(:perform_url=>'http://foobar/', :integrated_ui=>true)
+    Task.last.rendering.use_completion_button?.should be_false
+  end
+
+  it 'should have nil render_url without perform_url' do
+    Task.new.rendering.render_url(true).should be_nil
+  end
+
+  it 'should render using perform_url when performing task' do
+    Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/').rendering.render_url(true).should == 'http://foobar/'
+  end
+
+  it 'should render using perform_url with query parameter when performing integrated task' do
+    task = Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/', :integrated_ui=>true)
+    task.rendering.render_url(true, 'url'=>'http://test.host').should == "http://foobar/?url=#{CGI.escape('http://test.host')}"
+    task.rendering.render_url(true) { { 'url'=>'http://test.host' } }.should == "http://foobar/?url=#{CGI.escape('http://test.host')}"
+  end
+
+  it 'should have nil render_url without details_url' do
+    Task.new(:perform_url=>'http://foobar/').rendering.render_url(false).should be_nil
+  end
+
+  it 'should render using details_url when performing task' do
+    Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/').rendering.render_url(false).should == 'http://barfoo/'
+  end
+
+  it 'should render using details_url with query parameters when viewing integrated task' do
+    task = Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/', :integrated_ui=>true)
+    task.rendering.render_url(false, 'url'=>'http://test.host' ).should == "http://barfoo/?url=#{CGI.escape('http://test.host')}"
+    task.rendering.render_url(false) { { 'url'=>'http://test.host' } }.should == "http://barfoo/?url=#{CGI.escape('http://test.host')}"
+  end
+
+  it 'should be assignable from hash' do
+    hash = { :perform_url=>'http://foobar/', :details_url=>'http://barfoo/', :integrated_ui=>true }
+    task = Task.new
+    task.attributes = { :rendering=>hash }
+    hash.each do |key, value|
+      task.rendering.send(key).should == value
+    end
+  end
+
+  it 'should validate URLs' do
+    Task.new(:perform_url=>'http://+++').should have(1).error_on(:perform_url)
+    Task.new(:details_url=>'http://+++').should have(1).error_on(:details_url)
+  end
+
+  it 'should allow HTTP URLS' do
+    Task.new(:perform_url=>'http://test.host/foo').should have(:no).errors
+    Task.new(:details_url=>'http://test.host?foo=bar').should have(:no).errors
+  end
+
+  it 'should allow HTTPS URLS' do
+    Task.new(:perform_url=>'https://test.host/foo').should have(:no).errors
+    Task.new(:details_url=>'https://test.host?foo=bar').should have(:no).errors
+  end
+
+  it 'should not allow other URL schemes' do
+    Task.new(:perform_url=>'ftp://test.host/foo').should have(1).error_on(:perform_url)
+    Task.new(:details_url=>'file:///var/log').should have(1).error_on(:details_url)
+  end
+
+  it 'should store normalized URLs' do
+    Task.create defaults(:perform_url=>'HTTP://Test.Host/Foo', :details_url=>'HTTPS://Foo:Bar@test.host?Foo=Bar')
+    Task.last.perform_url.should eql('http://test.host/Foo')
+    Task.last.details_url.should eql('https://Foo:Bar@test.host/?Foo=Bar')
+  end
+
+end
 
 =begin
 

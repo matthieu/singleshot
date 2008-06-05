@@ -3,22 +3,22 @@
 #
 # Table name: tasks
 #
-#  id              :integer         not null, primary key
-#  title           :string(255)     not null
-#  description     :string(255)     not null
-#  priority        :integer(1)      not null
-#  due_on          :date
-#  status          :string(255)     not null
-#  perform_url     :string(255)
-#  details_url     :string(255)
-#  form_completing :boolean
-#  outcome_url     :string(255)
-#  outcome_type    :string(255)
-#  access_key      :string(32)
-#  data            :text            not null
-#  version         :integer         default(0), not null
-#  created_at      :datetime
-#  updated_at      :datetime
+#  id            :integer         not null, primary key
+#  title         :string(255)     not null
+#  description   :string(255)     not null
+#  priority      :integer(1)      not null
+#  due_on        :date
+#  status        :string(255)     not null
+#  perform_url   :string(255)
+#  details_url   :string(255)
+#  integrated_ui :boolean
+#  outcome_url   :string(255)
+#  outcome_type  :string(255)
+#  access_key    :string(32)
+#  data          :text            not null
+#  version       :integer         default(0), not null
+#  created_at    :datetime
+#  updated_at    :datetime
 #
 
 require 'openssl'
@@ -82,29 +82,27 @@ class Task < ActiveRecord::Base
   validate do |task|
     # Check state transitions.
     from, to = task.status_change
-    if case from # States you cannot transition from.
-      when 'suspended'
-        task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
-      when 'completed'
-        task.errors.add :status, 'Cannot change status of completed task.'
-      when 'cancelled'
-        task.errors.add :status, 'Cannot change status of cancelled task.'
-      end
-    else
-      case to # or, states you cannot transition to.
-      when 'reserved'
-        task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
-      when 'active'
-        #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
-        #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
-      when 'suspended'
-        task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
-      when 'completed'
-        task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
-        task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
-      when 'cancelled'
-        task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
-      end
+    case from # States you cannot transition from.
+    when 'suspended'
+      task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
+    when 'completed'
+      task.errors.add :status, 'Cannot change status of completed task.'
+    when 'cancelled'
+      task.errors.add :status, 'Cannot change status of cancelled task.'
+    end
+    case to # or, states you cannot transition to.
+    when 'reserved'
+      task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
+    when 'active'
+      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
+      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
+    when 'suspended'
+      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
+    when 'completed'
+      task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
+      task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
+    when 'cancelled'
+      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
     end
     task.readonly! if !task.status_changed? && (task.completed? || task.cancelled?)
   end
@@ -113,47 +111,63 @@ class Task < ActiveRecord::Base
   # -- View and perform ---
 
   # Some tasks are performed offline, for example, calling a customer.  Other
-  # tasks are performed online, in which case we would like to include the UI
-  # for performing the task as part of the task page.
+  # tasks performed onlined, in which case we would like to render that UI
+  # component as part of the task view.
   #
-  # There are two views for each task.  One view presented to the task owner
-  # for performing the task, the other view, presented to everyone else only
-  # provides details about the task.
+  # There are two possible views for each task.  One view, presented to the
+  # task owner for performing the task, the other view presented to everyone
+  # else and only provides details about the task.
   #
-  # Some forms are integrated with the task manager, these know how to update
-  # the task status and mark the task as completed.  For all other forms, we
-  # need to include a button to mark the task as completed.
+  # Some UIs are integrated with the task manager: they obtain the task state
+  # and update it upon completion.  Other UIs require that the user mark the
+  # task upon completion.
   #
-  # We handle these cases through several combinations of rendering
-  # information.  Some tasks are rendered using only the task description (e.g.
-  # offline tasks).  Other tasks provide a URL for performing the task, using
-  # the description for everyone else.  Last, some tasks provide both a URL for
-  # performing the task and a URL for viewing task details.
+  # Tasks that do not have a UI representation (e.g. offline tasks) should use
+  # the task description as the most adequate representation.  Calling
+  # #render_url on these tasks returns nil.  Tasks that do have a UI
+  # representation should use the URL returned by #render_url, e.g. to pull
+  # that UI into an IFrame.
+  #
+  # UIs that integrate with the taske manager (#integrated_ui) will need
+  # additional query parameters in the URL, those are passed to render_for
+  # using an argument/block.  UIs that are not integrated should provide the
+  # user with other means for marking the task as completed
+  # (#use_completion_button?).
   class Rendering
 
-    MAPPING = [%w{perform_url perform_url}, %w{details_url details_url}, %w{form_completing completing}]
-    attr_reader :perform_url, :details_url, :completing
+    MAPPING = %w{perform_url details_url integrated_ui}.map { |name| [name, name] }
+    attr_reader :perform_url, :details_url, :integrated_ui
 
-    def initialize(perform_url, details_url, completing)
+    def initialize(perform_url, details_url, integrated_ui)
       @perform_url = perform_url
       @details_url = details_url if perform_url
-      @completing = perform_url && completing || false
+      @integrated_ui = (perform_url && integrated_ui) || false
     end
 
-    # True if rendering the task using only the task description.
-    def use_description?(performing)
-      performing ? perform_url.nil? : details_url.nil?
-    end
-
-    # True if we need to include button to mark task as completed.
+    # True if rendering a button for user to mark task as completed.
     def use_completion_button?
-      !perform_url || !completing
+      !perform_url || !integrated_ui
+    end
+
+    # Returns most suitable URL for rendering the task.
+    #
+    # Returns nil if there is no suitable URL for rendering the task,
+    # otherwise, returns perform_url or details_url.  If the integrated_ui
+    # option is available, passes query parameters to the rendered URL.  Query
+    # parameters are passed as last argument or returned from the block.
+    def render_url(perform, params = {})
+      url = perform ? perform_url : details_url
+      return url unless integrated_ui
+      params = yield if block_given?
+      uri = URI(url)
+      uri.query = CGI.parse(uri.query || '').update(params).to_query
+      uri.to_s
     end
 
   end
 
   composed_of :rendering, :class_name=>Rendering.to_s, :mapping=>Rendering::MAPPING do |hash|
-    Rendering.new(hash[:perform_url], hash[:details_url], hash[:completing])
+    Rendering.new(hash[:perform_url], hash[:details_url], hash[:integrated_ui])
   end
 
   validates_url :perform_url, :allow_nil=>true
@@ -288,7 +302,7 @@ class Task < ActiveRecord::Base
   end
 
   def over_due?
-    (ready? || active?) && due_on && due_on < Date.today
+    due_on ? (ready? || active?) && due_on < Date.today : false
   end
 
   # Scopes can use this to add ranking methods on returned records.
