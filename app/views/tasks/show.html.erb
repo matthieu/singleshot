@@ -8,7 +8,7 @@
     <div class='actions'>
       <%= quick_actions(@task) %>
       <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.header .details', 'Less options')", :class=>'button-to' %>
-      <%= button_to 'Completed', task_url(@task, :status=>'completed'), :title=>'Click when task completed' if performing && @task.rendering.use_completion_button?  %>
+      <%= button_to 'Completed', task_url(@task, 'task[status]'=>'completed'), :method=>:put, :title=>'Click when task completed' if performing && @task.rendering.use_completion_button?  %>
     </div>
     <div class='vitals'>
       <p class='title'><%= h(@task.title) %></p>

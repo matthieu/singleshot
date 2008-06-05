@@ -17,8 +17,11 @@ abbr {
 }
 
 a, a:visited {
-  color: #0059be;
   text-decoration: none;
+  color: #0081d1; 
+}
+a:hover {
+  color: #055da4;
 }
 
 
@@ -185,28 +188,29 @@ ul.alternate img {
 /** Tasks list **/
 
 table.tasks {
+  table-layout: fixed;
   width: 100%;
   border-spacing: 0;
   border-padding: 0;
   border: none;
   margin: 0;
-  padding:2em 2.5em 2em 2.5em;
+  padding: 2em 3em 2em 3em;
   font-size: 1.1em;
-  table-layout: fixed;
 }
 table.tasks thead th {
   text-align: left;
   font-weight: bold;
-  padding: 0.5em;
+  padding: 0 0 0.6em 0;
+  padding: 0 0.6em 0.6em 0;
   margin: 0;
   border-bottom: 1px solid #ccc;
 }
 table.tasks tbody td {
   text-align: left;
   vertical-align: top;
-  padding: 0.5em;
+  padding: 0.6em 0.6em 0.6em 0;
   margin: 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
   text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
@@ -234,10 +238,13 @@ ol.dates {
   padding: 0;
 }
 ol.dates li.date {
-  padding-bottom: 1em;
+  padding: 0 0 1.2em 0;
+  margin: 0;
 }
 ol.dates li.date h2 {
-  font-size: 1.2em;
+  font-size: 1.0em;
+  padding: 0 0 0.3em 0;
+  margin: 0 0 0.6em 0;
   border-bottom: 1px solid #ccc;
 }
 ol.dates li.date ol.tasks {
@@ -246,12 +253,12 @@ ol.dates li.date ol.tasks {
   padding: 0;
 }
 ol.dates li.date ol.tasks li.task {
-  margin: 0 0 1.0em 0;
+  margin: 0 0 0.6em 0;
 }
 ol.dates li.date abbr.updated {
   color: #666;
-  font-size: 0.8em;
-  margin-right: 0.6em;
+  font-size: 0.7em;
+  margin-right: 1.2em;
 }
 
 
@@ -262,12 +269,12 @@ ol.activities {
   padding: 0;
 }
 ol.activities li.activity {
-  margin: 0 0 1.0em 0;
+  margin: 0 0 0.6em 0;
 }
 ol.activities li.activity abbr.published {
   color: #666;
-  font-size: 0.8em;
-  margin-right: 0.6em;
+  font-size: 0.7em;
+  margin-right: 1.2em;
 }
 
 

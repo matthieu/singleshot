@@ -288,7 +288,7 @@ class Task < ActiveRecord::Base
   end
 
   def over_due?
-    due_on ? due_on < Date.today : false
+    (ready? || active?) && due_on && due_on < Date.today
   end
 
   # Scopes can use this to add ranking methods on returned records.
