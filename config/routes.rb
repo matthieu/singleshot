@@ -2,10 +2,19 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resource 'session'
   map.resources 'tasks', :collection=>{ 'completed'=>:get, 'following'=>:get, 'complete_redirect'=>:get } do |tasks|
-    tasks.resource :perform
+    tasks.with_options :controller=>'task_for' do |opts|
+      opts.connect 'for/:person_id', :action=>'update', :conditions=>{ :method=>:put }
+      opts.for_person 'for/:person_id', :action=>'show'
+    end
+    tasks.with_options :controller=>'activity', :action=>'for_task' do |opts|
+      opts.activity 'activity'
+      opts.activity 'activity.:format', :name_prefix=>'formatted_task_'
+    end
   end
-  map.resources 'activities'
-  map.day_activity 'activity/:year/:month/:day', :controller=>'activities', :action=>'show', :year =>/\d{4}/, :month=>/\d{1,2}/, :day=>/\d{1,2}/
+  map.with_options :controller=>'activity', :action=>'index' do |opts|
+    opts.activity '/activity'
+    opts.formatted_activity '/activity.:format'
+  end
   map.root :controller=>'application'
   map.resource 'sandwich'
 

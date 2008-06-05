@@ -45,4 +45,10 @@ module TaskHelper
     actions.join
   end
 
+  def task_for_person_url(task, person)
+    uri = URI(super(task, person))
+    uri.user, uri.password = '_token', task.token_for(person)
+    uri.to_s
+  end
+
 end
