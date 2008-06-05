@@ -97,7 +97,7 @@ class Task < ActiveRecord::Base
       #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
       #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
     when 'suspended'
-      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.admin?(task.modified_by)
+      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.modified_by && task.admin?(task.modified_by)
     when 'completed'
       task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
       task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
@@ -157,7 +157,7 @@ class Task < ActiveRecord::Base
     # parameters are passed as last argument or returned from the block.
     def render_url(perform, params = {})
       url = perform ? perform_url : details_url
-      return url unless integrated_ui
+      return url unless integrated_ui && url
       params = yield if block_given?
       uri = URI(url)
       uri.query = CGI.parse(uri.query || '').update(params).to_query
@@ -213,7 +213,7 @@ class Task < ActiveRecord::Base
     define_method("#{role}?") { |identity| in_role?(role, identity) }
     define_method "#{role}=" do |identity|
       old_value = in_role(role)
-      new_value = set_role(role, identity)
+      new_value = set_role(role, identity.blank? ? nil : identity)
       changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
     end
     define_method("#{role}_changed?") { attribute_changed?(role) }
@@ -273,7 +273,7 @@ class Task < ActiveRecord::Base
     end
     task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && ![nil, 'reserved'].include?(task.status_was)
     task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-      task.excluded_owner?(task.owner)
+      task.owner && task.excluded_owner?(task.owner)
     to, from = task.owner_change
     if task.potential_owners.empty?
       # With no potential owners, task must have a set owner.

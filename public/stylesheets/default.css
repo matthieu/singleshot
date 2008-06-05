@@ -355,7 +355,7 @@ div.task div.details div.actions select {
 }
 
 div.task div.description {
-  padding: 3em;
+  padding: 5em 3em 3em 3em;
 }
 
 div.task iframe {

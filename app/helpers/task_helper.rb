@@ -2,7 +2,7 @@ module TaskHelper
 
   def quick_actions(task)
     [ task.admin?(authenticated) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
-      task.can_claim?(authenticated) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated.identity),
+      task.can_claim?(authenticated) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated),
                                                                           :method=>:put, :title=>'Claim task')
     ].select { |action| action }.join(' ')
   end
@@ -38,7 +38,7 @@ module TaskHelper
       unless others.empty?
         actions << form_tag(task_url(task), :method=>:put, :class=>'button-to') + 
           '<select name="task[owner]"><option disabled>Select owner ...</option>' +
-          options_for_select(others.map { |person| [person.fullname, person.identity] }.sort) +
+          options_for_select(others.map { |person| [person.fullname, person.to_param] }.sort) +
           '<option value="">Anyone</option></select><input type="submit" value="Delegate"></form>'
       end
     end

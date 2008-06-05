@@ -12,7 +12,7 @@ module Helper
     end
 
     def person(identity)
-      Person.identify(identity) || Person.create(:email=>"#{identity}@apache.org", :password=>'secret')
+      Person.identify(identity) rescue Person.create(:email=>"#{identity}@apache.org", :password=>'secret')
     end
 
     def people(*identities)

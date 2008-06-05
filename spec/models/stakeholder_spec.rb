@@ -157,6 +157,12 @@ describe Task do
       Task.last.owner.should be_nil
     end
 
+    it 'should treat empty string as nil' do
+      Task.create! defaults.merge(:owner=>person('owner'))
+      Task.last.update_attributes! :owner=>''
+      Task.last.owner.should be_nil
+    end
+
     it 'should not allow owner if listed in excluded owners' do
       Task.create! defaults.merge(:excluded_owners=>person('excluded'))
       lambda { Task.last.update_attributes! :owner=>person('excluded') }.should raise_error

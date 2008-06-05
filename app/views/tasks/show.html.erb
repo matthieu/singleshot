@@ -1,6 +1,6 @@
 <%
   performing = @task.can_complete?(authenticated)
-  iframe_url = @task.rendering.render_url(performing, 'task_url'=>task_for_person_url(@task, authenticated))
+  iframe_url = @task.rendering.render_url(performing) { { 'task_url'=>task_for_person_url(@task, authenticated) } }
 %>
 <% div_for @task do %>
   <div class='header'>

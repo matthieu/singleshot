@@ -385,6 +385,7 @@ describe Task::Rendering do
 
   it 'should have nil render_url without perform_url' do
     Task.new.rendering.render_url(true).should be_nil
+    Task.new.rendering.render_url(true) { fail }.should be_nil
   end
 
   it 'should render using perform_url when performing task' do
@@ -399,6 +400,7 @@ describe Task::Rendering do
 
   it 'should have nil render_url without details_url' do
     Task.new(:perform_url=>'http://foobar/').rendering.render_url(false).should be_nil
+    Task.new.rendering.render_url(false) { fail }.should be_nil
   end
 
   it 'should render using details_url when performing task' do
@@ -449,51 +451,6 @@ describe Task::Rendering do
 end
 
 =begin
-
-describe Task, 'url', :shared=>true do
-
-  it 'should be tested for validity' do
-    Task.new(@field=>'http://+++').should have(1).error_on(@field)
-  end
-
-  it 'should allow HTTP URLS' do
-    Task.new(@field=>'http://test.host/do').should have(:no).errors_on(@field)
-  end
-
-  it 'should allow HTTPS URLS' do
-    Task.new(@field=>'https://test.host/do').should have(:no).errors_on(@field)
-  end
-
-  it 'should not allow other URL schemes' do
-    Task.new(@field=>'ftp://test.host/do').should have(1).error_on(@field)
-  end
-
-  it 'should store normalized URL' do
-    task = Task.new(@field=>'HTTP://Test.Host/Foo')
-    task.should have(:no).errors_on(@field)
-    task.send(@field).should eql('http://test.host/Foo')
-  end
-
-  it 'should be modifiable' do
-    task = Task.new(@field=>'http://test.host/view')
-    lambda { task.update_attributes @field=>'http://test.host/' }.should change(task, @field).to('http://test.host/')
-  end
-
-end
-
-
-describe Task, 'frame_url' do
-  it_should_behave_like 'Task url'
-
-  before :all do
-    @field = :frame_url
-  end
-
-  it 'should be required for active task' do
-    Task.new.should have(1).errors_on(:frame_url)
-  end
-
-end
 
 
 describe Task, 'outcome_url' do
@@ -605,95 +562,4 @@ describe Task, 'token' do
 end
 
 
-describe Task, 'stakeholder?' do
-
-  before :all do
-    @task = Task.new(@roles = all_roles)
-    @task.excluded_owners = [person('excluded'), @task.potential_owners[1]]
-    @task.save
-  end
-  
-  it 'should return true if person associated with task' do
-    allowed = @roles.map { |role, people| Array(people) }.flatten - @task.excluded_owners
-    allowed.size.should > 0
-    allowed.each { |person| @task.stakeholder?(person).should be_true }
-  end
-
-  it 'should return false if person not associated with task' do
-    @task.stakeholder?(person(:unknown)).should be_false
-  end
-
-  it 'should return true for task admin' do
-    @task.stakeholder?(su).should be_true
-  end
-
-  it 'should return false for excluded owner' do
-    @task.excluded_owners.each { |person| @task.stakeholder?(person).should be_false }
-  end
-
-end
-
-
-describe Task, 'stakeholders' do
-
-  it 'should be protected attribute' do
-    task = Task.new(:stakeholders=>[Stakeholder.new])
-    task.stakeholders.should be_empty
-    lambda { task.update_attributes :stakeholders=>[Stakeholder.new] }.should_not change(task, :stakeholders)
-  end
-
-end
-
-
-describe Task, 'cancellation' do
-
-  before :each do
-    @task = Task.new(defaults(@roles = all_roles))
-  end
-
-  it 'should default to :admin' do
-    @task.cancellation.should eql(:admin)
-  end
-
-  it 'should accept :owner' do
-    lambda { @task.update_attributes! :cancellation=>:owner }.should change(@task, :cancellation).to(:owner)
-  end
-
-  it 'should allow admin to cancel the task for all values' do
-    @roles.select { |role, people| Array(people).any? { |person| @task.can_cancel?(person) } }.
-      map(&:first).should eql([:admins])
-    @task.can_cancel?(su).should be_true
-  end
-
-  it 'should allow owner to cancel the task for the value :owner' do
-    @task.cancellation = :owner
-    @roles.select { |role, people| Array(people).any? { |person| @task.can_cancel?(person) } }.
-      map(&:first).sort_by(&:to_s).should eql([:admins, :owner])
-    @task.can_cancel?(su).should be_true
-  end
-
-end
-
-
-describe Task, 'completion' do
-
-  before :all do
-    @roles = all_roles
-  end
-
-  before :each do
-    @task = Task.create(defaults(@roles))
-  end
-
-  it 'should allow owner to complete task' do
-    @roles.select { |role, people| Array(people).any? { |person| @task.can_complete?(person) } }.
-      map(&:first).should eql([:owner])
-  end
-
-  it 'should not validate if completed without owner' do
-    @task.status = :completed
-    lambda { @task.owner = nil }.should change { @task.valid? }.to(false)
-  end
-
-end
 =end
