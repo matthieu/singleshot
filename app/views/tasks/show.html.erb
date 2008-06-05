@@ -9,9 +9,7 @@
       <%= quick_actions(@task) %>
       <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.header .details', 'Less options')", :class=>'button-to' %>
     </div>
-    <div class='vitals'>
-      <%= task_vitals(@task) %>: <%= content_tag 'span', h(@task.title), :class=>'title', :title=>@task.title %>
-    </div>
+    <div class='vitals'><p class='title'><%= h(@task.title) %></p><p class='info'><%= task_vitals(@task) %></p></div>
     <div class='details' style='display:none'>
       <dl>
         <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) unless use_description %>
