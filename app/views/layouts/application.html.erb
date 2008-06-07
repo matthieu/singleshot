@@ -11,7 +11,10 @@
   <body>
     <div id='header'>
       <h1><%= link_to 'Singleshot', root_url %></h1>
-      <ul class='links'><li><%= link_to 'Logout', session_url, :method=>:delete %></li></ul>
+      <ul class='links'>
+        <li><%= link_to 'Logout', session_url, :method=>:delete %></li>
+        <li><form action='<% tasks_url %>' method='get' class='search'><input type='text' name='query' /><button><%= image_tag 'magnifier.png' %></button></form></li>
+      </ul>
       <ul class='tabs'><%=
         [ ['➠ Tasks', tasks_url, 'Pending and available tasks'],
           ['Following', following_tasks_url, 'Tasks you create, observing or administrating'],
@@ -19,7 +22,7 @@
           ['Activity', activity_url, 'Recent task activity'] ].map { |tab|
             content_tag 'li', link_to(tab[0], tab[1], :title=>tab[2], :class=>current_page?(tab[1]) ? 'current': nil)
           }.join %></ul>
-      <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe with your feed reader') if @alternate && @alternate[Mime::ATOM] %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add to your calendar') if @alternate && @alternate[Mime::ICS] %></ul>
+       <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe with your feed reader') if @alternate && @alternate[Mime::ATOM] %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add to your calendar') if @alternate && @alternate[Mime::ICS] %></ul>
     </div>
     <div id='main'>
 <%= yield %>
