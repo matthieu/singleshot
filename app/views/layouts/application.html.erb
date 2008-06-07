@@ -13,7 +13,7 @@
       <h1><%= link_to 'Singleshot', root_url %></h1>
       <ul class='links'>
         <li><%= link_to 'Logout', session_url, :method=>:delete %></li>
-        <li><form action='<% tasks_url %>' method='get' class='search'><%= text_field_tag 'query', params['query'] %><button><%= image_tag 'magnifier.png' %></button></form></li>
+        <li><form action='<% tasks_url %>' method='get' class='search'><%= text_field_tag 'query', params['query'] %><button><%= image_tag 'search.png' %></button></form></li>
       </ul>
       <ul class='tabs'><%=
         [ ['➠ Tasks', tasks_url, 'Pending and available tasks'],

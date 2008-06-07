@@ -8,7 +8,10 @@ body {
   padding: 0;
 }
 h1 {
-  font-family: "Corbel";
+  font-family: "Corbel", Helvetica;
+  font-size: 2.0em;
+  font-weight: bold;
+  letter-spacing: -1pt;
 }
 
 abbr {
@@ -134,11 +137,8 @@ div#errorExplanation p, div#errorExplanation ul {
   border-bottom: solid 2px #898989;
 }
 #header h1 {
-  font-size: 2.0em;
-  font-weight: bold;
   margin: 0 auto 0.6em auto;
   float: left;
-  letter-spacing: -1pt;
 }
 #header h1 a {
   color: #404040;
@@ -317,11 +317,8 @@ div.task div.header {
   border-bottom: solid 2px #898989;
 }
 div.task div.header h1 {
-  font-size: 2.0em;
-  font-weight: bold;
   margin: 0.2em 1em 0 1.5em;
   float: left;
-  letter-spacing: -1pt;
 }
 div.task div.header h1 a {
   color: #404040;
