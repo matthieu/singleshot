@@ -1,9 +1,10 @@
 <% by_date = group_by_dates(@activities, :created_at) %>
+<div style='float:right; margin-right: 3em'><%= sparkline_tag((0..30).map { rand(100) }) %></div>
 <ol class='dates hfeed'>
   <% for date, activities in by_date %>
     <li class='date'>
       <h2><%= date.humanize %></h2>
-      <%= render :partial=>'activities', :locals=>{ :activities=>activities } %>
+      <%= render :partial=>'activities', :locals=>{ :activities=>activities, :today=>nil } %>
     </li>
   <% end %>
 </ol>

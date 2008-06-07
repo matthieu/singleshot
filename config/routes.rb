@@ -16,7 +16,9 @@ ActionController::Routing::Routes.draw do |map|
     opts.activity '/activity'
     opts.formatted_activity '/activity.:format'
   end
+  map.sparklines '/sparklines', :controller=>'sparklines'
   map.root :controller=>'application'
+
   map.resource 'sandwich'
   map.resource 'survey', :controller=>'survey'
 

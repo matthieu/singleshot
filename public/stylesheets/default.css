@@ -397,6 +397,12 @@ div.task iframe {
 }
 
 
+div.right {
+  float: right;
+  margin-right: 3em;
+}
+
+
 /** Login **/
 form.login {
   width: 30em;

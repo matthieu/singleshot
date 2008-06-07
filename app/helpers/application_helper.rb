@@ -1,6 +1,8 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
 
+  include SparklinesHelper
+
   # Returns a link to a person using their full name as the link text and site URL
   # (or profile, if unspecified) as the reference.
   def link_to_person(person, options = {})

@@ -1,4 +1,5 @@
 <% by_date = group_by_dates(@tasks, :updated_at) %>
+<div class='right'><%= sparkline_tag @tasks.group_by { |task| task.updated_at.to_date }.map { |date, tasks| tasks.size } %></div>
 <ol class='dates hfeed'>
   <% for date, tasks in by_date %>
     <li class='date'>
