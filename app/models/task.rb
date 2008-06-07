@@ -84,7 +84,7 @@ class Task < ActiveRecord::Base
     from, to = task.status_change
     case from # States you cannot transition from.
     when 'suspended'
-      task.errors.add :status, 'You are not allowed to resume this task.' unless task.admin?(task.modified_by)
+      task.errors.add :status, 'You are not allowed to resume this task.' unless task.modified_by && task.admin?(task.modified_by)
     when 'completed'
       task.errors.add :status, 'Cannot change status of completed task.'
     when 'cancelled'
@@ -102,7 +102,7 @@ class Task < ActiveRecord::Base
       task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
       task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
     when 'cancelled'
-      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.admin?(task.modified_by)
+      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.modified_by && task.admin?(task.modified_by)
     end
     task.readonly! if !task.status_changed? && (task.completed? || task.cancelled?)
   end
