@@ -26,7 +26,9 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
-      wants.html
+      wants.html do
+        @graph = Task.connection.select_values("SELECT tasks.updated_at FROM tasks JOIN stakeholders ON stakeholders.task_id = tasks.id WHERE person_id=#{authenticated.id} AND role='owner' AND status='completed' AND tasks.updated_at >= '#{Date.today - 1.month}'").group_by { |date| date.to_date }.map { |date, entries| entries.size }
+      end
       # TODO: wants.xml
       # TODO: wants.json
       wants.atom { render :action=>'index' }
