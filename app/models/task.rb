@@ -124,9 +124,16 @@ class Task < ActiveRecord::Base
   #
   # Tasks that do not have a UI representation (e.g. offline tasks) should use
   # the task description as the most adequate representation.  Calling
-  # #render_url on these tasks returns nil.  Tasks that do have a UI
-  # representation should use the URL returned by #render_url, e.g. to pull
-  # that UI into an IFrame.
+  # #render_url on these tasks returns nil.
+  #
+  # Tasks that do have a UI representation should use #perform_url when
+  # performing the task, and #details_url for anyone else viewing the task.
+  # However, offline tasks can just use #details_url for both, and UIs that
+  # must not be accessible to anyone but the owner should use #perform_url
+  # only, with description presented to everyone else.
+  #
+  # The method #render_url returns either #perform_url or #details_url to the
+  # owner, and #details_url (or nil) to anyone else.
   #
   # UIs that integrate with the taske manager (#integrated_ui) will need
   # additional query parameters in the URL, those are passed to render_for

@@ -339,78 +339,93 @@ end
 
 describe Task::Rendering do
   it 'should store perform_url attribute' do
-    Task.create! defaults(:perform_url=>'http://foobar/')
-    Task.last.rendering.perform_url.should == 'http://foobar/'
+    Task.create! defaults(:perform_url=>'http://perform/')
+    Task.last.rendering.perform_url.should == 'http://perform/'
   end
 
   it 'should store details_url attribute' do
-    Task.create! defaults(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/')
-    Task.last.rendering.details_url.should == 'http://barfoo/'
-  end
-
-  it 'should not have details_url without perform_url' do
-    Task.create! defaults(:details_url=>'http://barfoo/')
-    Task.last.rendering.details_url.should be_nil
+    Task.create! defaults(:details_url=>'http://details/')
+    Task.last.rendering.details_url.should == 'http://details/'
   end
 
   it 'should store integrated_ui attribute' do
-    Task.create! defaults(:perform_url=>'http://foobar/', :integrated_ui=>true)
+    Task.create! defaults(:perform_url=>'http://perform/', :integrated_ui=>true)
     Task.last.rendering.integrated_ui.should be_true
   end
 
   it 'should not have integrated_ui without perform_url' do
-    Task.create! defaults(:integrated_ui=>true)
-    Task.last.rendering.integrated_ui.should be_false
+    Task.new(defaults(:integrated_ui=>true)).rendering.integrated_ui.should be_false
   end
 
   it 'should default integrated_ui attribute to false' do
-    Task.create! defaults(:perform_url=>'http://foobar/')
-    Task.last.rendering.integrated_ui.should be_false
+    Task.new(defaults(:perform_url=>'http://perform/')).rendering.integrated_ui.should be_false
   end
 
   it 'should use completion button if no perform_url' do
-    Task.create! defaults
-    Task.last.rendering.use_completion_button?.should be_true
+    Task.new(defaults).rendering.use_completion_button?.should be_true
+    Task.new(defaults(:details_url=>'http://details/')).rendering.use_completion_button?.should be_true
   end
 
   it 'should use completion button if perform_url but no integrated_ui' do
-    Task.create! defaults(:perform_url=>'http://foobar/')
-    Task.last.rendering.use_completion_button?.should be_true
+    Task.new(defaults(:perform_url=>'http://perform/')).rendering.use_completion_button?.should be_true
   end
 
   it 'should not use completion button if perform_url and integrated_ui' do
-    Task.create! defaults(:perform_url=>'http://foobar/', :integrated_ui=>true)
-    Task.last.rendering.use_completion_button?.should be_false
+    Task.new(defaults(:perform_url=>'http://perform/', :integrated_ui=>true)).rendering.use_completion_button?.should be_false
   end
 
-  it 'should have nil render_url without perform_url' do
+  it 'should have no render_url without perform_url or details_url' do
     Task.new.rendering.render_url(true).should be_nil
-    Task.new.rendering.render_url(true) { fail }.should be_nil
+    Task.new.rendering.render_url(false).should be_nil
   end
 
-  it 'should render using perform_url when performing task' do
-    Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/').rendering.render_url(true).should == 'http://foobar/'
+  it 'should render to owner using perform_url if available' do
+    Task.new(:perform_url=>'http://perform/').rendering.render_url(true).should == 'http://perform/'
   end
 
-  it 'should render using perform_url with query parameter when performing integrated task' do
-    task = Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/', :integrated_ui=>true)
-    task.rendering.render_url(true, 'url'=>'http://test.host').should == "http://foobar/?url=#{CGI.escape('http://test.host')}"
-    task.rendering.render_url(true) { { 'url'=>'http://test.host' } }.should == "http://foobar/?url=#{CGI.escape('http://test.host')}"
+  it 'should render to owner using perform_url even if details_url given' do
+    Task.new(:perform_url=>'http://perform/', :details_url=>'http://details/').rendering.render_url(true).should == 'http://perform/'
   end
 
-  it 'should have nil render_url without details_url' do
-    Task.new(:perform_url=>'http://foobar/').rendering.render_url(false).should be_nil
-    Task.new.rendering.render_url(false) { fail }.should be_nil
+  it 'should render to owner using details_url if no perform_url' do
+    Task.new(:details_url=>'http://details/').rendering.render_url(true).should == 'http://details/'
   end
 
-  it 'should render using details_url when performing task' do
-    Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/').rendering.render_url(false).should == 'http://barfoo/'
+  it 'should render to anyone else using details_url if available' do
+    Task.new(:details_url=>'http://details/').rendering.render_url(false).should == 'http://details/'
   end
 
-  it 'should render using details_url with query parameters when viewing integrated task' do
-    task = Task.new(:perform_url=>'http://foobar/', :details_url=>'http://barfoo/', :integrated_ui=>true)
-    task.rendering.render_url(false, 'url'=>'http://test.host' ).should == "http://barfoo/?url=#{CGI.escape('http://test.host')}"
-    task.rendering.render_url(false) { { 'url'=>'http://test.host' } }.should == "http://barfoo/?url=#{CGI.escape('http://test.host')}"
+  it 'should not render to anyone else using perform_url' do
+    Task.new(:perform_url=>'http://perform/').rendering.render_url(false).should be_nil
+    Task.new(:perform_url=>'http://perform/', :details_url=>'http://details/').rendering.render_url(false).should == 'http://details/'
+  end
+
+  it 'should not yield from render_url if no suitable URL' do
+    Task.new.rendering.render_url(true, :integrated_ui=>true) { fail }.should be_nil
+    Task.new.rendering.render_url(false, :integrated_ui=>true) { fail }.should be_nil
+  end
+
+  it 'should include query parameters for integrated UI' do
+    Task.new(:perform_url=>'http://perform/', :integrated_ui=>true).rendering.
+      render_url(true, 'foo'=>'bar').should == 'http://perform/?foo=bar'
+    Task.new(:perform_url=>'http://perform/', :details_url=>'http://details/', :integrated_ui=>true).rendering.
+      render_url(false, 'foo'=>'bar').should == 'http://details/?foo=bar'
+  end
+
+  it 'should yield and include query parameters for integrated UI' do
+    Task.new(:perform_url=>'http://perform/', :integrated_ui=>true).rendering.
+      render_url(true) { { 'foo'=>'bar' } }.should == 'http://perform/?foo=bar'
+    Task.new(:perform_url=>'http://perform/', :details_url=>'http://details/', :integrated_ui=>true).rendering.
+      render_url(false) { { 'foo'=>'bar' } }.should == 'http://details/?foo=bar'
+  end
+
+  it 'should escape query parameters for integrated UI' do
+    Task.new(:perform_url=>'http://perform/', :integrated_ui=>true).rendering.
+      render_url(true, 'url'=>'http://integated').should == 'http://perform/?url=http%3A%2F%2Fintegated'
+  end
+
+  it 'should not include query parameters unless integrated UI' do
+    Task.new(:perform_url=>'http://perform/').rendering.render_url(true, 'foo'=>'bar').should == 'http://perform/'
   end
 
   it 'should be assignable from hash' do
