@@ -3,7 +3,7 @@ class Stakeholders < ActiveRecord::Migration
     create_table :stakeholders do |t|
       t.integer :task_id,    :null=>false
       t.integer :person_id,  :null=>false
-      t.integer :role,       :null=>false, :limit=>2
+      t.string  :role,       :null=>false
       t.timestamps
     end
     add_index :stakeholders, [:task_id, :person_id, :role], :unique=>true
