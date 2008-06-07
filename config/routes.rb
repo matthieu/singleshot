@@ -2,6 +2,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resource 'session'
   map.resources 'tasks', :collection=>{ 'completed'=>:get, 'following'=>:get, 'complete_redirect'=>:get } do |tasks|
+    map.connect '/tasks/:id', :controller=>'tasks', :action=>'complete', :conditions=>{ :method=>:post }
     tasks.with_options :controller=>'task_for' do |opts|
       opts.connect 'for/:person_id', :action=>'update', :conditions=>{ :method=>:put }
       opts.for_person 'for/:person_id', :action=>'show'
@@ -17,6 +18,7 @@ ActionController::Routing::Routes.draw do |map|
   end
   map.root :controller=>'application'
   map.resource 'sandwich'
+  map.resource 'survey', :controller=>'survey'
 
   
   # The priority is based upon order of creation: first created -> highest priority.

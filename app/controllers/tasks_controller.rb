@@ -92,38 +92,13 @@ class TasksController < ApplicationController
     render :text=>"<script>frames.top.location.href='#{tasks_url}'</script>"
   end
 
-
-
-  def new
-    @task = Task.new(:creator=>authenticated)
-    respond_to :html
-  end
-
-  def create
-    if input = params[:task]
-      input[:outcome_type] = suggested_outcome_type
-      input[:admins] = Array(input[:admins]) + [authenticated]
-      input.delete(:status)
-      @task = Task.create!(input)
-      respond_to do |format|
-        format.html { redirect_to tasks_url }
-        format.xml  { render :xml=>@task, :location=>task_url(@task), :status=>:created }
-        format.json { render :json=>@task, :location=>task_url(@task), :status=>:created }
-      end
-    else
-      task = Task.reserve!(authenticated)
-      render :nothing=>true, :location=>task_url(task), :status=>:see_other
-    end
-  end
-
   def complete
-    raise ActiveRecord::StaleObjectError, 'This task already completed.' if @task.completed?
-    raise NotAuthorized, 'You are not allowed to complete this task.' unless @task.can_complete?(authenticated)
-    data = params[:task][:data] if params[:task]
-    @task.complete!(data)
-    respond_to do |format|
-      format.xml  { render :xml=>@task }
-      format.json { render :json=>@task }
+    update = (params[:task] || {}).update(:status=>'completed')
+    @task.modify_by(authenticated).update_attributes!(update)
+    respond_to do |wants|
+      wants.html { redirect_to tasks_url }
+      # TODO: wants.xml
+      # TODO: wants.json
     end
   end
 

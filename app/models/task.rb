@@ -139,8 +139,7 @@ class Task < ActiveRecord::Base
     attr_reader :perform_url, :details_url, :integrated_ui
 
     def initialize(perform_url, details_url, integrated_ui)
-      @perform_url = perform_url
-      @details_url = details_url if perform_url
+      @perform_url, @details_url = perform_url, details_url
       @integrated_ui = (perform_url && integrated_ui) || false
     end
 
@@ -156,7 +155,7 @@ class Task < ActiveRecord::Base
     # option is available, passes query parameters to the rendered URL.  Query
     # parameters are passed as last argument or returned from the block.
     def render_url(perform, params = {})
-      url = perform ? perform_url : details_url
+      url = perform && perform_url || details_url
       return url unless integrated_ui && url
       params = yield if block_given?
       uri = URI(url)
@@ -450,11 +449,11 @@ class Task < ActiveRecord::Base
   end
 
   def can_claim?(person)
-    owner.nil? && (potential_owners.empty? || potential_owner?(person))
+    owner.nil? && (potential_owners.empty? || potential_owner?(person)) && !excluded_owner?(person)
   end
 
   def can_delegate?(person)
-    (owner?(person) && active?) || (admin?(person) && active? || ready?)
+    (owner?(person) && active? && !(potential_owners - [owner]).empty?) || (admin?(person) && (active? || ready?))
   end
 
   def filter_update_for(person)
