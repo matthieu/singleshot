@@ -438,7 +438,7 @@ class Task < ActiveRecord::Base
   enumerable :cancellation, [:admin, :owner], :default=>:admin
 
   def can_cancel?(person)
-    admin?(person) && !completed && !cancelled?
+    admin?(person) && !completed? && !cancelled?
   end
 
   def can_complete?(person)

@@ -2,23 +2,28 @@ class TaskForController < ApplicationController
 
   before_filter :authenticate
   verify :params=>'task', :only=>:update
+  include TaskHelper
 
   def show
     respond_to do |wants|
-      wants.xml { render :xml=>@task }
-      wants.json { render :json=>@task }
+      wants.xml { render :xml=>state.to_xml(:root=>'task') }
+      wants.json { render :json=>state.to_json }
     end
   end
 
   def update
     @task.modify_by(@person).update_attributes! params[:task]
-    respond_to do |wants|
-      wants.xml { render :xml=>@task }
-      wants.json { render :json=>@task }
-    end
+    show
   end
 
 private
+
+  def state
+    attributes = { 'id'=>@task.id, 'url'=>task_url(@task), 'title'=>@task.title, 'description'=>@task.description,
+      'status'=>@task.status, 'owner'=>@task.owner.to_param, 'data'=>@task.data }
+    attributes.update 'update_url'=>task_for_person_url(@task, @person), 'redirect_url'=>complete_redirect_tasks_url if @task.owner?(@person)
+    attributes
+  end
 
   def authenticate
     @task = Task.with_stakeholders.find(params[:task_id])

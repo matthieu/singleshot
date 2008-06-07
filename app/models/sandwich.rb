@@ -4,10 +4,12 @@ class Sandwich
     name.titleize
   end
 
-  def initialize(other = nil)
-    ['bread', 'spread', 'toppings'].each do |name|
-      send "#{name}=", other.send(name)
-    end if other
+  def initialize(attributes = {})
+    if attributes
+      ['bread', 'spread', 'toppings'].each do |name|
+        send "#{name}=", attributes[name]
+      end
+    end
   end
 
   attr_accessor :bread, :spread, :toppings
@@ -26,9 +28,18 @@ class Sandwich
     end
   end
 
-  def save
+  def save(url, completed = false)
     validate
     errors.empty?
+    data = ['bread', 'spread', 'toppings'].inject({}) { |hash, name| hash.update(name=>send(name)) }
+    task = { 'data'=>data }
+    task.update 'status'=>'completed' if completed
+    uri = URI(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    post = Net::HTTP::Put.new(uri.path)
+    post.basic_auth uri.user, uri.password
+    post.content_type = Mime::XML.to_s
+    http.request(post, task.to_xml(:root=>'task'))
   end
 
   private
