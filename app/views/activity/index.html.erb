@@ -1,4 +1,6 @@
 <% by_date = group_by_dates(@activities, :created_at) %>
+<div class='right'><%= sparkline_tag @activities.group_by { |activity| activity.created_at.to_date }.map { |time, list| list.size },
+                                     :title=>'Level of activity for each day' unless @activities.empty?  %></div>
 <ol class='dates hfeed'>
   <% for date, activities in by_date %>
     <li class='date'>

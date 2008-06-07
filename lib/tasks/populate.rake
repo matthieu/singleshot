@@ -2,12 +2,11 @@ namespace 'db' do
 
   desc 'Populate the database with mock values'
   task 'populate'=>['environment', 'create', 'migrate'] do
-    you = Person.find_by_identity(ENV['USER'])
-    unless you
-      you = Person.create(:email=>"#{ENV['USER']}@apache.org", :password=>'secret')
-      puts 'Created an account for you:'
+    you = Person.identify(ENV['USER']) rescue begin
+      puts 'Creating an account for you:'
       puts "  Username: #{ENV['USER']}"
       puts '  Password: secret'
+      Person.create!(:email=>"#{ENV['USER']}@apache.org", :password=>'secret')
     end
 
     puts "Populating database for #{you.identity}"
@@ -16,7 +15,7 @@ namespace 'db' do
     Task.delete_all
 
     def other
-      Person.identify('anon') || Person.create(:email=>'anon@apache.org')
+      Person.identify('anon') rescue Person.create(:email=>'anon@apache.org')
     end
     def Task.delay(duration = 2.hours)
       for model in [Task, Stakeholder, Activity]
@@ -33,7 +32,7 @@ namespace 'db' do
 
     def create(attributes)
       Task.delay 
-      you = Person.find_by_identity(ENV['USER']) 
+      you = Person.identify(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
                    :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :integrated_ui=>true }, :potential_owners=>[you, other] }
       returning Task.new(defaults.merge(attributes || {})) do |task|

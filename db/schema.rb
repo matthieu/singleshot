@@ -30,10 +30,10 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.datetime "updated_at"
   end
 
-  add_index "people", ["access_key"], :name => "index_people_on_access_key", :unique => true
-  add_index "people", ["email"], :name => "index_people_on_email", :unique => true
-  add_index "people", ["fullname"], :name => "index_people_on_fullname"
   add_index "people", ["identity"], :name => "index_people_on_identity", :unique => true
+  add_index "people", ["fullname"], :name => "index_people_on_fullname"
+  add_index "people", ["email"], :name => "index_people_on_email", :unique => true
+  add_index "people", ["access_key"], :name => "index_people_on_access_key", :unique => true
 
   create_table "stakeholders", :force => true do |t|
     t.integer  "task_id",    :null => false
