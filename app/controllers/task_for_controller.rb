@@ -28,7 +28,7 @@ private
   def authenticate
     @task = Task.with_stakeholders.find(params[:task_id])
     @person = Person.identify(params[:person_id])
-    authenticate_or_request_with_http_basic request.domain do |login, token|
+    authenticate_or_request_with_http_basic "#{request.domain}:#{@task.id}:#{@person.id}" do |login, token|
       login == '_token' && token == @task.token_for(@person)
     end
   end

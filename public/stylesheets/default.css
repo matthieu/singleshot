@@ -87,25 +87,26 @@ form dl dd {
 form.search {
   display: inline;
   margin: 0 -1.2em 0 1em;
+	white-space: nowrap;
 }
 form.search input {
   width: 15em;
   padding-right: 2.5em;
-  border: 1px solid #ccc;
+  border: none;
   -moz-border-radius: 8px;
   -webkit-border-radius: 8px;
 }
 form.search input:focus, form.search input:hover {
-  border: 1px solid #ccc;
+  border: none;
 }
 form.search button {
   display: inline;
   background: transparent;
+  position: relative;
   left: -1.5em;
+  vertical-align: middle;
   padding: 0;
   margin: 0;
-  position: relative;
-  vertical-align: middle;
 }
 
 fieldset {
@@ -128,7 +129,7 @@ div#errorExplanation p, div#errorExplanation ul {
 /** Header **/
 
 #header {
-  background: #c9c9c9 url('/images/header-bg.png') repeat-x bottom;
+  background: #c9c9c9 url('/images/header-bg.jpg') repeat-x bottom;
   padding: 0.5em 3em 3px 3em;
   border-bottom: solid 2px #898989;
 }
@@ -312,7 +313,7 @@ div.task div.header {
   width: 100%;
   margin: 0;
   padding: 0;
-  background: #c9c9c9 url('/images/header-bg.png') repeat-x bottom;
+  background: #c9c9c9 url('/images/header-bg.jpg') repeat-x bottom;
   border-bottom: solid 2px #898989;
 }
 div.task div.header h1 {
