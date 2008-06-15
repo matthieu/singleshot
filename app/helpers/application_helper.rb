@@ -16,7 +16,7 @@ module ApplicationHelper
 
   def relative_date(date)
     date = date.to_date
-    today = Date.today
+    today = Date.current
     if date == today
       'today'
     elsif date == today - 1.day
@@ -31,7 +31,7 @@ module ApplicationHelper
   end
 
   def age(time, ago = true)
-    text = case age = Time.now - time
+    text = case age = Time.current - time
     when 0...2.minute
       '1 minute'
     when 2.minute...1.hour
@@ -53,7 +53,7 @@ module ApplicationHelper
   end
 
   def relative_time(time)
-    case age = Time.now - time
+    case age = Time.current - time
     when 0...2.minute
       'this minute'
     when 2.minute...1.hour
@@ -83,7 +83,7 @@ module ApplicationHelper
 
   def group_by_dates(activities, attr = :updated_at)
     activities.inject([]) do |groups, activity|
-      date, today = activity.send(attr).to_date, Date.today
+      date, today = activity.send(attr).to_date, Date.current
       group = if date == today
         'today'
       elsif date == today.yesterday

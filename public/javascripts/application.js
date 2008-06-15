@@ -32,5 +32,11 @@ var Singleshot = {
       target.show();
     }
     Event.stop(event);
+  },
+
+  makeTopFrame: function() {
+    var to = window.location.href;
+    if (top.location != to)
+      top.location = to;
   }
 }

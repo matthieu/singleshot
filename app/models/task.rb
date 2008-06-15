@@ -308,7 +308,7 @@ class Task < ActiveRecord::Base
   end
 
   def over_due?
-    due_on ? (ready? || active?) && due_on < Date.today : false
+    due_on ? (ready? || active?) && due_on < Date.current : false
   end
 
   # Scopes can use this to add ranking methods on returned records.
@@ -322,7 +322,7 @@ class Task < ActiveRecord::Base
     # - High priority tasks always rank higher than lower priority tasks
     # - Older tasks rank higher than more recently created tasks
     def rank_for(person)
-      today = Date.today
+      today = Date.current
       # Calculating an absolute rank value is tricky if not impossible, so instead we construct
       # an array of values and compare these arrays against each other.  To create an array we
       # need a person's name, so we can ranked their owned tasks higher.
@@ -516,11 +516,11 @@ class Task < ActiveRecord::Base
     :extend=>RankingMethods
 
   named_scope :completed, lambda { |end_date|
-    { :conditions=>["tasks.status == 'completed' AND tasks.updated_at >= ?", end_date || Date.today - 7.days],
+    { :conditions=>["tasks.status == 'completed' AND tasks.updated_at >= ?", end_date || Date.current - 7.days],
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :following, lambda { |end_date|
-    { :conditions=>["tasks.updated_at >= ?", end_date || Date.today - 7.days],
+    { :conditions=>["tasks.updated_at >= ?", end_date || Date.current - 7.days],
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :visible, :conditions=>["tasks.status != 'reserved'"]

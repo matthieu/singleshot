@@ -35,13 +35,13 @@ namespace 'db' do
       you = Person.identify(ENV['USER']) 
       defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
                    :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :integrated_ui=>true }, :potential_owners=>[you, other] }
-      returning Task.new(defaults.merge(attributes || {})) do |task|
-        task.modify_by(you).save!
-        def task.delay(duration = 2.hours)
-          Task.delay(duration)
-          self
-        end
+      task = Task.new(defaults.merge(attributes || {}))
+      task.modify_by(you).save!
+      def task.delay(duration = 2.hours)
+        Task.delay(duration)
+        self
       end
+      task
     end
 
 
@@ -63,9 +63,9 @@ namespace 'db' do
     # High priority should show first.
     create :owner=>you, :priority=>Task::PRIORITIES.first
     # Over-due before due today before anything else.
-    create :owner=>you, :due_on=>Time.today - 1.day
-    create :owner=>you, :due_on=>Time.today
-    create :owner=>you, :due_on=>Time.today + 1.day
+    create :owner=>you, :due_on=>Date.current - 1.day
+    create :owner=>you, :due_on=>Date.current
+    create :owner=>you, :due_on=>Date.current + 1.day
     # Completed, cancelled, suspended
     create(:potential_owners=>[you, other]).delay(30.minutes).modify_by(other).update_attributes(:status=>'suspended')
     create(:owner=>you, :status=>'active').delay(2.hours).modify_by(you).update_attributes(:status=>'completed')
