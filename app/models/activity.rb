@@ -25,8 +25,13 @@ class Activity < ActiveRecord::Base
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
       :conditions=>["involved.person_id=? AND involved.role != 'excluded'", person.id],
       :include=>[:task, :person], :order=>'activities.created_at DESC' } }
-  named_scope :for_dates, lambda { |dates|
-    range = dates.min.to_time.beginning_of_day..dates.max.to_time.end_of_day
+  named_scope :for_dates, lambda { |range|
+    case range
+    when Date
+      range = range.to_time..Time.current.end_of_day
+    when Range
+      range = range.min.to_time.beginning_of_day..range.max.to_time.end_of_day
+    end
     { :conditions=>{ :created_at=>range } } }
 
 end

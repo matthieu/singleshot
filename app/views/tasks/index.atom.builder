@@ -1,4 +1,4 @@
-atom_feed :root_url=>tasks_url do |feed|
+atom_feed :root_url=>@alternate[Mime::HTML] do |feed|
   feed.title 'Singleshot: Tasks'
   feed.updated @tasks.map(&:updated_at).max
 
