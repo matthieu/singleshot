@@ -11,6 +11,9 @@ atom_feed :root_url=>activity_url do |feed|
         content.text! "<p>#{activity_to_html(activity)}</p>"
         content.text!  truncate(strip_tags(task.description), 250)
       end
+      entry.author do |author|
+        author.name activity.person.fullname if activity.person
+      end
     end
   end
 end

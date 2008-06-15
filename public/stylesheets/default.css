@@ -250,6 +250,9 @@ table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
 table.tasks tbody td .priority_1 {
   color: #f04040;
 }
+table.tasks td .button-to {
+  font-size: 0.7em;
+}
 
 
 /** Chronological list **/

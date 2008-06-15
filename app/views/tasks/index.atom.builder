@@ -9,6 +9,9 @@ atom_feed :root_url=>tasks_url do |feed|
         content.text! sanitize(simple_format(task.description))
         content.text! "<p><em>#{task_vitals(task)}</em></p>"
       end
+      entry.author do |author|
+        author.name task.creator.fullname if task.creator
+      end
     end
   end
 end

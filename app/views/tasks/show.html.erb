@@ -22,7 +22,7 @@
         <dt>Recent activity</dt>
         <dd>
           <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe to see changes to this task') %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add this task to your calendar') %></ul>
-          <%= render :file=>'activity/_activities', :locals=>{ :today=>Date.today, :activities=>@task.activities } %>
+          <%= render :file=>'activity/_activities', :locals=>{ :today=>Date.current, :activities=>@task.activities } %>
         </dd>
       </dl>
       <div class='actions'><%= task_actions(@task) %></div>
