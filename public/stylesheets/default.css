@@ -62,7 +62,7 @@ form.button-to input, a.button-to, button {
   padding: 0.3em 0.6em 0.3em 0.6em;
   margin: 0;
   color: #fff;
-  background-color: #646060;
+  background-color: #848080;
   cursor: pointer;
   text-decoration: none;
   -moz-border-radius: 2px;
@@ -90,8 +90,8 @@ form dl dd {
 
 form.search {
   display: inline;
-  margin: 0 -1.2em 0 1em;
 	white-space: nowrap;
+  margin: 0 -20px 0 1em;
 }
 form.search input {
   width: 15em;
@@ -107,10 +107,11 @@ form.search button {
   display: inline;
   background: transparent;
   position: relative;
-  left: -1.5em;
+  left: -20px;
   vertical-align: middle;
   padding: 0;
   margin: 0;
+  width: 20px;
   -webkit-box-shadow: none;
 }
 
@@ -252,7 +253,7 @@ table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
 table.tasks tbody td .priority_1 {
   color: #f04040;
 }
-table.tasks td .button-to {
+table.tasks td .button-to input {
   font-size: 0.7em;
 }
 
