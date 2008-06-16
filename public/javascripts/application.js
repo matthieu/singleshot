@@ -21,7 +21,7 @@ var Singleshot = {
     if (target.visible()) {
       if (source.originalText)
         source.innerHTML = source.originalText; 
-      target.hide();
+      target.slideUp({ duration: 0.5 });
     } else if (event.shiftKey || event.ctrlKey || event.metaKey) {
       return;
     } else {
@@ -29,7 +29,7 @@ var Singleshot = {
         source.originalText = source.innerHTML;
         source.innerHTML = alternative;
       }
-      target.show();
+      target.slideDown({ duration: 0.5 });
     }
     Event.stop(event);
   },
