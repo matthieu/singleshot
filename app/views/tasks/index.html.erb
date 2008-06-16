@@ -1,8 +1,8 @@
 <table class='tasks hfeed'>
   <thead>
     <th>Task</th>
-    <th style='width:7em'>Due on</th>
     <th style='width:5em'>Priority</th>
+    <th style='width:7em'>Due on</th>
     <th style='width:7em'>Age</th>
     <th style='width:5em'></th>
   </thead>
@@ -10,8 +10,8 @@
     <% for task in @tasks %>
       <% content_tag_for 'tr', task, :class=>'hentry' + (task.over_due? ? ' overdue' : '') do %>
         <td class='entry-title'><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></td>
-        <td><%= image_tag('exclamation.png') if task.over_due? %> <%= abbr_date task.due_on, relative_date(task.due_on).titleize if task.due_on %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
+        <td><%= image_tag('exclamation.png') if task.over_due? %> <%= abbr_date task.due_on, relative_date(task.due_on).titleize if task.due_on %></td>
         <td><%= abbr_time task.created_at, age(task.created_at, false), :class=>'published' %></td>
         <td><%= button_to 'Claim', task_url(task, 'task[owner]'=>authenticated), :method=>:put, :title=>'Claim this task' if task.can_claim?(authenticated) %></td>
       <% end %>
