@@ -3,18 +3,16 @@
   iframe_url = @task.rendering.render_url(performing) { { 'task_url'=>task_for_person_url(@task, authenticated) } }
 %>
 <% div_for @task do %>
-  <div class='header'>
-    <h1><%= link_to 'Singleshot', tasks_url, :title=>'Back to tasks list' %></h1>
+  <div id='header'>
     <div class='actions'>
       <%= quick_actions(@task) %>
-      <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, '.header .details', 'Less options')", :class=>'button-to' %>
+      <%= content_tag 'button', 'More Options', :onclick=>"Singleshot.expand(event, 'details', 'Less options')", :class=>'button-to', :title=>'Click to reveal task details and more options' %>
       <%= button_to 'Completed', task_url(@task), :title=>'Click when task completed' if performing && @task.rendering.use_completion_button?  %>
     </div>
-    <div class='vitals'>
-      <p class='title'><%= h(@task.title) %></p>
-      <p class='info'><%= task_vitals(@task) %></p>
-    </div>
-    <div class='details' style='display:none'>
+    <ul class='tabs'><li><%= link_to truncate(@task.title, 50), '#', :class=>'current', :title=>truncate(strip_tags(@task.description), 250) %></li><li><%= link_to '➠ Inbox', tasks_url, :title=>'Return to tasks list' %></li></ul>
+    <!-- p class='info'><%= task_vitals(@task) %></p -->
+  </div>
+    <div id='details' style='display:none'>
       <dl>
         <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) if iframe_url %>
         <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
@@ -27,8 +25,6 @@
       </dl>
       <div class='actions'><%= task_actions(@task) %></div>
     </div>
-  </div>
-
   <% if iframe_url %>
     <iframe id='task_frame' src='<%= iframe_url %>'></iframe>
     <%= javascript_tag "Singleshot.setFrameSize('task_frame')" %>

@@ -6,6 +6,7 @@ body {
   background-color: #fff;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 h1 {
   font-family: "Corbel", Helvetica;
@@ -138,6 +139,7 @@ div#errorExplanation p, div#errorExplanation ul {
 #header {
   background: #e9e9e9 url('/images/header-bg.jpg') repeat-x bottom;
   padding: 0.5em 3em 3px 3em;
+  margin: 0;
   border-bottom: solid 2px #898989;
 }
 #header h1 {
@@ -314,68 +316,55 @@ div.task {
   padding: 0;
   background-color: #fff;
 }
-div.task div.header {
+div.task div#header {
   position: absolute;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+  right: 0;
+  left: 0;
   background: #e9e9e9 url('/images/header-bg.jpg') repeat-x bottom;
-  border-bottom: solid 2px #898989;
 }
-div.task div.header h1 {
-  margin: 0.2em 1em 0 1.5em;
-  float: left;
-}
-div.task div.header h1 a {
-  color: #404040;
-}
-
-div.task div.header div.vitals {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  margin: 0.6em auto 0.6em auto;
-}
-div.task div.header div.vitals p {
-  margin: 0 auto 0.3em auto;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-div.task div.header div.vitals p.title {
-  font-weight: bold;
-}
-div.task div.header div.actions {
+div.task div#header div.actions {
   display: inline;
   float: right;
-  margin: 0.9em 2.5em 0.5em 0;
+  position: relative;
+  top: 0.6em;
   white-space: nowrap;
 }
-div.task div.header div.actions .button-to {
+div.task div#header div.actions .button-to {
   margin-left: 0.6em;
 }
 
-div.task div.details {
-  clear: both;
-  padding: 1em 3em 2em 3em;
-  margin: 0;
+div.task div#details {
+  position: absolute;
+  width: 100%;
+  top: 4em;
+  background-color: #fff;
+  border-bottom: solid 2px #898989;
 }
-div.task div.details dt {
+div.task div#details dl {
+  margin: 2em 3em 0 3em;
+}
+div.task div#details dt {
   font-weight: bold;
   float: left;
   position: relative;
   display: inline;
 }
-div.task div.details dd {
+div.task div#details dd {
   margin: 0 0 1em 10em;
   min-height: 1.3em;
 }
-div.task div.details ol.activities {
+div.task div#details ol.activities {
   margin: 0;
 }
-div.task div.details div.actions {
-  margin: 1em 0 1em 0;
+div.task div#details div.actions {
+  margin: 1em 3em 1em 3em;
+  display: inline;
+  float: right;
 }
-div.task div.details div.actions select {
+div.task div#details div.actions form {
+  margin-left: 0.6em;
+}
+div.task div#details div.actions select {
   width: 10em;
   margin: 0 0.6em 0 0.6em;
 }
