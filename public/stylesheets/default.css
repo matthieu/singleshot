@@ -67,6 +67,7 @@ form.button-to input, a.button-to, button {
   text-decoration: none;
   -moz-border-radius: 2px;
   -webkit-border-radius: 4px;
+  -webkit-box-shadow: 2px 2px 5px #ccc;
 }
 form.button-to input:hover, a.button-to:hover, button:hover {
   border: none;
@@ -110,11 +111,13 @@ form.search button {
   vertical-align: middle;
   padding: 0;
   margin: 0;
+  -webkit-box-shadow: none;
 }
 
 fieldset {
-  border: 2pt solid #ccc;
+  border: 2pt solid #eee;
   padding: 1em;
+  -webkit-box-shadow: 8px 8px 16px #ccc;
 }
 
 /*
@@ -132,7 +135,7 @@ div#errorExplanation p, div#errorExplanation ul {
 /** Header **/
 
 #header {
-  background: #c9c9c9 url('/images/header-bg.jpg') repeat-x bottom;
+  background: #e9e9e9 url('/images/header-bg.jpg') repeat-x bottom;
   padding: 0.5em 3em 3px 3em;
   border-bottom: solid 2px #898989;
 }
@@ -216,7 +219,6 @@ table.tasks {
   border-spacing: 0;
   border-padding: 0;
   border: none;
-  margin: 0;
   padding: 2em 3em 2em 3em;
   font-size: 1.1em;
 }
@@ -316,7 +318,7 @@ div.task div.header {
   width: 100%;
   margin: 0;
   padding: 0;
-  background: #c9c9c9 url('/images/header-bg.jpg') repeat-x bottom;
+  background: #e9e9e9 url('/images/header-bg.jpg') repeat-x bottom;
   border-bottom: solid 2px #898989;
 }
 div.task div.header h1 {
