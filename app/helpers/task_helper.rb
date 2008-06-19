@@ -51,4 +51,9 @@ module TaskHelper
     uri.to_s
   end
 
+
+  def task_url(task, *args)
+    task.cancelled? ? cancelled_task_url(task, *args) : super
+  end
+
 end
