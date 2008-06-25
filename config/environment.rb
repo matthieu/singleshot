@@ -27,6 +27,7 @@ Rails::Initializer.run do |config|
   # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"
   # config.gem "aws-s3", :lib => "aws/s3"
   config.gem 'rest-open-uri',   :version=>'1.0.0'
+  config.gem 'rmagick',         :version=>'2.5.1'
   config.gem 'sparklines',      :version=>'0.5.1'
   config.gem 'acts_as_ferret',  :version=>'0.4.3'
 
