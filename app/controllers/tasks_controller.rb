@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
 
-  access_key_authentication :only=>[:search, :completed, :following, :show]
+  access_key_authentication :only=>[:index, :completed, :following, :search, :show]
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
@@ -13,11 +13,11 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
     respond_to do |wants|
-      wants.html { render :action=>'inbox' }
+      wants.html { render :action=>'index' }
       # TODO: wants.xml
       # TODO: wants.json
-      wants.atom
-      wants.ics
+      wants.atom { render :action=>'tasks' }
+      wants.ics  { render :action=>'tasks' }
     end
   end
 
@@ -33,8 +33,8 @@ class TasksController < ApplicationController
       end
       # TODO: wants.xml
       # TODO: wants.json
-      wants.atom { render :action=>'index' }
-      wants.ics  { render :action=>'ics' }
+      wants.atom { render :action=>'tasks' }
+      wants.ics  { render :action=>'tasks' }
     end
   end
 
@@ -45,11 +45,11 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
-      wants.html { render :action=>'index' }
+      wants.html { render :action=>'tasks' }
       # TODO: wants.xml
       # TODO: wants.json
-      wants.atom { render :action=>'index' }
-      wants.ics  { render :action=>'index' }
+      wants.atom { render :action=>'tasks' }
+      wants.ics  { render :action=>'tasks' }
     end
   end
 
@@ -61,11 +61,11 @@ class TasksController < ApplicationController
     ids = Task.find_id_by_contents(@query).last.map { |h| h[:id] }
     @tasks = Task.for_stakeholder(authenticated).with_stakeholders.find(:all, :conditions=>{ :id=>ids })
     respond_to do |wants|
-      wants.html { render :action=>'index' }
+      wants.html { render :action=>'tasks' }
       # TODO: wants.xml
       # TODO: wants.json
-      wants.atom { render :action=>'index' }
-      wants.ics  { render :action=>'index' }
+      wants.atom { render :action=>'tasks' }
+      wants.ics  { render :action=>'tasks' }
     end
   end
 
