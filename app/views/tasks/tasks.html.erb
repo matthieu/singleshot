@@ -16,7 +16,7 @@
         <td class='status'><%= task.status.titleize %></td>
         <td class='entry-title'><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
-        <td><%= image_tag('exclamation.png') if task.over_due? %> <%= abbr_date task.due_on, relative_date(task.due_on).titleize, :class=>(task.over_due? ? 'overdue' : nil) if task.due_on %></td>
+        <td><%= sparkline_tag [task.deadline], :type=>:deadline, :title=>"Due #{relative_date(task.due_on).titleize}" if task.due_on %></td>
         <td><%= abbr_time task.created_at, age(task.created_at, false), :class=>'published' %></td>
         <td><%= link_to_person task.owner, :rel=>:owner if task.owner %><%= button_to 'Claim', task_url(task, 'task[owner]'=>authenticated), :method=>:put, :title=>'Claim this task' if task.can_claim?(authenticated) %></td>
       <% end %>

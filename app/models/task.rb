@@ -317,6 +317,28 @@ class Task < ActiveRecord::Base
     due_on ? (ready? || active?) && due_on < Date.current : false
   end
 
+  # If t-0 is the due date for this task, return days past deadline as positive
+  # number, calculated so one wee 
+  #
+  # This only applies to tasks with due date that are ready or active, all
+  # other tasks return nil.
+  #
+  # T-0 is the task's due date.  If we're past that due date, return a positive
+  # value that is over-due / 7 (i.e. week over due = 1.0).
+  #
+  # If we're ahead of the due date, and there is no specified start date,
+  # return a negative value that is days-left / 7 (i.e. week left = -1.0).
+  #
+  # If we do have a start by date, return a negative value indicating progress,
+  # starting with -1.0 on the start date and working all the way up to 0 on the
+  # due date.
+  def deadline
+    return unless due_on && (ready? || active?)
+    today = Date.current
+    return (today - due_on).to_f / 7 if due_on < today
+    (today - due_on).to_f * (due_on - (start_by || today - 1.week)).to_f
+  end
+
   # Scopes can use this to add ranking methods on returned records.
   module RankingMethods
 
