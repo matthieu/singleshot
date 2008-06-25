@@ -1,5 +1,5 @@
 # == Schema Information
-# Schema version: 20080506015153
+# Schema version: 20080621023051
 #
 # Table name: tasks
 #
@@ -182,9 +182,10 @@ class Task < ActiveRecord::Base
   validates_url :details_url, :allow_nil=>true
 
 
-  # -- Common task attributes --
+  # -- Descriptive --
 
   validates_presence_of :title
+
 
 
   # --- Task data ---
@@ -344,42 +345,35 @@ class Task < ActiveRecord::Base
 
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :dependent=>:delete_all
 
+  def log_activity(person, action)
+    activities.build :person=>person || modified_by, :action=>action
+  end
+
   LOG_CHANGE_ATTRIBUTES = [:title, :description, :priority, :due_on]
 
-  before_save :unless=>lambda { |task| task.status == 'reserved' } do |task|
-    log = Hash.new
-    def log.add(person, action)
-      self[person] = Array(self[person]).push(action)
-    end
-    task.log_activities log
-    log.each do |person, actions|
-      task.activities.build :person=>person || task.modified_by, :action=>actions.to_sentence
+  before_save do |task|
+    if task.status_changed?
+      from, to = task.status_change
+      task.log_activity task.creator, 'created' if from.nil? || from == 'reserved'
+      case to
+      when 'ready'
+        task.log_activity nil, 'resumed' if from == 'suspended'
+        task.log_activity nil, 'released' if from == 'active'
+      when 'active'
+        task.log_activity nil, 'resumed' if from == 'suspended'
+        task.log_activity task.owner, 'owner' if task.changed.include?('owner')
+      when 'suspended' then task.log_activity nil, 'suspended'
+      when 'completed' then task.log_activity task.owner, 'completed'
+      when 'cancelled' then task.log_activity nil, 'cancelled'
+      end
+    elsif task.changed.include?('owner')
+      # TODO: get this working!
+      task.log_activity task.owner, 'owner'
+    elsif task.changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
+      task.log_activity nil, 'updated'
     end
   end
 
-  def log_activities(log)
-    if status_changed?
-      from, to = status_change
-      log.add creator, 'created' if from.nil? || from == 'reserved'
-      case to
-      when 'ready'
-        log.add nil, 'resumed' if from == 'suspended'
-        log.add nil, 'released' if from == 'active'
-      when 'active'
-        log.add nil, 'resumed' if from == 'suspended'
-        log.add owner, 'is owner of' if changed.include?('owner')
-      when 'suspended' then log.add nil, 'suspended'
-      when 'completed' then log.add owner, 'completed'
-      when 'cancelled' then log.add nil, 'cancelled'
-      end
-    elsif changed.include?('owner')
-      # TODO: get this working!
-      log.add owner, 'is owner of'
-    elsif changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
-      log.add nil, 'changed'
-    end
-  end
-  
 
   # --- Completion and cancellation ---
 

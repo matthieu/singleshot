@@ -5,14 +5,12 @@ atom_feed :root_url=>@alternate[Mime::HTML] do |feed|
   feed.link :href=>@alternate[Mime::ICS], :rel=>'alternate', :type=>Mime::ICS if @alternate[Mime::ICS]
   feed.generator 'Singleshot', :version=>Singleshot::VERSION
 
-  for activity in @activities
-    person, task = activity.person, activity.task
-    feed.entry activity, :url=>task_url(task) do |entry|
-      entry.title activity_to_text(activity)
+  for (task, person, published), related in @activities.group_by { |activity| [activity.task, activity.person, activity.created_at] }
+    feed.entry related.first, :url=>task_url(task) do |entry|
+      entry.title activity_as_text(person, related, task)
       entry.content :type=>'html' do |content|
-        content.text! activity_to_html(activity)
+        content.text! activity_as_html(person, related, task)
       end
-      person = activity.person
       entry.author do |author|
         author.name  person ? person.fullname : 'Unknown'
         author.url   person.url if person && person.url

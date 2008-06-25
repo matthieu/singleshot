@@ -1,5 +1,5 @@
 # == Schema Information
-# Schema version: 20080506015153
+# Schema version: 20080621023051
 #
 # Table name: activities
 #
