@@ -1,20 +1,16 @@
 module ActivityHelper
 
-  HUMANIZED_ACTIONS = { 'owner'=>'is owner of' }
-
-  def humanize_actions(activities)
-    activities.map { |activity| HUMANIZED_ACTIONS[activity.action] || activity.action }.to_sentence
-  end
+  EXPANDED_ACTIVITY_NAMES = { 'owner'=>'is owner of' }
 
   def activity_as_text(person, activities, task)
-    actions = humanize_actions(activities)
-    person ? "#{person.fullname} #{actions} #{task.title}" : "#{actions.capitalize} #{task.title}"
+    sentence = activities.map { |activity| EXPANDED_ACTIVITY_NAMES[activity.name] || activity.name }.to_sentence
+    person ? "#{person.fullname} #{sentence} #{task.title}" : "#{sentence.capitalize} #{task.title}"
   end
 
   def activity_as_html(person, activities, task, options = {})
-    actions = humanize_actions(activities)
+    sentence = activities.map { |activity| EXPANDED_ACTIVITY_NAMES[activity.name] || activity.name }.to_sentence
     title = link_to(task.title, task_url(task), options[:task])
-    person ? "#{link_to_person person, :rel=>options[:person]} #{actions} #{title}" : "#{actions.capitalize} #{title}"
+    person ? "#{link_to_person person, :rel=>options[:person]} #{sentence} #{title}" : "#{sentence.capitalize} #{title}"
   end
 
 end

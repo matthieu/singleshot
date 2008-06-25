@@ -89,6 +89,20 @@ form dl dd {
   margin: 0.3em 0 1em 0;
 }
 
+#header form#search {
+  display: inline;
+  text-decoration: none;
+  padding: 0;
+  margin: 0 0 0 1em;
+}
+#header form#search input {
+  display: inline;
+  width: 20em;
+  padding: 0;
+  margin: 0;
+  font-size: 1.0em;
+}
+
 form.search {
   display: inline;
 	white-space: nowrap;
@@ -138,9 +152,8 @@ div#errorExplanation p, div#errorExplanation ul {
 
 #header {
   background: #e9e9e9 url('/images/header-bg.jpg') repeat-x bottom;
-  padding: 0.5em 3em 3px 3em;
-  margin: 0;
-  border-bottom: solid 2px #898989;
+  padding: 0.5em 3em 0 3em;
+  border-bottom: solid 0.1em #898989;
 }
 #header h1 {
   margin: 0 auto 0.6em auto;
@@ -168,15 +181,11 @@ div#errorExplanation p, div#errorExplanation ul {
   list-style: none;
   margin: 0;
   padding: 0;
+  font-size: 1.1em;
 }
 #header ul.tabs li {
-  display: inline;
-  margin-right: 0.6em;
-  padding: 0;
-}
-#header ul.tabs li a {
-  color: #eee;
-  font-size: 1.1em;
+  display: inline-block;
+  margin: 0 0.6em 0 0;
   text-decoration: none;
   background-color: #0081d1; 
   padding: 0.3em 0.9em 0.3em 0.9em;
@@ -184,7 +193,11 @@ div#errorExplanation p, div#errorExplanation ul {
   -webkit-border-top-left-radius: 4px;
   -webkit-border-top-right-radius: 4px;
 }
-#header ul.tabs li a:hover, #header ul.tabs li a.current {
+#header ul.tabs li a {
+  color: #eee;
+  border: none;
+}
+#header ul.tabs li:hover, #header ul.tabs li.current {
   background-color: #055da4;
 }
 #header ul.alternate {
@@ -232,6 +245,10 @@ table.tasks thead th {
   padding: 0 0.6em 0.6em 0;
   margin: 0;
   border-bottom: 1px solid #ccc;
+}
+table.tasks tbody tr:hover {
+  background-color: #ffffe8;
+  padding: 0 1em 0 1em;
 }
 table.tasks tbody td {
   text-align: left;

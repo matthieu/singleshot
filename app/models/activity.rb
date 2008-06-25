@@ -15,7 +15,7 @@ class Activity < ActiveRecord::Base
   belongs_to :person
   belongs_to :task
   validates_presence_of :task
-  validates_presence_of :action
+  validates_presence_of :name
 
   def readonly?
     !new_record?

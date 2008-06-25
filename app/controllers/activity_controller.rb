@@ -12,7 +12,7 @@ class ActivityController < ApplicationController
       want.html do
         @graph = Activity.for_stakeholder(authenticated).for_dates(Date.current - 1.month)
         yesterday = Date.yesterday
-        @activities = @graph.select { |activity| activity.created_at >= yesterday }
+        @activities = @graph[0,50]
       end
       want.atom { @activities = Activity.for_stakeholder(authenticated).scoped(:limit=>50) }
       want.ics  { @activities = Activity.for_stakeholder(authenticated).scoped(:limit=>50) }

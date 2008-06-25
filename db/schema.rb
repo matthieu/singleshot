@@ -14,7 +14,7 @@ ActiveRecord::Schema.define(:version => 20080621023051) do
   create_table "activities", :force => true do |t|
     t.integer  "person_id"
     t.integer  "task_id",    :null => false
-    t.string   "action",     :null => false
+    t.string   "name",       :null => false
     t.datetime "created_at", :null => false
   end
 
@@ -54,9 +54,11 @@ ActiveRecord::Schema.define(:version => 20080621023051) do
     t.string   "description",                                :null => false
     t.integer  "priority",      :limit => 1,                 :null => false
     t.date     "due_on"
+    t.date     "start_by"
     t.string   "status",                                     :null => false
     t.string   "perform_url"
     t.string   "details_url"
+    t.string   "instructions"
     t.boolean  "integrated_ui"
     t.string   "outcome_url"
     t.string   "outcome_type"

@@ -1,4 +1,9 @@
+# Deadline sparkline adapted from Sparklines, 
+# Copyright (c) 2005 Geoffrey Grosenbach boss@topfunky.com
+
+
 class Sparklines
+
   ## Creates a deadline sparkline.
   #
   # A deadline accepts pre-deadline (negative) and post-deadline (positive

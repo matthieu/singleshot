@@ -3,7 +3,7 @@ class CreateActivities < ActiveRecord::Migration
     create_table  'activities' do |t|
       t.belongs_to  'person'
       t.belongs_to  'task',       :null=>false
-      t.string      'action',     :null=>false
+      t.string      'name',       :null=>false
       t.datetime    'created_at', :null=>false
     end
   end
