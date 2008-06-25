@@ -13,7 +13,7 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
     respond_to do |wants|
-      wants.html
+      wants.html { render :action=>'inbox' }
       # TODO: wants.xml
       # TODO: wants.json
       wants.atom
@@ -45,11 +45,11 @@ class TasksController < ApplicationController
                    Mime::ICS=>formatted_following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
-      wants.html
+      wants.html { render :action=>'index' }
       # TODO: wants.xml
       # TODO: wants.json
       wants.atom { render :action=>'index' }
-      wants.ics  { render :action=>'ics' }
+      wants.ics  { render :action=>'index' }
     end
   end
 
@@ -60,7 +60,13 @@ class TasksController < ApplicationController
     #               Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     ids = Task.find_id_by_contents(@query).last.map { |h| h[:id] }
     @tasks = Task.for_stakeholder(authenticated).with_stakeholders.find(:all, :conditions=>{ :id=>ids })
-    render :action=>'following'
+    respond_to do |wants|
+      wants.html { render :action=>'index' }
+      # TODO: wants.xml
+      # TODO: wants.json
+      wants.atom { render :action=>'index' }
+      wants.ics  { render :action=>'index' }
+    end
   end
 
 
