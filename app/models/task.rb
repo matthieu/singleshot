@@ -16,6 +16,7 @@
 #  outcome_type  :string(255)
 #  access_key    :string(32)
 #  data          :text            not null
+#  context_id    :integer         not null
 #  version       :integer         default(0), not null
 #  created_at    :datetime
 #  updated_at    :datetime
@@ -34,6 +35,7 @@ class Task < ActiveRecord::Base
     self.description ||= ''
     self.data ||= {}
     self.access_key = MD5.hexdigest(OpenSSL::Random.random_bytes(128))
+    self.context ||= Context.new(:title=>self.title)
   end
 
   def to_param #:nodoc:
@@ -186,6 +188,7 @@ class Task < ActiveRecord::Base
 
   validates_presence_of :title
 
+  belongs_to :context
 
 
   # --- Task data ---

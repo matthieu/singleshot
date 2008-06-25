@@ -9,13 +9,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20080506015153) do
+ActiveRecord::Schema.define(:version => 20080621023051) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id"
     t.integer  "task_id",    :null => false
     t.string   "action",     :null => false
     t.datetime "created_at", :null => false
+  end
+
+  create_table "contexts", :force => true do |t|
+    t.string   "title",       :null => false
+    t.string   "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "people", :force => true do |t|
@@ -30,10 +37,10 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.datetime "updated_at"
   end
 
-  add_index "people", ["identity"], :name => "index_people_on_identity", :unique => true
-  add_index "people", ["fullname"], :name => "index_people_on_fullname"
-  add_index "people", ["email"], :name => "index_people_on_email", :unique => true
   add_index "people", ["access_key"], :name => "index_people_on_access_key", :unique => true
+  add_index "people", ["email"], :name => "index_people_on_email", :unique => true
+  add_index "people", ["fullname"], :name => "index_people_on_fullname"
+  add_index "people", ["identity"], :name => "index_people_on_identity", :unique => true
 
   create_table "stakeholders", :force => true do |t|
     t.integer  "task_id",    :null => false
@@ -55,6 +62,7 @@ ActiveRecord::Schema.define(:version => 20080506015153) do
     t.string   "outcome_type"
     t.string   "access_key",    :limit => 32
     t.text     "data",                                       :null => false
+    t.integer  "context_id",                                 :null => false
     t.integer  "version",                     :default => 0, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
