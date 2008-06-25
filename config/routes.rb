@@ -12,6 +12,7 @@ ActionController::Routing::Routes.draw do |map|
       opts.activity 'activity.:format', :name_prefix=>'formatted_task_'
     end
   end
+  map.search '/search', :controller=>'tasks', :action=>'search'
   map.with_options :controller=>'activity', :action=>'index' do |opts|
     opts.activity '/activity'
     opts.formatted_activity '/activity.:format'

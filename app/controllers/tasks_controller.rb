@@ -1,6 +1,6 @@
 class TasksController < ApplicationController
 
-  access_key_authentication :only=>[:index, :completed, :following, :show]
+  access_key_authentication :only=>[:search, :completed, :following, :show]
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
@@ -53,6 +53,17 @@ class TasksController < ApplicationController
     end
   end
 
+  def search
+    @query = @title = params['query'] || ''
+    #@alternate = { Mime::HTML=>search_url('query'=>@query)
+    #               Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+    #               Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    ids = Task.find_id_by_contents(@query).last.map { |h| h[:id] }
+    @tasks = Task.for_stakeholder(authenticated).with_stakeholders.find(:all, :conditions=>{ :id=>ids })
+    render :action=>'following'
+  end
+
+
   def show
     @title = @task.title
     @alternate = { Mime::HTML=>task_url(@task),
@@ -69,8 +80,6 @@ class TasksController < ApplicationController
       end
     end
   end
-
-
 
   def update
     # TODO: rescue ActiveRecord::ReadOnlyRecord
