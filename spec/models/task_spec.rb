@@ -233,7 +233,7 @@ describe Task do
 
   describe 'due_on' do
 
-    it 'should not be required' do
+    it 'should be optional' do
       Task.create(defaults.except(:due_on)).should have(:no).errors
     end
 
@@ -261,7 +261,7 @@ describe Task do
       Task.last.due_on.should == now.to_date
     end
 
-    it 'should accept blank string and set to nil' do
+    it 'should accept blank string as nil' do
       Task.create! defaults(:due_on=>Time.now)
       Task.last.update_attributes :due_on=>''
       Task.last.due_on.should be_nil
@@ -272,27 +272,29 @@ describe Task do
 
   describe 'over_due?' do
 
-    it 'should be false if task has no due date' do
+    it 'should be false if no due date' do
       Task.create(defaults).over_due?.should be_false
     end
 
-    it 'should be false if task due date in the future' do
+    it 'should be false if due date in the future' do
       Task.create(defaults(:due_on=>Date.tomorrow)).over_due?.should be_false
     end
 
-    it 'should be false if task due today' do
+    it 'should be false if due today' do
       Task.create(defaults(:due_on=>Date.today)).over_due?.should be_false
     end
 
-    it 'should be true if task due date in the past' do
+    it 'should be true if due date in the past' do
       Task.create(defaults(:due_on=>Date.yesterday)).over_due?.should be_true
     end
 
-    it 'should be true only if task is ready or active' do
+    it 'should be true only when task is ready or active' do
       for status in Task::STATUSES
         task_with_status(status, :due_on=>Date.yesterday).over_due?.should == (status == 'ready' || status == 'active')
       end
     end
+
+    it 'should respect current time zone'
 
   end
 
