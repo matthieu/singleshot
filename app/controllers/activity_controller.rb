@@ -8,14 +8,13 @@ class ActivityController < ApplicationController
     @alternate = { Mime::HTML=>activity_url,
                    Mime::ATOM=>formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key),
                    Mime::ICS=>formatted_activity_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    @activities = Activity.for_stakeholder(authenticated).with_dependents.paginate(:page=>params['page'], :per_page=>50)
     respond_to do |want|
       want.html do
         @graph = Activity.for_stakeholder(authenticated).for_dates(Date.current - 1.month)
-        yesterday = Date.yesterday
-        @activities = @graph[0,50]
       end
-      want.atom { @activities = Activity.for_stakeholder(authenticated).scoped(:limit=>50) }
-      want.ics  { @activities = Activity.for_stakeholder(authenticated).scoped(:limit=>50) }
+      want.atom
+      want.ics
     end
   end
 

@@ -22,8 +22,38 @@ ZenTest, Copyright (c) 2001-2006 Ryan Davis, Eric Hodel, Zen Spider Software
 AssertSelect, Copyright (c) 2006 Assaf Arkin
 http://rspec.info/
 
+rest-open-uri, copyright of Leonard Richardson.
+http://rubyforge.org/projects/rest-open-uri/
+
+RMagick, copyright of Timothy P. Hunter, licensed under MIT license.
+http://rmagick.rubyforge.org/
+
 Sparklines, copyright of Geoffrey Grosenbach, licensed under MIT license.
 http://nubyonrails.com/pages/sparklines
+
+Acts As Ferret, copyright of Kasper Weibel Nielsen-Refs (original author) and
+Jens Kraemer, licensed under MIT license.
+http://actsasferret.rubyforge.org/
+
+Ferret, copyright of Dave Balmain, licensed under MIT license.
+http://ferret.davebalmain.com/trac/
+
+Annotate Models, copyright of Cuong Tran, licensed under MIT license.
+http://annotate-models.rubyforge.org/
+
+Faker, copyright of Benjamin Curtis, licensed under MIT license.
+http://faker.rubyforge.org/
+
+SQLite Ruby, copyright of Jamis Buck, licensed under BSD license.
+http://sqlite-ruby.rubyforge.org/
+
+Thin, copyright of Marc-Andre Cournoyer, with MIT license but supposedly
+under Ruby license with some GPL code thrown in.  Not a runtime dependency.
+http://code.macournoyer.com/thin/
+
+Will Paginate, copyright of PJ Hyett and Mislav Marohnić, licensed under MIT
+license.
+http://errtheblog.com/posts/56-im-paginating-again
 
 Silk icon set, copyright of Mark James, licensed under the Creative Commons
 Attribution 2.5 License.

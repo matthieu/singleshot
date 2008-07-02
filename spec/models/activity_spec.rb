@@ -1,3 +1,19 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
+
 require File.dirname(__FILE__) + '/../spec_helper'
 require File.dirname(__FILE__) + '/helper'
 
@@ -23,19 +39,19 @@ describe Activity do
     end
 
     it 'should be required' do
-      Activity.create(:person=>person('person'), :action=>'created').should have(1).error_on(:task)
+      Activity.create(:person=>person('person'), :name=>'created').should have(1).error_on(:task)
     end
   end
 
-  describe 'action' do
+  describe 'name' do
     it 'should be part of activity' do
       Task.create! defaults
-      Activity.last.action.should == 'created'
+      Activity.last.name.should == 'created'
     end
 
     it 'should be required' do
       Task.create! defaults
-      Activity.create(:person=>person('person'), :task=>Task.last).should have(1).error_on(:action)
+      Activity.create(:person=>person('person'), :task=>Task.last).should have(1).error_on(:name)
     end
   end
 
@@ -46,18 +62,19 @@ describe Activity do
   
   it 'should be read only' do
     Task.create! defaults
-    lambda { Activity.last.update_attributes! :action=>'updated' }.should raise_error(ActiveRecord::ReadOnlyRecord)
+    lambda { Activity.last.update_attributes! :name=>'updated' }.should raise_error(ActiveRecord::ReadOnlyRecord)
   end
 
-  it 'should delete when destroying task' do
+  it 'should be removed when destroying task' do
     Task.create! defaults
     lambda { Task.last.destroy }.should change(Activity, :count).to(0)
   end
 
-  it 'should delete when destroying person' do
+  it 'should be removed when destroying person' do
     Task.create! defaults(:creator=>person('creator'))
     lambda { person('creator').destroy }.should change(Activity, :count).to(0)
   end
+
 
 
   describe 'for_dates' do
@@ -77,50 +94,40 @@ describe Activity do
 
 
   describe 'for_stakeholder' do
-
-    it 'should return activities for tasks associated with person' do
-      for role in Stakeholder::ALL_ROLES - ['excluded_owners']
-        Task.create! defaults.merge(Task::ACCESSOR_FROM_ROLE[role]=>person('person'))
-      end
-      Activity.for_stakeholder(person('person')).map(&:task).uniq.size.should == Stakeholder::ALL_ROLES.size - 1
+    it 'should return activities from all tasks associated with stakeholder' do
+      Task.create! defaults(:creator=>person('person'))
+      Task.create! defaults(:owner=>person('person'))
+      Task.create! defaults(:observers=>person('person'))
+      Activity.for_stakeholder(person('person')).map(&:task).uniq.size.should == 3
     end
 
-    it 'should not return activities for excluded owners' do
-      Task.create! defaults.merge(:excluded_owners=>person('person'))
+    it 'should not return activities for excluded owner' do
+      Task.create! defaults(:excluded_owners=>person('person'))
       Activity.for_stakeholder(person('person')).should be_empty
     end
 
-    it 'should not return activities for other stakeholders' do
-      Task.create! defaults.merge(:status=>'reserved', :potential_owners=>person('other'))
-      Activity.for_stakeholder(person('person')).should be_empty
+    it 'should not return activities not relevant to stakeholder' do
+      Task.create! defaults(:creator=>person('creator'))
+      Task.create! defaults(:owner=>person('owner'))
+      Activity.for_stakeholder(person('creator')).first.task.should == Task.first
+      Activity.for_stakeholder(person('owner')).last.task.should == Task.last
     end
 
-    it 'should return activities for tasks with visible status' do
-      for status in Task::STATUSES - ['reserved']
-        task_with_status status, :potential_owners=>person('person')
-      end
-      Activity.for_stakeholder(person('person')).map(&:task).uniq.size.should == Task::STATUSES.size - 1
-    end
-
-    it 'should not return activities for reserved tasks' do
-      Task.create! defaults.merge(:status=>'reserved', :potential_owners=>person('person'))
-      Activity.for_stakeholder(person('person')).should be_empty
-    end
-
-    it 'should return all activities for a visible task' do
-      Task.create! defaults.merge(:creator=>person('creator'))
-      Task.last.update_attributes! :owner=>person('owner')
-      Activity.for_stakeholder(person('creator')).should == Activity.for_stakeholder(person('owner'))
-      Activity.for_stakeholder(person('creator')).map(&:action).should include('created', 'is owner of')
-      Activity.for_stakeholder(person('owner')).map(&:person).should include(person('creator'), person('owner'))
-    end
-
-    it 'should return activities from most recent to last' do
-      Task.create! defaults.merge(:creator=>person('creator'))
+    it 'should order activities from most recent to last' do
+      Task.create! defaults(:creator=>person('person'))
       Activity.update_all ['created_at=?', Time.zone.now - 5.seconds]
-      Task.last.update_attributes! :owner=>person('owner')
-      activities = Activity.for_stakeholder(person('creator'))
+      Task.create! defaults(:owner=>person('person'))
+      activities = Activity.for_stakeholder(person('person'))
       activities.first.created_at.should > activities.last.created_at
+    end
+
+    it 'should not return the same activity twice' do
+      Task.create! defaults(:creator=>person('person'), :observers=>person('person'))
+      Activity.for_stakeholder(person('person')).size.should == 1
+    end
+
+    it 'should not eager load dependencies' do
+      Activity.for_stakeholder(person('person')).proxy_options[:include].should be_empty
     end
 
   end
