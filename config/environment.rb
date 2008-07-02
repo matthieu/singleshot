@@ -26,10 +26,12 @@ Rails::Initializer.run do |config|
   # config.gem "bj"
   # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"
   # config.gem "aws-s3", :lib => "aws/s3"
-  config.gem 'rest-open-uri',   :version=>'1.0.0'
-  config.gem 'rmagick',         :version=>'2.5.1'
-  config.gem 'sparklines',      :version=>'0.5.1'
-  config.gem 'acts_as_ferret',  :version=>'0.4.3'
+  config.gem 'rest-open-uri',                   :version=>'1.0.0'
+  config.gem 'rmagick', :lib=>'RMagick',        :version=>'2.5.1'
+  config.gem 'sparklines',                      :version=>'0.5.1'
+  config.gem 'acts_as_ferret',                  :version=>'0.4.3'
+  config.gem 'mislav-will_paginate', :lib=>'will_paginate',
+    :source=>'http://gems.github.com',          :version=>'2.3.2'
 
   # Only load the plugins named here, in the order given. By default, all plugins 
   # in vendor/plugins are loaded in alphabetical order.
