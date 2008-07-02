@@ -13,6 +13,7 @@ ActionController::Routing::Routes.draw do |map|
     end
   end
   map.search '/search', :controller=>'tasks', :action=>'search'
+  map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
   map.with_options :controller=>'activity', :action=>'index' do |opts|
     opts.activity '/activity'
     opts.formatted_activity '/activity.:format'

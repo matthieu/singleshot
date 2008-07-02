@@ -4,7 +4,7 @@ class TasksController < ApplicationController
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
-
+  skip_filter :authenticate, :only=>[:opensearch]
 
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
@@ -67,6 +67,10 @@ class TasksController < ApplicationController
       wants.atom { render :action=>'tasks' }
       wants.ics  { render :action=>'tasks' }
     end
+  end
+
+  def opensearch
+    render :template=>'tasks/opensearch.builder', :content_type=>'application/opensearchdescription', :layout=>false
   end
 
 
