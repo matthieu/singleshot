@@ -257,17 +257,18 @@ table.tasks tbody td {
   margin: 0;
   border-bottom: 1px solid #eee;
   text-overflow: ellipsis;
-	overflow: hidden;
-	white-space: nowrap;
+  overflow: hidden;
+  white-space: nowrap;
 }
 table.tasks tbody td img {
   vertical-align: middle;
 }
-table.tasks tbody tr.inactive, table.tasks tbody tr.inactive td a {
-  color: #888;
-}
 table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
   color: #f04040;
+}
+table.tasks tbody tr.completed td, table.tasks tbody tr.completed td a,
+table.tasks tbody tr.cancelled td, table.tasks tbody tr.cancelled td a {
+  color: #888;
 }
 table.tasks tbody td .priority_1 {
   color: #f04040;
