@@ -94,9 +94,8 @@ module ActionView
       end
 
       def compile(template)
-        content_type_handler = (@view.send!(:controller).respond_to?(:response) ? "controller.response" : "controller")
         <<-RUBY
-        #{content_type_handler}.content_type ||= "#{Mime::ICS};method=PUBLISH"
+        set_controller_content_type("#{Mime::ICS};method=PUBLISH");
         ical = ActionView::ICalBuilder.new controller.request do |calendar|
           #{template.source}
         end
