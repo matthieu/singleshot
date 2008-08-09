@@ -40,9 +40,9 @@ class Person < ActiveRecord::Base
     # it will return an array of people.  Matches against the identity returned in to_param.
     def identify(identity)
       case identity
-      when Array then Person.find(:all, :conditions=>{:identity=>identity.flatten.uniq})
       when Person then identity
-      else Person.find_by_identity(identity) or raise ActiveRecord::RecordNotFound
+      when Array then Person.find(:all, :conditions=>{:identity=>identity.flatten.uniq})
+      else Person.find_by_identity(identity.to_s) or raise ActiveRecord::RecordNotFound
       end
     end
 

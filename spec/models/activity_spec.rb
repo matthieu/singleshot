@@ -15,7 +15,6 @@
 
 
 require File.dirname(__FILE__) + '/../spec_helper'
-require File.dirname(__FILE__) + '/helper'
 
 
 describe Activity do
@@ -76,19 +75,25 @@ describe Activity do
   end
 
 
-
   describe 'for_dates' do
-    it 'should return activities in date range' do
-      now = Time.zone.now
-      activities = (0..3).each do |i|
-        Task.create! defaults(:creator=>person('creator'))
-        Activity.update_all ['created_at=?', now - i.day], ['id=?', Activity.last.id]
-      end
-      min, max = Activity.minimum(:created_at) + 1.day, Activity.maximum(:created_at)
-      Activity.for_dates(min.to_date..max.to_date).count == 1
-      Activity.for_dates(min.to_date..max.to_date).each do |activity|
-        activity.created_at.should be_between(min, max)
-      end
+    it 'should accept time and find all activities since that day' do
+      Activity.for_dates(3.days.ago).proxy_options[:conditions][:created_at].should ==
+        (3.days.ago.beginning_of_day..Time.current.end_of_day)
+    end
+    
+    it 'should accept date and find all activities since that day' do
+      Activity.for_dates(Date.current - 3.days).proxy_options[:conditions][:created_at].should ==
+        (3.days.ago.beginning_of_day..Time.current.end_of_day)
+    end
+
+    it 'should accept time range and find all activities in these dates' do
+      Activity.for_dates(3.days.ago..1.day.ago).proxy_options[:conditions][:created_at].should ==
+        (3.days.ago.beginning_of_day..1.day.ago.end_of_day)
+    end
+
+    it 'should accept date range and find all activities in these dates' do
+      Activity.for_dates(Date.current - 3.days..Date.current - 1.day).proxy_options[:conditions][:created_at].should ==
+        (3.days.ago.beginning_of_day..1.day.ago.end_of_day)
     end
   end
 
@@ -127,9 +132,8 @@ describe Activity do
     end
 
     it 'should not eager load dependencies' do
-      Activity.for_stakeholder(person('person')).proxy_options[:include].should be_empty
+      Activity.for_stakeholder(person('person')).proxy_options[:include].should be_nil
     end
-
   end
 
 end
