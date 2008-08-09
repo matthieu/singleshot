@@ -75,7 +75,6 @@ describe Activity do
   end
 
 
-
   describe 'for_dates' do
     it 'should accept time and find all activities since that day' do
       Activity.for_dates(3.days.ago).proxy_options[:conditions][:created_at].should ==
