@@ -37,12 +37,19 @@ class Activity < ActiveRecord::Base
     !new_record?
   end
 
+<<<<<<< HEAD:app/models/activity.rb
+=======
+  # Eager loads all activities and their dependents (task, person).
+  named_scope :with_dependents, :include=>[:task, :person]
+
+>>>>>>> dev:app/models/activity.rb
   # Returns activities from all tasks associated with this stakeholder.
   named_scope :for_stakeholder, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
       :conditions=>["involved.person_id=? AND involved.role != 'excluded'", person.id],
       :order=>'activities.created_at DESC', :group=>'activities.task_id, activities.person_id, activities.name' } }
 
+<<<<<<< HEAD:app/models/activity.rb
   named_scope :with_dependents, :include=>[:task, :person]
 
   named_scope :for_dates, lambda { |range|
@@ -51,6 +58,13 @@ class Activity < ActiveRecord::Base
       range = range.to_time..Time.current.end_of_day
     when Range
       range = range.min.to_time.beginning_of_day..range.max.to_time.end_of_day
+=======
+  # Returns activities for a range of dates (from..to) or from a given date to today.
+  named_scope :for_dates, lambda { |arg|
+    range = case arg
+    when Date, Time; arg.to_time.in_time_zone.beginning_of_day..Time.current.end_of_day
+    when Range;      arg.first.to_time.in_time_zone.beginning_of_day..arg.last.to_time.in_time_zone.end_of_day
+>>>>>>> dev:app/models/activity.rb
     end
     { :conditions=>{ :created_at=>range } } }
 

@@ -57,10 +57,7 @@ Rails::Initializer.run do |config|
   # no regular words or you'll be exposed to dictionary attacks.
   config.action_controller.session = {
     :session_key => '_singleshot_session',
-    # NOTE: This secret is not so secret, it shows up in the source distribution.
-    # Change to something else before deploying in production!
-    # Use rake secret to generate a new crypto-strong secrent.
-    :secret      => '01d45defc4a9585c2e0a9d6bb1d10ff3488fa2ffef1fd439ad03894cc2ae4e5025bdc6487972679b97a7ac79bd385ee07b36c7952f7882d35bdc9bc60aa584bf'
+    :secret      => File.read('secret.key')
   }
 
   # Use the database for sessions instead of the cookie-based default,

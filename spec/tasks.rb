@@ -1,41 +1,12 @@
-module Helper
-  module Models
+module SpecHelpers
 
+  module Tasks
     def self.included(base)
-      base.after :all do
+      base.after :each do
         Activity.delete_all
         Stakeholder.delete_all
         Task.delete_all
-        Person.delete_all
-        @authenticated = nil
       end
-    end
-
-    def person(identity)
-      Person.identify(identity) rescue Person.create(:email=>"#{identity}@apache.org", :password=>'secret')
-    end
-
-    def people(*identities)
-      identities.map { |identity| person(identity) }
-    end
-
-    def su
-      Person.identify('super') || Person.create(:email=>'super@apache.org', :admin=>true)
-    end
-
-    def authenticate(person)
-      @authenticated = person
-      session[:person_id] = person.id
-      credentials = [person.identity, 'secret']
-      request.headers['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(*credentials)
-    end
-
-    attr_reader :authenticated
-
-    def all_roles
-      singular = ['creator', 'owner'].inject({}) { |h, role| h.update(role=>person(role)) }
-      ['potential_owners', 'observers', 'admins'].inject(singular) { |h, role|
-        h.update(role.to_sym=>Array.new(3) { |i| person("#{role.singularize}#{i}") }) }
     end
 
     def defaults(attributes = {})
@@ -73,12 +44,10 @@ module Helper
       end
       task
     end
-
   end
-
 end
 
-
 Spec::Runner.configure do |config|
-  config.include Helper::Models, :type=>:model
+  config.include SpecHelpers::Tasks, :type=>:model
+  config.include SpecHelpers::Tasks, :type=>:controller
 end

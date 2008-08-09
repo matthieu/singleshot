@@ -3,7 +3,19 @@
 ENV["RAILS_ENV"] = "test"
 require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
 require 'spec/rails'
-require File.expand_path(File.dirname(__FILE__) + "/enhancements")
+require File.expand_path(File.dirname(__FILE__) + '/people')
+require File.expand_path(File.dirname(__FILE__) + '/tasks')
+
+module ActionController
+  # TestResponse for functional, CgiResponse for integration.
+  class AbstractResponse
+    StatusCodes::SYMBOL_TO_STATUS_CODE.each do |symbol, code|
+      unless instance_methods.include?("#{symbol}?")
+        define_method("#{symbol}?") { self.code == code.to_s }
+      end
+    end
+  end
+end
 
 Spec::Runner.configure do |config|
   config.use_transactional_fixtures = true

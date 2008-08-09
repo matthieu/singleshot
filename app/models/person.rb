@@ -40,9 +40,9 @@ class Person < ActiveRecord::Base
     # it will return an array of people.  Matches against the identity returned in to_param.
     def identify(identity)
       case identity
-      when Array then Person.find(:all, :conditions=>{:identity=>identity.flatten.uniq})
       when Person then identity
-      else Person.find_by_identity(identity) or raise ActiveRecord::RecordNotFound
+      when Array then Person.find(:all, :conditions=>{:identity=>identity.flatten.uniq})
+      else Person.find_by_identity(identity.to_s) or raise ActiveRecord::RecordNotFound
       end
     end
 
@@ -88,15 +88,15 @@ class Person < ActiveRecord::Base
   # TODO:  Some way to check minimum size of passwords.
 
   def password=(password)
-    seed = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
-    crypted = SHA1.hexdigest("#{seed}:#{password}")
-    self[:password] = "#{seed}:#{crypted}"
+    salt = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
+    crypted = SHA1.hexdigest("#{salt}:#{password}")
+    self[:password] = "#{salt}:#{crypted}"
   end
 
   def password?(password)
     return false unless self[:password]
-    seed, crypted = self[:password].split(':')
-    crypted == SHA1.hexdigest("#{seed}:#{password}")
+    salt, crypted = self[:password].split(':')
+    crypted == SHA1.hexdigest("#{salt}:#{password}")
   end
 
   def reset_password!
