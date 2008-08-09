@@ -14,7 +14,7 @@
         <li><%= link_to 'Logout', session_url, :method=>:delete %></li>
       </ul>
       <ul class='tabs'><%=
-        [ ['➠ Inbox', tasks_url, 'Pending and available tasks'],
+        [ ['➠ Tasks list', tasks_url, 'Your task list'],
           ['All Tasks', following_tasks_url, 'Tasks you create, observing or administrating'],
           ['Completed', completed_tasks_url, 'Tasks you completed'],
           ['Activity', activity_url, 'Recent task activity'] ].map { |tab|
