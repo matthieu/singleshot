@@ -4,8 +4,10 @@
     <%= javascript_include_tag :all, :cache=>true %>
     <%= stylesheet_link_tag 'default', :cache=>true %>
     <%= stylesheet_link_tag 'print', :media=>'print', :cache=>true %>
-    <% @alternate.each do |mime, url| %><%= auto_discovery_link_tag mime.to_sym, url %><% end if @alternate %>
-      <link rel='search' type='application/opensearchdescription+xml' href='<%= open_search_url %>' title='Search your tasks list' />
+    <%= @alternate.map { |mime, url| auto_discovery_link_tag mime.to_sym, url } if @alternate %>
+    <%= tag :link, :rel=>'search', :type=>Mime::OSD, :href=>open_search_url, :title=>'Search your tasks list' %>
+    <%= tag :link, :rel=>'next', :type=>Mime::HTML, :href=>@next if @next %>
+    <%= tag :previous, :rel=>'previous', :type=>Mime::HTML, :href=>@previous if @previous %>
   </head>
   <body>
     <div id='header'>

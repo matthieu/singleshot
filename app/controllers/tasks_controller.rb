@@ -133,6 +133,20 @@ class TasksController < ApplicationController
       @task.cancel!
     head :ok
   end
+  
+  def activities
+    @activities = @task.activities
+    @title = "Activities - #{@task.title}"
+    @subtitle = "Track all activities in the task #{@task.title}"
+    @alternate = { Mime::HTML=>task_activity_url(@task),
+                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key),
+                   Mime::ICS=>formatted_task_activity_url(@task, :format=>:ics, :access_key=>authenticated.access_key) }
+    respond_to do |want|
+      want.html { @graph = @activities ; render :action=>'index' }
+      want.atom { render :action=>'index' }
+      want.ics  { render :action=>'index' }
+    end
+  end
 
 private
 

@@ -54,4 +54,7 @@ class Activity < ActiveRecord::Base
     end
     { :conditions=>{ :created_at=>range } } }
 
+  # Returns activities by recently added order.
+  named_scope :recently_added, :order=>'created_at desc'
+
 end
