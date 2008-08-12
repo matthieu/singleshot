@@ -1,11 +1,13 @@
-<% graph = @graph.group_by { |activity| activity.created_at.to_date }
-   range = graph.last.first..Date.current %>
-<div class='right'><%= sparkline_tag range.map { |date| graph[date] ? graph[date].size : 0 },
-                                     :title=>'Level of activity for each day' unless graph.empty?  %></div>
+<%  if @graph
+      graph = @graph.group_by { |activity| activity.created_at.to_date }
+      range = graph.last.first..Date.current %>
+      <div class='right'><%= sparkline_tag range.map { |date| graph[date] ? graph[date].size : 0 },
+                                           :title=>'Level of activity for each day' unless graph.empty?  %></div>
+<%  end %>
 <ol class='dates hfeed'>
-  <% for date, activities in group_by_dates(@activities, :created_at) %>
+  <% for date, activities in @activities.group_by{ |a| a.created_at.to_date } %>
     <li class='date'>
-      <h2><%= date.humanize %></h2>
+      <h2><%= relative_date(date).humanize %></h2>
       <%= render :partial=>'activities', :locals=>{ :activities=>activities, :today=>nil } %>
     </li>
   <% end %>

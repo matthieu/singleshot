@@ -2,6 +2,8 @@ atom_feed :root_url=>@alternate[Mime::HTML] do |feed|
   feed.title "Singleshot: #{@title}"
   feed.subtitle @subtitle
   feed.updated @activities.first.created_at unless @activities.empty?
+  feed.link :href=>@next, :rel=>'next', :type=>Mime::ATOM if @next
+  feed.link :href=>@previous, :rel=>'previous', :type=>Mime::ATOM if @previous
   feed.link :href=>@alternate[Mime::ICS], :rel=>'alternate', :type=>Mime::ICS if @alternate[Mime::ICS]
   feed.generator 'Singleshot', :version=>Singleshot::VERSION
 

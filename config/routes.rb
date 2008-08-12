@@ -1,23 +1,21 @@
 ActionController::Routing::Routes.draw do |map|
 
   map.resource 'session'
-  map.resources 'tasks', :collection=>{ 'completed'=>:get, 'following'=>:get, 'complete_redirect'=>:get } do |tasks|
+  map.resources 'tasks', :collection=>{ 'completed'=>:get, 'following'=>:get, 'complete_redirect'=>:get },
+    :member=>['activities'] do |tasks|
     map.connect '/tasks/:id', :controller=>'tasks', :action=>'complete', :conditions=>{ :method=>:post }
     tasks.with_options :controller=>'task_for' do |opts|
       opts.connect 'for/:person_id', :action=>'update', :conditions=>{ :method=>:put }
       opts.for_person 'for/:person_id', :action=>'show'
     end
-    tasks.with_options :controller=>'activity', :action=>'for_task' do |opts|
-      opts.activity 'activity'
-      opts.activity 'activity.:format', :name_prefix=>'formatted_task_'
-    end
   end
   map.search '/search', :controller=>'tasks', :action=>'search'
   map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
-  map.with_options :controller=>'activity', :action=>'index' do |opts|
-    opts.activity '/activity'
-    opts.formatted_activity '/activity.:format'
-  end
+ 
+  map.activity '/activity', :controller=>'activity', :action=>'index'
+  map.formatted_activity '/activity.:format', :controller=>'activity', :action=>'index'
+  map.recent_activity '/activity/recent', :controller=>'activity', :action=>'recent'
+  
   map.sparklines '/sparklines', :controller=>'sparklines'
   map.root :controller=>'application'
 
