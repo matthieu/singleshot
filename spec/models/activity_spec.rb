@@ -136,4 +136,13 @@ describe Activity do
     end
   end
 
+
+  describe 'recently_added' do
+    it 'should return recently added activities' do
+      Activity.recently_added.proxy_options[:order].downcase.split.should == ['created_at', 'desc']
+    end
+    
+  end
+
+
 end

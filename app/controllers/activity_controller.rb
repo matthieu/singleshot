@@ -25,6 +25,8 @@ class ActivityController < ApplicationController
                    Mime::ATOM=>formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key),
                    Mime::ICS=>formatted_activity_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @activities = Activity.for_stakeholder(authenticated).with_dependents.paginate(:page=>params['page'], :per_page=>50)
+    @next = activity_url(:page=>@activities.next_page) if @activities.next_page
+    @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
     respond_to do |want|
       want.html do
         @graph = Activity.for_stakeholder(authenticated).for_dates(Date.current - 1.month)
@@ -34,19 +36,13 @@ class ActivityController < ApplicationController
     end
   end
 
-  def for_task
-    @task = Task.for_stakeholder(authenticated).find(params[:task_id], :include=>:activities)
-    @activities = @task.activities
-    @title = "Activities - #{@task.title}"
-    @subtitle = "Track all activities in the task #{@task.title}"
-    @alternate = { Mime::HTML=>task_activity_url(@task),
-                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key),
-                   Mime::ICS=>formatted_task_activity_url(@task, :format=>:ics, :access_key=>authenticated.access_key) }
-    respond_to do |want|
-      want.html { @graph = @activities ; render :action=>'index' }
-      want.atom { render :action=>'index' }
-      want.ics  { render :action=>'index' }
-    end
+  # TODO: Need admin verification filter.  
+  def recent
+    @title = 'Recently added activities'
+    @subtitle = 'Recently added activities on all tasks.'
+    @activities = Activity.recently_added.with_dependents.paginate(:page=>params['page'], :per_page=>50)
+    @next = recent_activity_url(:page=>@activities.next_page) if @activities.next_page
+    @previous = recent_activity_url(:page=>@activities.previous_page) if @activities.previous_page
   end
-
+  
 end
