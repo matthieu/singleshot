@@ -5,21 +5,18 @@ class ApplicationController < ActionController::Base
 
   helper :all # include all helpers, all the time
 
-  # See ActionController::Base for details 
-  # Uncomment this to filter the contents of submitted sensitive data parameters
-  # from your application log (in this case, all fields with names like "password"). 
-  filter_parameter_logging :password
-
   def index
     redirect_to tasks_url
   end
 
+protected
 
-  # --- Authentication ---
+  # --- Authentication/Security ---
 
-  # Turn sessions off for everything but HTML and AJAX.  This also forces HTTP Basic or access key
-  # authentication on all other content types (JSON, iCal, etc).
-  session :off, :if=>lambda { |req| !(req.format.html? || req.xhr?) }
+  # See ActionController::Base for details 
+  # Uncomment this to filter the contents of submitted sensitive data parameters
+  # from your application log (in this case, all fields with names like "password"). 
+  filter_parameter_logging :password
 
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
@@ -27,46 +24,39 @@ class ApplicationController < ActionController::Base
 
   before_filter :authenticate
 
-  # Authentication filter, added by default on all actions in all controllers.
-  # Uses HTTP Basic Authentication or, when processing HTML/AJAX requests, sessions.
+  # Authentication filter enabled by default since most resources are guarded.
   def authenticate
-    return if @authenticated
-    if ActionController::HttpAuthentication::Basic.authorization(request) || !session_enabled?
-      authenticate_or_request_with_http_basic request.domain do |login, password|
-        @authenticated = Person.authenticate(login, password)
-      end
+    # Good luck using HTTP Basic/sessions with feed readers and calendar apps.
+    # Instead we use a query parameter tacked to the URL to authenticate, and
+    # given the lax security, only for these resources and only for GET requests.
+    if params[:access_key] && (request.format.atom? || request.format.ics?)
+      raise ActionController::MethodNotAllowed, 'GET' unless request.get?
+      session.data.clear # don't send back cookies
+      @authenticated = Person.find_by_access_key(params[:access_key])
+      head :forbidden unless @authenticated
     else
-      @authenticated ||= Person.find(session[:person_id]) rescue nil
-      unless @authenticated
-        flash[:return_to] = request.url
-        redirect_to session_url
+      # Favoring HTTP Basic over sessions makes my debugging life easier.
+      if ActionController::HttpAuthentication::Basic.authorization(request)
+        @authenticated = authenticate_or_request_with_http_basic(request.host) { |login, password| Person.authenticate(login, password) }
+        session.data.clear
+      else
+        @authenticated = Person.find(session[:person_id]) rescue nil
+        unless @authenticated
+          # Browsers respond favorably to this test, so we use it to detect browsers
+          # and redirect the use to a login page.  Otherwise we assume dumb machine and
+          # insist on HTTP Basic.
+          if request.format.html?
+            flash[:return_to] = request.url
+            redirect_to session_url
+          else
+            session.data.clear
+            request_http_basic_authentication
+          end
+        end
       end
     end
   end
-
-  def self.access_key_authentication(options = {})
-    formats = options[:formats] || ['atom', 'ics']
-    options[:if] ||= lambda { |controller| formats.include?(controller.request.format) }
-    prepend_before_filter :authenticate_with_access_key, options
-  end
-
-  # Access key authentication, used for feeds, iCal and other type of requets that
-  # do not support HTTP authentication or sessions.  Can only be used for GET requests.
-  #
-  # To apply as a filter (must come before authenticate):
-  #   prepend_before_filter :authenticate_with_access_key, :only=>[:feed]
-  def authenticate_with_access_key
-    raise ActionController::MethodNotAllowed, 'GET' unless request.get?
-    @authenticated = Person.find_by_access_key(params[:access_key]) or raise ActiveRecord::RecordNotFound
-  end
-
-=begin
-  # Raise to return 403 (Forbidden) with optional error message.
-  class NotAuthorized < Exception
-  end
-  rescue_responses[NotAuthorized.name] = :forbidden
-=end
-
+  
 
   # --- Authenticated user ---
 

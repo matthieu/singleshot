@@ -8,9 +8,11 @@
 #  description   :string(255)     not null
 #  priority      :integer(1)      not null
 #  due_on        :date
+#  start_by      :date
 #  status        :string(255)     not null
 #  perform_url   :string(255)
 #  details_url   :string(255)
+#  instructions  :string(255)
 #  integrated_ui :boolean
 #  outcome_url   :string(255)
 #  outcome_type  :string(255)

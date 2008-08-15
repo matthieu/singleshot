@@ -16,8 +16,6 @@
 
 class ActivityController < ApplicationController
 
-  access_key_authentication
-
   def index
     @title = 'Activities'
     @subtitle = 'Track activity in tasks you participate in or observe.'
