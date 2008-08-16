@@ -1,200 +1,143 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 describe TasksController do
-
-end
-
-
-describe TasksController, 'authentication' do
-
-  include Specs::Tasks
-
-  before :all do
-    @person = person('assaf')
-  end
   
-  def session_authenticate(person)
-    session[:person_id] = person.id
-  end
-
-  def http_authenticate(login, password)
-    request.headers['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(login, password)
-  end
-
-  it 'should use session authentication for HTML requests' do
-    post :create, :task=>default_task
-    response.should redirect_to(session_url)
-  end
-
-  it 'should accept session authentication' do
-    session_authenticate @person
-    Task.should_receive(:create!)
-    post :create, :task=>default_task
-  end
-
-  it 'should use HTTP Basic authentication for XML requests' do
-    post :create, :task=>default_task, :format=>'xml'
-    response.should be_unauthorized
-  end
-
-  it 'should use HTTP Basic authentication for JSON requests' do
-    post :create, :task=>default_task, :format=>'json'
-    response.should be_unauthorized
-  end
-
-  it 'should use HTTP Basic authentication if authentication header provider' do
-    http_authenticate 'assaf', 'wrong'
-    post :create, :task=>default_task
-    response.should be_unauthorized
-  end
-
-  it 'should accept HTTP Basic authentication' do
-    http_authenticate 'assaf', 'secret'
-    Task.should_receive(:create!)
-    post :create, :task=>default_task
-  end
-
-  it 'should redirect to login page with return to self' do
-    post :create, :task=>default_task
-    response.should redirect_to(session_url)
-    flash[:return_to].should match(/^http:\/\/test.host\/tasks/)
-  end
-
-end
+  controller_name :tasks
 
 
-describe TasksController, 'POST /tasks' do
-
-  include Specs::Tasks
-
-  before :each do
-    authenticate person('assaf')
-  end
-
-  it 'should map to /tasks/' do
-    route_for(:controller=>'tasks', :action=>'create').should eql('/tasks')
-  end
-
-  it 'should create empty task if no input provided' do
-    post :create, :format=>'json'
-    response.should be_see_other
-    task = Task.find(:first)
-    task.should be_reserved
-    response.headers['Location'].should eql(task_url(task))
-  end
-
-  it 'should create task from supplied inputs' do
-    post :create, :task=>default_task, :format=>'json'
-    response.should be_created
-    task = Task.find(:first)
-    task.should be_active
-    response.headers['Location'].should eql(task_url(task))
-    default_task.each { |key, val| task.send(key).should eql(val) }
-  end
-
-  it 'should infer XML as outcome MIME type from accepted content type' do
-    request.headers['CONTENT_TYPE'] = Mime::XML.to_s
-    post :create, :task=>default_task
-    Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
-  end
-
-  it 'should infer JSON as outcome MIME type from accepted content type' do
-    request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
-    post :create, :task=>default_task
-    Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
-  end
-
-  it 'should default to XML as outcome MIME type for all other content types' do
-    post :create, :task=>default_task
-    Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
-  end
-
-  it 'should ignore outcome MIME type in request' do
-    request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
-    post :create, :task=>default_task.merge(:outcome_type=>'application/xml')
-    Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
-  end
-
-  it 'should add authenticated user as task admin' do
-    Task.should_receive(:create!) do |params|
-      admins = params[:admins]
-      admins.size.should eql(1)
-      admins.should include(person('assaf'))
+  describe 'POST /tasks' do
+    before :each do
+      authenticate person('assaf')
     end
-    post :create, :task=>default_task
-  end
 
-  it 'should set authenticated user as task admin' do
-    Task.should_receive(:create!) do |params|
-      admins = params[:admins]
-      admins.size.should eql(2)
-      admins.should include(person('assaf'), 'alex')
+    it 'should map to /tasks/' do
+      route_for(:controller=>'tasks', :action=>'create').should eql('/tasks')
     end
-    post :create, :task=>default_task.merge(:admins=>['alex'])
+
+    it 'should create empty task if no input provided' do
+      post :create, :format=>'json'
+      response.should be_see_other
+      task = Task.find(:first)
+      task.should be_reserved
+      response.headers['Location'].should eql(task_url(task))
+    end
+
+    it 'should create task from supplied inputs' do
+      post :create, :task=>defaults, :format=>'json'
+      response.should be_created
+      task = Task.find(:first)
+      task.should be_active
+      response.headers['Location'].should eql(task_url(task))
+      defaults.each { |key, val| task.send(key).should eql(val) }
+    end
+
+    it 'should infer XML as outcome MIME type from accepted content type' do
+      request.headers['CONTENT_TYPE'] = Mime::XML.to_s
+      post :create, :task=>defaults
+      Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
+    end
+
+    it 'should infer JSON as outcome MIME type from accepted content type' do
+      request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
+      post :create, :task=>defaults
+      Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
+    end
+
+    it 'should default to XML as outcome MIME type for all other content types' do
+      post :create, :task=>defaults
+      Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
+    end
+
+    it 'should ignore outcome MIME type in request' do
+      request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
+      post :create, :task=>defaults(:outcome_type=>'application/xml')
+      Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
+    end
+
+    it 'should add authenticated user as task admin' do
+      Task.should_receive(:create!) do |params|
+        admins = params[:admins]
+        admins.size.should eql(1)
+        admins.should include(person('assaf'))
+      end
+      post :create, :task=>defaults
+    end
+
+    it 'should set authenticated user as task admin' do
+      Task.should_receive(:create!) do |params|
+        admins = params[:admins]
+        admins.size.should eql(2)
+        admins.should include(person('assaf'), 'alex')
+      end
+      post :create, :task=>defaults(:admins=>['alex'])
+    end
+
   end
+
+
+  describe 'GET /tasks/{id}' do
+    before :each do
+      @task = Task.create(defaults(@roles = all_roles))
+      authenticate person(@roles[:admins].first)
+    end
+
+    it 'should map to /tasks/{id}' do
+      route_for(:controller=>'tasks', :action=>'show', :id=>1).should eql('/tasks/1')
+      lambda { route_for(:controller=>'tasks', :action=>'show') }.should raise_error(ActionController::RoutingError)
+    end
+
+    it 'should 404 if task not found' do
+      lambda { get :show, :id=>0 }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'should 404 if task not yet active' do
+      task = Task.reserve!(authenticated)
+      lambda { get :show, :id=>task.id }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'should 404 if task already cancelled' do
+      @task.status = :cancelled ; @task.save!
+      lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'should 404 unless allowed to view task' do
+      authenticate person('noone')
+      lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it 'should not be visible to admin' do
+      lambda { get :show, :id=>@task.id }.should_not raise_error
+    end
+
+    it 'should not be visible to owner' do
+      authenticate @roles[:owner]
+      lambda { get :show, :id=>@task.id }.should_not raise_error
+    end
+
+    it 'should not be visible to potential owner' do
+      authenticate @roles[:potential_owners].first
+      lambda { get :show, :id=>@task.id }.should_not raise_error
+    end
+
+    it 'should not be visible to excluded owners' do
+      authenticate @task.potential_owners[1]
+      @task.update_attributes! :excluded_owners=>[authenticated]
+      lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
+    end
+
+  end
+
 
 end
 
 
-describe TasksController, 'GET /tasks/{id}' do
-  include Specs::Tasks
 
-  before :each do
-    @task = Task.create(default_task.merge(@roles = all_roles))
-    authenticate person(@roles[:admins].first)
-  end
 
-  it 'should map to /tasks/{id}' do
-    route_for(:controller=>'tasks', :action=>'show', :id=>1).should eql('/tasks/1')
-    lambda { route_for(:controller=>'tasks', :action=>'show') }.should raise_error(ActionController::RoutingError)
-  end
 
-  it 'should 404 if task not found' do
-    lambda { get :show, :id=>0 }.should raise_error(ActiveRecord::RecordNotFound)
-  end
-
-  it 'should 404 if task not yet active' do
-    task = Task.reserve!(authenticated)
-    lambda { get :show, :id=>task.id }.should raise_error(ActiveRecord::RecordNotFound)
-  end
-
-  it 'should 404 if task already cancelled' do
-    @task.status = :cancelled ; @task.save!
-    lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
-  end
-
-  it 'should 404 unless allowed to view task' do
-    authenticate person('noone')
-    lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
-  end
-
-  it 'should not be visible to admin' do
-    lambda { get :show, :id=>@task.id }.should_not raise_error
-  end
-
-  it 'should not be visible to owner' do
-    authenticate @roles[:owner]
-    lambda { get :show, :id=>@task.id }.should_not raise_error
-  end
-
-  it 'should not be visible to potential owner' do
-    authenticate @roles[:potential_owners].first
-    lambda { get :show, :id=>@task.id }.should_not raise_error
-  end
-
-  it 'should not be visible to excluded owners' do
-    authenticate @task.potential_owners[1]
-    @task.update_attributes! :excluded_owners=>[authenticated]
-    lambda { get :show, :id=>@task.id }.should raise_error(ActiveRecord::RecordNotFound)
-  end
-
-end
 
 
 
 describe TasksController, 'PUT task', :shared=>true do
-  include Specs::Tasks
-
   before :all do
     @admin, @owner = people('admin', 'owner')
     @observer, @excluded = people('observer', 'excluded')
@@ -202,7 +145,7 @@ describe TasksController, 'PUT task', :shared=>true do
   end
 
   before :each do
-    @task = Task.create!(default_task.merge(:admins=>@admin, :potential_owners=>@potential,
+    @task = Task.create!(defaults(:admins=>@admin, :potential_owners=>@potential,
       :excluded_owners=>@excluded, :observers=>@observer))
     controller.use_rails_error_handling!
   end
@@ -215,8 +158,6 @@ describe TasksController, 'PUT task', :shared=>true do
 end
 
 describe TasksController, 'PUT reserved task' do
-  include Specs::Tasks
-
   before :each do
     authenticate person('admin')
     @task = Task.reserve!(authenticated)
@@ -231,59 +172,59 @@ describe TasksController, 'PUT reserved task' do
 
   it 'should 404 if not associated with task' do
     authenticate person('unknown')
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_not_found
     @task.reload.should be_reserved
   end
 
   it 'should 200 and redirect back if task updated' do
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should redirect_to(task_url)
   end
 
   it 'should update task' do
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     @task.reload
-    default_task.each do |key, value|
+    defaults.each do |key, value|
       @task.send(key).should eql(value)
     end
   end
 
   it 'should change task status to active' do
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     @task.reload.should be_active
   end
 
   it 'should retain task administrator if no admins specified' do
-    put :update, :id=>@task.id, :task=>default_task.except(:admins)
+    put :update, :id=>@task.id, :task=>defaults.except(:admins)
     @task.reload.admins.should eql([authenticated])
   end
 
   it 'should retain authenticated admin when other admins specified' do
     admins = people('foo', 'bar')
-    put :update, :id=>@task.id, :task=>default_task.merge(:admins=>admins)
+    put :update, :id=>@task.id, :task=>defaults(:admins=>admins)
     @task.reload.admins.sort_by(&:id).should eql([authenticated] + admins)
   end
 
   it 'should 422 if task does not validate' do
-    put :update, :id=>@task.id, :task=>default_task.except(:title)
+    put :update, :id=>@task.id, :task=>defaults.except(:title)
     response.should be_unprocessable_entity
   end
 
   it 'should determine outcome type from content type if XML' do
     request.headers['CONTENT_TYPE'] = 'application/xml'
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     @task.reload.outcome_type.should eql('application/xml')
   end
 
   it 'should determine outcome type from content type if JSON' do
     request.headers['CONTENT_TYPE'] = 'application/json'
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     @task.reload.outcome_type.should eql('application/json')
   end
 
   it 'should allow changing of outcome type' do
-    put :update, :id=>@task.id, :task=>default_task.merge(:outcome_type=>'application/json')
+    put :update, :id=>@task.id, :task=>defaults(:outcome_type=>'application/json')
     @task.reload.outcome_type.should eql('application/json')
   end
  
@@ -300,7 +241,7 @@ describe TasksController, 'PUT active task' do
 
   it 'should 404 if not associated with task' do
     authenticate person('unknown')
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_not_found
   end
 
@@ -408,7 +349,7 @@ describe TasksController, 'PUT claimed task' do
   it 'should allow owner to change task data' do
     authenticate @owner
     put :update, :id=>@task.id, :task=>{ :title=>'changed', :data=>{ 'foo'=>'bar'  } }
-    @task.reload.title.should eql(default_task[:title])
+    @task.reload.title.should eql(defaults[:title])
     @task.data.should == { 'foo'=>'bar' }
   end
 
@@ -492,21 +433,21 @@ describe TasksController, 'PUT completed task' do
 
   it 'should 404 if not associated with task' do
     authenticate person('unknown')
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_not_found
     @task.reload.should be_completed
   end
 
   it 'should 409 if associated with task' do
     authenticate @admin
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_conflict
     @task.reload.should be_completed
   end
 
   it 'should not change task' do
     authenticate @admin
-    put :update, :id=>@task.id, :task=>default_task.merge(:title=>'changed')
+    put :update, :id=>@task.id, :task=>defaults(:title=>'changed')
     @task.reload.title.should_not eql('changed')
   end
 
@@ -519,14 +460,14 @@ describe TasksController, 'PUT cancelled task' do
 
   it 'should 404 if not associated with task' do
     authenticate person('unknown')
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_not_found
     @task.reload.should be_cancelled
   end
 
   it 'should 404 if associated with task' do
     authenticate @admin
-    put :update, :id=>@task.id, :task=>default_task
+    put :update, :id=>@task.id, :task=>defaults
     response.should be_not_found
     @task.reload.should be_cancelled
   end
@@ -535,11 +476,9 @@ end
 
 
 describe TasksController, 'DELETE task', :shared=>true do
-  include Specs::Tasks
-
   before :each do
     @admin, @owner = people('admin', 'owner')
-    @task = Task.create!(default_task.merge(:admins=>@admin, :owner=>@owner))
+    @task = Task.create!(defaults(:admins=>@admin, :owner=>@owner))
     controller.use_rails_error_handling!
   end
   
@@ -551,8 +490,6 @@ describe TasksController, 'DELETE task', :shared=>true do
 end
 
 describe TasksController, 'DELETE reserved task' do
-  include Specs::Tasks
-
   before :each do
     @admin = person('admin')
     @task = Task.reserve!(@admin)
@@ -690,11 +627,9 @@ end
 
 
 describe TasksController, 'POST task', :shared=>true do
-  include Specs::Tasks
-
   before :each do
     @admin, @owner = people('admin', 'owner')
-    @task = Task.create!(default_task.merge(:admins=>@admin, :owner=>@owner))
+    @task = Task.create!(defaults(:admins=>@admin, :owner=>@owner))
     controller.use_rails_error_handling!
   end
   
@@ -710,8 +645,6 @@ describe TasksController, 'POST task', :shared=>true do
 end
 
 describe TasksController, 'POST reserved task' do
-  include Specs::Tasks
-
   before :each do
     @admin = person('admin')
     @task = Task.reserve!(@admin)
@@ -828,11 +761,9 @@ end
 
 
 describe TasksController, 'token authentication' do
-  include Specs::Tasks
-
   before :each do
-    @task = Task.create(default_task.merge(:owner=>person('owner'), :potential_owners=>person('excluded'),
-                                           :excluded_owners=>person('excluded')))
+    @task = Task.create(defaults(:owner=>person('owner'), :potential_owners=>person('excluded'),
+                                                         :excluded_owners=>person('excluded')))
   end
 
   def authenticate(person)

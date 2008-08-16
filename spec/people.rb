@@ -28,23 +28,13 @@ module SpecHelpers
     #
     # Without arguments, authenticates as 'person'.
     def authenticate(person = person('person'))
-      #credentials = [person.identity, 'secret']
-      #request.headers['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(*credentials)
+      previous, session[:person_id] = session[:person_id], person.id
       if block_given?
         begin
-          previous, session[:person_id] = session[:person_id], person.id
-          credentials = [person.identity, 'secret']
-          request.headers['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(*credentials)
-          p 'here'
           yield
         ensure
           session[:person_id] = previous
-          request.headers.delete('HTTP_AUTHORIZATION')
         end
-      else
-        session[:person_id] = person.is
-        credentials = [person.identity, 'secret']
-        request.headers['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(*credentials)
       end
     end
 
@@ -63,7 +53,7 @@ end
 
 
 Spec::Runner.configure do |config|
-  config.include SpecHelpers::People, :type=>:model
-  config.include SpecHelpers::People, :type=>:controller
+  config.include SpecHelpers::People
+  config.include SpecHelpers::People
   config.include SpecHelpers::Authentication, :type=>:controller
 end
