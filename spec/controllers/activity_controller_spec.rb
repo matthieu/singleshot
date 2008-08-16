@@ -33,7 +33,6 @@ describe ActivityController do
     it 'should return root element activities' do
       authenticate do
         get 'index', :format=>Mime::XML
-        p response.body
       end
     end
 

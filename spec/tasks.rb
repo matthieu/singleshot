@@ -48,6 +48,5 @@ module SpecHelpers
 end
 
 Spec::Runner.configure do |config|
-  config.include SpecHelpers::Tasks, :type=>:model
-  config.include SpecHelpers::Tasks, :type=>:controller
+  config.include SpecHelpers::Tasks
 end

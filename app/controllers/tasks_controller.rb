@@ -72,6 +72,11 @@ class TasksController < ApplicationController
   end
 
 
+  def create
+    @task = Task.create!(params[:task])
+    head :created, :location=>@task
+  end
+
   def show
     @title = @task.title
     @alternate = { Mime::HTML=>task_url(@task),
