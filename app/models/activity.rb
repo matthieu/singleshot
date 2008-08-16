@@ -1,3 +1,15 @@
+# == Schema Information
+# Schema version: 20080621023051
+#
+# Table name: activities
+#
+#  id         :integer         not null, primary key
+#  person_id  :integer
+#  task_id    :integer         not null
+#  name       :string(255)     not null
+#  created_at :datetime        not null
+#
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -13,18 +25,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-
-# == Schema Information
-# Schema version: 20080621023051
-#
-# Table name: activities
-#
-#  id         :integer         not null, primary key
-#  person_id  :integer
-#  task_id    :integer         not null
-#  action     :string(255)     not null
-#  created_at :datetime        not null
-#
 
 class Activity < ActiveRecord::Base
 

@@ -1,7 +1,5 @@
 class TasksController < ApplicationController
 
-  access_key_authentication :only=>[:index, :completed, :following, :search, :show]
-
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
   skip_filter :authenticate, :only=>[:opensearch]

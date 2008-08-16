@@ -2,7 +2,7 @@
 # Copyright (c) 2005 Geoffrey Grosenbach boss@topfunky.com
 
 class Sparklines
-
+  
   ## Creates a deadline sparkline.
   #
   # A deadline accepts pre-deadline (negative) and post-deadline (positive
@@ -89,6 +89,7 @@ end
 class SparklinesController < ApplicationController
 
   skip_before_filter :authenticate
+  session :off
 
   COLOR_SCHEME = { :above_color=>'#65a0e4', :below_color=>'#a8c0d8', :target=>50, :target_color=>'#ffffd0', :background_color=>'transparent' }
 
