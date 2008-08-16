@@ -3,5 +3,5 @@ log/*.log
 tmp/**/*
 .DS_Store
 secret.key
-vendor/rails
+vendor
 index
