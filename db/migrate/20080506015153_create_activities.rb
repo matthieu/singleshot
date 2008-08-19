@@ -17,7 +17,7 @@
 class CreateActivities < ActiveRecord::Migration
   def self.up
     create_table  'activities' do |t|
-      t.belongs_to  'person'
+      t.belongs_to  'person',     :null=>false
       t.belongs_to  'task',       :null=>false
       t.string      'name',       :null=>false
       t.datetime    'created_at', :null=>false
