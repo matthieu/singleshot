@@ -17,20 +17,19 @@
 class ActivityController < ApplicationController
 
   def index
-    @title = 'Activities'
-    @subtitle = 'Track activity in tasks you participate in or observe.'
-    @alternate = { Mime::HTML=>activity_url,
-                   Mime::ATOM=>formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key),
-                   Mime::ICS=>formatted_activity_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    @title = I18n.t('activities.index.title')
+    @subtitle = I18n.t('activities.index.subtitle')
     @activities = Activity.for_stakeholder(authenticated).with_dependents.paginate(:page=>params['page'], :per_page=>50)
     @next = activity_url(:page=>@activities.next_page) if @activities.next_page
     @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
     respond_to do |want|
       want.html do
+        @atom_feed_url = formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key)
         @graph = Activity.for_stakeholder(authenticated).for_dates(Date.current - 1.month)
       end
-      want.atom
-      want.ics
+      want.atom { @root_url = activity_url }
+      want.json
+      want.xml
     end
   end
 

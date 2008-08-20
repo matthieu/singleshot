@@ -12,7 +12,7 @@
 ActiveRecord::Schema.define(:version => 20080621023051) do
 
   create_table "activities", :force => true do |t|
-    t.integer  "person_id"
+    t.integer  "person_id",  :null => false
     t.integer  "task_id",    :null => false
     t.string   "name",       :null => false
     t.datetime "created_at", :null => false

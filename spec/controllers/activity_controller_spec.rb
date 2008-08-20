@@ -17,25 +17,30 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 
-describe ActivityController do
+describe ActivityController, 'index' do
 
-  describe 'index' do
+  it 'should map to /activity' do
+    route_for(:controller=>'activity', :action=>'index').should eql('/activity')
+  end
 
-    it 'should map to /activity' do
-      route_for(:controller=>'activity', :action=>'index').should eql('/activity')
-    end
-
-    it 'should require authentication' do
+  it 'should require authentication' do
+    get 'index'
+    response.should redirect_to(session_url)
+  end
+  
+  describe 'response' do
+    before :each do
+      authenticate
       get 'index'
-      response.should redirect_to(session_url)
     end
-
-    it 'should return root element activities' do
-      authenticate do
-        get 'index', :format=>Mime::XML
-      end
+    
+    it "should have 'Activities' in the title" do
+      assigns[:title].should == 'Activities'
     end
-
+    
+    it "should expand on the title in the subtitle" do
+      assigns[:subtitle].should == "Activity from all tasks you own or observe"
+    end
   end
 
 end

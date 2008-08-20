@@ -373,7 +373,8 @@ class Task < ActiveRecord::Base
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :dependent=>:delete_all
 
   def log_activity(person, name)
-    activities.build :person=>person || modified_by, :name=>name
+    person ||= modified_by
+    activities.build :person=>person, :name=>name if person
   end
 
   LOG_CHANGE_ATTRIBUTES = [:title, :description, :priority, :due_on]
