@@ -7,7 +7,7 @@ module SpecHelpers
       end
     end
 
-    def person(identity)
+    def person(identity = 'person')
       Person.identify(identity) rescue Person.create!(:email=>"#{identity}@apache.org", :password=>'secret')
     end
 
@@ -28,13 +28,16 @@ module SpecHelpers
     #
     # Without arguments, authenticates as 'person'.
     def authenticate(person = person('person'))
-      previous, session[:person_id] = session[:person_id], person.id
       if block_given?
         begin
+          previous, session[:person_id] = session[:person_id], person.id
           yield
         ensure
           session[:person_id] = previous
         end
+      else
+        session[:person_id] = person.id
+        person
       end
     end
 
