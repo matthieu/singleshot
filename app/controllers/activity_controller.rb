@@ -29,7 +29,7 @@ class ActivityController < ApplicationController
         @graph = for_stakeholder.for_dates(Date.current - 1.month)
       end
       want.atom { @root_url = activity_url }
-      want.json { render :json=>@activities }
+      want.json { render :json=>@activities, :callback=>params[:callback] }
       want.xml { render :xml=>@activities }
     end
   end
