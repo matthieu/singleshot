@@ -17,29 +17,21 @@
 class ActivityController < ApplicationController
 
   def index
-    @title = I18n.t('activities.index.title')
-    @subtitle = I18n.t('activities.index.subtitle')
-    @activities = Activity.for_stakeholder(authenticated).with_dependents.paginate(:page=>params['page'], :per_page=>50)
-    @next = activity_url(:page=>@activities.next_page) if @activities.next_page
-    @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
+    @title = I18n.t('activity.index.title')
+    @subtitle = I18n.t('activity.index.subtitle')
+    for_stakeholder = Activity.for_stakeholder(authenticated)
+    @activities = for_stakeholder.with_dependents.paginate(:page=>params['page'], :per_page=>50)
     respond_to do |want|
       want.html do
         @atom_feed_url = formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key)
-        @graph = Activity.for_stakeholder(authenticated).for_dates(Date.current - 1.month)
+        @next = activity_url(:page=>@activities.next_page) if @activities.next_page
+        @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
+        @graph = for_stakeholder.for_dates(Date.current - 1.month)
       end
       want.atom { @root_url = activity_url }
-      want.json
-      want.xml
+      want.json { render :json=>presenting(@activities) }
+      want.xml { render :xml=>presenting(@activities) }
     end
   end
 
-  # TODO: Need admin verification filter.  
-  def recent
-    @title = 'Recently added activities'
-    @subtitle = 'Recently added activities on all tasks.'
-    @activities = Activity.recently_added.with_dependents.paginate(:page=>params['page'], :per_page=>50)
-    @next = recent_activity_url(:page=>@activities.next_page) if @activities.next_page
-    @previous = recent_activity_url(:page=>@activities.previous_page) if @activities.previous_page
-  end
-  
 end

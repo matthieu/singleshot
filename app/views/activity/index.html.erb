@@ -8,7 +8,7 @@
   <% for date, activities in @activities.group_by{ |a| a.created_at.to_date } %>
     <li class='date'>
       <h2><%= relative_date(date).humanize %></h2>
-      <%= render :partial=>'activities', :locals=>{ :activities=>activities, :today=>nil } %>
+      <%= presenting(activities).to_html %>
     </li>
   <% end %>
 </ol>

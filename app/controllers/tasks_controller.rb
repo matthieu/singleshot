@@ -79,9 +79,10 @@ class TasksController < ApplicationController
 
   def show
     @title = @task.title
-    @alternate = { Mime::HTML=>task_url(@task),
-                   Mime::ICS=>formatted_task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
-                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
+#    @alternate = { Mime::HTML=>task_url(@task),
+#                   Mime::ICS=>formatted_task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
+#                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
+    @alternate = {}
     respond_to do |wants|
       wants.html { render :layout=>'head' }
       # TODO: wants.xml
