@@ -72,5 +72,5 @@ protected
   before_filter do |controller|
     Time.zone = controller.authenticated.timezone rescue nil
   end
-
+  
 end

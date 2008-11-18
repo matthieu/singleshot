@@ -119,15 +119,18 @@ describe Activity, 'for_stakeholder' do
   end
 
   it 'should not return the same activity twice' do
+    # FIXME: broken, see ticket 937:
+    # http://rails.lighthouseapp.com/projects/8994-ruby-on-rails/tickets/937-size-method-ignores-group-by-on-has_many
     Task.create! defaults(:creator=>person('person'), :observers=>person('person'))
-    Activity.for_stakeholder(person('person')).size.should == 1
+    # Two stakeholders, one task: must not return/count cartesian product
+    Activity.for_stakeholder(person('person')).count(:id).should == 1
+    Activity.for_stakeholder(person('person')).all.size.should == 1
   end
 
   it 'should not eager load dependencies' do
     Activity.for_stakeholder(person('person')).proxy_options[:include].should be_nil
   end
 end
-
 
 describe Activity, 'recently_added' do
   it 'should return recently added activities' do

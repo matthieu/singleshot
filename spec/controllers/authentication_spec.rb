@@ -3,9 +3,11 @@ require File.dirname(__FILE__) + '/../spec_helper'
 class AuthenticationTestController < ApplicationController
 
   def index
+    render :nothing=>true
   end
 
   def feed
+    render :nothing=>true
   end
 end
 
