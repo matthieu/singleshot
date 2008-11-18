@@ -1,31 +1,29 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
+
 # Be sure to restart your web server when you modify this file.
 
-# Uncomment below to force Rails into production mode when
-# you don't control web/app server and can't set it the proper way
-# ENV['RAILS_ENV'] ||= 'production'
-
-# Specifies gem version of Rails to use when vendor/rails is not present
-#RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
-
+ENV['RAILS_ENV'] ||= 'production'
+# TODO:  Uncomment this when we finally upgrade to Rails 2.2.
+# RAILS_GEM_VERSION = '2.2.0' unless defined? RAILS_GEM_VERSION
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
 
 
 Rails::Initializer.run do |config|
-  # Settings in config/environments/* take precedence over those specified here.
-  # Application configuration should go into files in config/initializers
-  # -- all .rb files in that directory are automatically loaded.
-  # See Rails::Configuration for more options.
-
-  # Skip frameworks you're not going to use. To use Rails without a database
-  # you must remove the Active Record framework.
-  # config.frameworks -= [ :active_record, :active_resource, :action_mailer ]
-
-  # Specify gems that this application depends on. 
-  # They can then be installed with rake gem:install on new installations.
-  # config.gem "bj"
-  # config.gem "hpricot", :version => '0.6', :source => "http://code.whytheluckystiff.net"
-  # config.gem "aws-s3", :lib => "aws/s3"
   config.gem 'rest-open-uri',                   :version=>'~>1.0'
   config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.5'
   config.gem 'sparklines',                      :version=>'~>0.5'
@@ -33,46 +31,25 @@ Rails::Initializer.run do |config|
   config.gem 'mislav-will_paginate', :lib=>'will_paginate',
     :source=>'http://gems.github.com',          :version=>'~>2.3'
 
-  # Only load the plugins named here, in the order given. By default, all plugins 
-  # in vendor/plugins are loaded in alphabetical order.
-  # :all can be used as a placeholder for all plugins not explicitly named
-  # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
   config.plugins = [:all]
-
-  # Add additional load paths for your own custom dirs
+  # config.frameworks -= [ :active_record, :active_resource, :action_mailer ]
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
-  # Force all environments to use the same logger level
-  # (by default production uses :info, the others :debug)
-  # config.log_level = :debug
-
-  # Make Time.zone default to the specified zone, and make ActiveRecord store time values
-  # in the database in UTC, and return them converted to the specified local zone.
-  # Run `rake -D time` for a list of tasks for finding time zone names. Uncomment to use default local time.
   config.time_zone = 'UTC'
-
-  # Your secret key for verifying cookie session data integrity.
-  # If you change this key, all old sessions will become invalid!
-  # Make sure the secret is at least 30 characters and all random, 
-  # no regular words or you'll be exposed to dictionary attacks.
   config.action_controller.session = {
     :session_key => '_singleshot_session',
     :secret      => File.read("#{Rails.root}/secret.key")
   }
 
-  # Use the database for sessions instead of the cookie-based default,
-  # which shouldn't be used to store highly confidential information
-  # (create the session table with 'rake db:sessions:create')
-  # config.action_controller.session_store = :active_record_store
-
-  # Use SQL instead of Active Record's schema dumper when creating the test database.
-  # This is necessary if your schema can't be completely dumped by the schema dumper,
-  # like if you have constraints or database-specific column types
-  # config.active_record.schema_format = :sql
-
-  # Activate observers that should always be running
+  config.active_record.schema_format = :sql
+  config.active_record.partial_updates = true
   # config.active_record.observers = :cacher, :garbage_collector
-
-  # Make ActiveRecord only save the attributes that have changed since the record was loaded.
-  # config.active_record.partial_updates = true
+  
+  
+  # These settings change the behavior of Rails 2 apps and will be defaults
+  # for Rails 3. You can remove this initializer when Rails 3 is released.
+  config.active_record.include_root_in_json = true
+  config.active_record.store_full_sti_class = true
+  config.active_support.use_standard_json_time_format = true
+  config.active_support.escape_html_entities_in_json = false
 end
