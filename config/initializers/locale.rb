@@ -15,6 +15,4 @@
 
 
 # Load all the locale files for Singleshot (app and libraries).
-Dir["#{Rails.root}/lib/locale/*.yml"].each do |path|
-  I18n.load_translations path
-end
+I18n.load_path.push *Dir["#{Rails.root}/lib/locale/*.yml"]
