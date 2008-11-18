@@ -30,7 +30,7 @@ require 'md5'
 
 class Task < ActiveRecord::Base
 
-  acts_as_ferret
+  #acts_as_ferret
 
   def initialize(attributes = {}) #:nodoc:
     super
