@@ -17,7 +17,7 @@
 require 'rails_generator/secret_key_generator'
 
 task 'secret.key' do |task|
-  secret = Rails::SecretKeyGenerator.new(ENV['ID']).generate_secret
+  secret = ActiveSupport::SecureRandom.hex(64)
   File.open task.name, 'w' do |file|
     file.write secret
   end

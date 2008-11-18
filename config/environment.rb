@@ -36,6 +36,8 @@ Rails::Initializer.run do |config|
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
   config.time_zone = 'UTC'
+
+  config.action_controller.use_accept_header = true
   config.action_controller.session = {
     :session_key => '_singleshot_session',
     :secret      => File.read("#{Rails.root}/secret.key")
@@ -44,7 +46,6 @@ Rails::Initializer.run do |config|
   config.active_record.schema_format = :sql
   config.active_record.partial_updates = true
   # config.active_record.observers = :cacher, :garbage_collector
-  
   
   # These settings change the behavior of Rails 2 apps and will be defaults
   # for Rails 3. You can remove this initializer when Rails 3 is released.
