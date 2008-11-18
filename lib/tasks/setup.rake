@@ -8,10 +8,14 @@ task 'secret.key' do |task|
   puts "Generated new secret in #{task.name}"
 end
 
-desc 'Run this task first to setup your test/development environment'
+
+desc "Run this task first to setup your test/development environment"
 task 'setup'=>['gems:install', 'plugins:install', 'secret.key', 'db:create', 'db:test:clone', 'db:populate']
 
+
 namespace 'plugins' do
+  
+  desc "Install all the plugins this app depends on"
   task 'install' do
     rb_bin = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
     puts "Installing rspec plugin from Github"
@@ -19,6 +23,7 @@ namespace 'plugins' do
     system 'rb_bin', 'script/plugin', 'git://github.com/dchelimsky/rspec-rails.git'  
   end
   
+  desc "List installed plugins"
   task 'list' do
     plugins = Dir["#{Rails.root}/vendor/plugins/*"].map { |path| Rails::Plugin.new(path) }
     plugins.each do |plugin|
@@ -30,4 +35,5 @@ namespace 'plugins' do
       puts
     end
   end
+  
 end
