@@ -5,7 +5,7 @@
 # ENV['RAILS_ENV'] ||= 'production'
 
 # Specifies gem version of Rails to use when vendor/rails is not present
-RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
+#RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
 
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
@@ -29,7 +29,7 @@ Rails::Initializer.run do |config|
   config.gem 'rest-open-uri',                   :version=>'~>1.0'
   config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.5'
   config.gem 'sparklines',                      :version=>'~>0.5'
-  config.gem 'acts_as_ferret',                  :version=>'~>0.4'
+  #config.gem 'acts_as_ferret',                  :version=>'~>0.4'
   config.gem 'mislav-will_paginate', :lib=>'will_paginate',
     :source=>'http://gems.github.com',          :version=>'~>2.3'
 
@@ -76,5 +76,3 @@ Rails::Initializer.run do |config|
   # Make ActiveRecord only save the attributes that have changed since the record was loaded.
   # config.active_record.partial_updates = true
 end
-
-I18n.load_translations 'config/locale/en-US.yml'
