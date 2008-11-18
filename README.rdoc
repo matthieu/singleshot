@@ -1,6 +1,6 @@
 == Setting up the environment
 
-Singleshot is developed against Rails Edge.
+Singleshot is developed against Rails 2.2 (requires RC1 or later).
 
 To get the latest copy use one of the following:
 
