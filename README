@@ -6,7 +6,7 @@ To get the latest copy use one of the following:
 
 $ svn checkout http://svn.apache.org/repos/asf/ode/sandbox/singleshot
 $ git svn clone http://svn.apache.org/repos/asf/ode/sandbox/singleshot
-$ git clone git://github.com/Assaf/singleshot.git
+$ git clone git://github.com/assaf/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
 Gems and setting up the development and test databases, run the setup task:
