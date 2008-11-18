@@ -34,9 +34,7 @@ namespace 'plugins' do
   desc "Install all the plugins this app depends on"
   task 'install' do
     rb_bin = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
-    puts "Installing rspec plugin from Github"
-    system 'rb_bin', 'script/plugin', 'git://github.com/dchelimsky/rspec.git'
-    system 'rb_bin', 'script/plugin', 'git://github.com/dchelimsky/rspec-rails.git'  
+#    system 'rb_bin', 'script/plugin', 'git://github.com/dchelimsky/rspec-rails.git'  
   end
   
   desc "List installed plugins"

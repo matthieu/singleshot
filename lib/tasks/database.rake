@@ -14,6 +14,8 @@
 # the License.
 
 
+require 'faker'
+
 namespace 'db' do
 
   desc 'Populate the database with mock values'

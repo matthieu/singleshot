@@ -22,8 +22,12 @@ config.action_controller.perform_caching             = false
 config.action_mailer.raise_delivery_errors = false
 config.action_controller.allow_concurrency = true
 
-config.gem 'annotate-models', :lib=>'annotate_models'
-config.gem 'rspec', :lib=>'spec',          :version=>'~> 1.1.4'
-config.gem 'faker',                         :version=>'~>0.3'  # Faker: Used to populate development database with fake data.
-config.gem 'sqlite3-ruby', :lib=>'sqlite3', :version=>'~>1.2'  # SQLite3: Development and test databases use SQLite3 by default.
-config.gem 'thin',                          :version=>'~>0.8'  # Thin: Not essential, but development scripts (e.g. rake run) are hard wired to use Thin.
+
+# These Gems are used exclusively during development/testing, they're listed here
+# to be included when running rake setup. Some of these are only used from rake
+# tasks or command line (e.g. rspec, thin), so don't load them as part of Rails.
+config.gem 'annotate-models', :lib=>false
+config.gem 'rspec-rails',     :lib=>false, :version=>'1.1.8'
+config.gem 'faker',           :lib=>false,  :version=>'~>0.3'  # Faker: Used to populate development database with fake data.
+config.gem 'thin',            :lib=>false,     :version=>'~>1.0'  # Thin: Not essential, but development scripts (e.g. rake run) are hard wired to use Thin.
+config.gem 'sqlite3-ruby',    :lib=>'sqlite3', :version=>'~>1.2'  # SQLite3: Development and test databases use SQLite3 by default.

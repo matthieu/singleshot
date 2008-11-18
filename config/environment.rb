@@ -25,7 +25,7 @@ require File.join(File.dirname(__FILE__), 'boot')
 
 Rails::Initializer.run do |config|
   config.gem 'rest-open-uri',                   :version=>'~>1.0'
-  config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.5'
+  config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.7'
   config.gem 'sparklines',                      :version=>'~>0.5'
   #config.gem 'acts_as_ferret',                  :version=>'~>0.4'
   config.gem 'mislav-will_paginate', :lib=>'will_paginate',
