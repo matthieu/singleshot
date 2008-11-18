@@ -53,4 +53,11 @@ Rails::Initializer.run do |config|
   config.active_record.store_full_sti_class = true
   config.active_support.use_standard_json_time_format = true
   config.active_support.escape_html_entities_in_json = false
+
+  # The internationalization framework can be changed 
+  # to have another default locale (standard is :en) or more load paths.
+  # All files from config/locales/*.rb,yml are added automatically.
+  # config.i18n.load_path << Dir[File.join(RAILS_ROOT, 'my', 'locales', '*.{rb,yml}')]
+  # config.i18n.default_locale = :de
+  
 end
