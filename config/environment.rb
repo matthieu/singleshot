@@ -57,7 +57,7 @@ Rails::Initializer.run do |config|
   # no regular words or you'll be exposed to dictionary attacks.
   config.action_controller.session = {
     :session_key => '_singleshot_session',
-    :secret      => File.read('secret.key')
+    :secret      => File.read("#{Rails.root}/secret.key")
   }
 
   # Use the database for sessions instead of the cookie-based default,
