@@ -1,9 +1,10 @@
 == Setting up the environment
 
-Singleshot is developed against Rails 2.2.  Make sure to have 2.2 RC2 installed:
+Singleshot is developed against Rails 2.2.  Make sure to have Rails 2.2.2 or
+later installed:
 
   gem update --system.
-  gem install rails -s http://gems.rubyonrails.org
+  gem install rails -v "~> 2.2"
 
 To get the latest copy use one of the following:
 
