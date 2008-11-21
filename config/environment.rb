@@ -17,8 +17,7 @@
 # Be sure to restart your web server when you modify this file.
 
 ENV['RAILS_ENV'] ||= 'production'
-# TODO:  Uncomment this when we finally upgrade to Rails 2.2.
-RAILS_GEM_VERSION = '2.2.0' unless defined? RAILS_GEM_VERSION
+RAILS_GEM_VERSION = '2.2.2' unless defined? RAILS_GEM_VERSION
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
 

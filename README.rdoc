@@ -1,24 +1,27 @@
 == Setting up the environment
 
-Singleshot is developed against Rails 2.2 (requires RC1 or later).
+Singleshot is developed against Rails 2.2.  Make sure to have 2.2 RC2 installed:
+
+  gem update --system.
+  gem install rails -s http://gems.rubyonrails.org
 
 To get the latest copy use one of the following:
 
-$ svn checkout http://svn.apache.org/repos/asf/ode/sandbox/singleshot
-$ git svn clone http://svn.apache.org/repos/asf/ode/sandbox/singleshot
-$ git clone git://github.com/assaf/singleshot.git
+  svn checkout http://svn.apache.org/repos/asf/ode/sandbox/singleshot
+  git svn clone http://svn.apache.org/repos/asf/ode/sandbox/singleshot
+  git clone git://github.com/assaf/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
 Gems and setting up the development and test databases, run the setup task:
 
-$ rake setup
+  rake setup
 
 This will also create a default account using your user name and the password
 'secret'
 
 To get started:
 
-$ rake run
+  rake run
 
 Point your browser to http://localhost:3000 and login with your user name and
 password.
@@ -45,18 +48,18 @@ recreate the entire database.
 
 Those changes are recorded in the form of migration, but to update run:
 
-$ rake db:migrate:reset
+  rake db:migrate:reset
 
 This task will recreate the entire development and test database.  In addition,
 we uses the annotate-models Gems to, well, annotate the Rails models with the
 most recent database schema.  So when changing the database schema, follow
 with:
 
-$ rake annotate_models
+  rake annotate_models
 
 To recreate the dummy data used for development:
 
-$ rake db:populate
+  rake db:populate
 
 
 == Getting Involved
@@ -73,10 +76,3 @@ A reference for Textile is available here:
 http://hobix.com/textile/
 
 
-== License
-
-:include:LICENSE
-
-== Notice
-
-:include:NOTICE
