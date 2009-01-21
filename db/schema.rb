@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20080621023051) do
+ActiveRecord::Schema.define(:version => 20090121220044) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id",  :null => false
@@ -18,23 +18,16 @@ ActiveRecord::Schema.define(:version => 20080621023051) do
     t.datetime "created_at", :null => false
   end
 
-  create_table "contexts", :force => true do |t|
-    t.string   "title",       :null => false
-    t.string   "description"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
+  add_index "activities", ["person_id", "task_id", "name"], :name => "index_activities_on_person_id_and_task_id_and_name", :unique => true
 
   create_table "people", :force => true do |t|
-    t.string   "identity",                 :null => false
-    t.string   "fullname",                 :null => false
-    t.string   "email",                    :null => false
-    t.string   "language",   :limit => 5
-    t.integer  "timezone",   :limit => 4
-    t.string   "password",   :limit => 64
-    t.string   "access_key", :limit => 32, :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string  "identity",                 :null => false
+    t.string  "fullname",                 :null => false
+    t.string  "email",                    :null => false
+    t.string  "language",   :limit => 5
+    t.integer "timezone",   :limit => 4
+    t.string  "password",   :limit => 64
+    t.string  "access_key", :limit => 32, :null => false
   end
 
   add_index "people", ["access_key"], :name => "index_people_on_access_key", :unique => true
@@ -49,25 +42,25 @@ ActiveRecord::Schema.define(:version => 20080621023051) do
     t.datetime "created_at", :null => false
   end
 
+  add_index "stakeholders", ["person_id", "task_id", "role"], :name => "index_stakeholders_on_person_id_and_task_id_and_role", :unique => true
+
   create_table "tasks", :force => true do |t|
-    t.string   "title",                                      :null => false
-    t.string   "description",                                :null => false
-    t.integer  "priority",      :limit => 1,                 :null => false
-    t.date     "due_on"
-    t.date     "start_by"
-    t.string   "status",                                     :null => false
-    t.string   "perform_url"
-    t.string   "details_url"
-    t.string   "instructions"
-    t.boolean  "integrated_ui"
-    t.string   "outcome_url"
-    t.string   "outcome_type"
-    t.string   "access_key",    :limit => 32
-    t.text     "data",                                       :null => false
-    t.integer  "context_id",                                 :null => false
-    t.integer  "version",                     :default => 0, :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string  "status",                           :null => false
+    t.string  "title",                            :null => false
+    t.string  "description"
+    t.string  "language",           :limit => 5,  :null => false
+    t.integer "priority",           :limit => 1,  :null => false
+    t.date    "due_on"
+    t.date    "start_on"
+    t.string  "cancellation"
+    t.boolean "perform_integrated"
+    t.boolean "view_integrated"
+    t.string  "perform_url"
+    t.string  "view_url"
+    t.text    "data",                             :null => false
+    t.string  "hooks"
+    t.string  "access_key",         :limit => 32
+    t.integer "version",                          :null => false
   end
 
 end

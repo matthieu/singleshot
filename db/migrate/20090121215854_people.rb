@@ -14,17 +14,26 @@
 # the License.
 
 
-class CreateStakeholders < ActiveRecord::Migration
+class People < ActiveRecord::Migration
   def self.up
-    create_table 'stakeholders' do |t|
-      t.belongs_to 'task',      :null=>false
-      t.belongs_to 'person',    :null=>false
-      t.string     'role',       :null=>false
-      t.datetime   'created_at', :null=>false
+    create_table :people do |t|
+      t.string   :identity,                 :null => false
+      t.string   :fullname,                 :null => false
+      t.string   :email,                    :null => false
+      t.string   :language,   :limit => 5
+      t.integer  :timezone,   :limit => 4
+      t.string   :password,   :limit => 64
+      t.string   :access_key, :limit => 32, :null => false
+      t.timestamp
     end
+
+    add_index :people, [:identity],   :unique => true
+    add_index :people, [:access_key], :unique => true
+    add_index :people, [:email],      :unique => true
+    add_index :people, [:fullname]
   end
 
   def self.down
-    drop_table 'stakeholders'
+    drop_table :people
   end
 end
