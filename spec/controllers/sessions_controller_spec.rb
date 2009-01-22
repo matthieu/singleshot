@@ -79,9 +79,3 @@ describe SessionsController do
   end
 
 end
-
-
-
-
-
-

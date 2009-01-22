@@ -6,20 +6,7 @@ require 'spec'
 require 'spec/rails'
 
 
-require File.expand_path(File.dirname(__FILE__) + '/people')
-require File.expand_path(File.dirname(__FILE__) + '/tasks')
-
-module ActionController
-  # TestResponse for functional, CgiResponse for integration.
-  class AbstractResponse
-    StatusCodes::SYMBOL_TO_STATUS_CODE.each do |symbol, code|
-      unless instance_methods.include?("#{symbol}?")
-        define_method("#{symbol}?") { self.code == code.to_s }
-      end
-    end
-  end
-end
-
+require File.expand_path(File.dirname(__FILE__) + '/common')
 
 Spec::Runner.configure do |config|
   # If you're not using ActiveRecord you should remove these

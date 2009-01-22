@@ -14,37 +14,10 @@
 # the License.
 
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/helpers'
 
 
 describe Person do
-
-  def look_like_sha1
-    simple_matcher('look like a SHA1') { |given| given =~ /^[0-9a-f]{40}$/ }
-  end
-
-  def allow_mass_assigning_of(attr, new_value = 'new value')
-    simple_matcher "allow mass assigning of #{attr}" do |given|
-      given.changed.clear
-      given.attributes = { attr=>new_value }
-      given.changed.include?(attr.to_s)
-    end
-  end
-
-  def validate_presence_of(attr)
-    simple_matcher "validate presence of #{attr}" do |given|
-      given.attributes = { attr=>nil }
-      !given.valid? && given.errors.on(attr)
-    end
-  end
-
-  def validate_uniquness_of(attr)
-    simple_matcher "validate uniqueness of #{attr}" do |given|
-      given.save!
-      clone = given.clone
-      !clone.save && clone.errors.on(attr)
-    end
-  end
 
   describe :identity do
     subject { Person.new :email=>'john.smith@example.com' }
