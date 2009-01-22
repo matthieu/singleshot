@@ -41,22 +41,26 @@ class Person < ActiveRecord::Base
     def identify(identity)
       case identity
       when Person then identity
-      when Array then Person.find(:all, :conditions=>{:identity=>identity.flatten.uniq})
+      when Array then Person.all(:conditions=>{:identity=>identity.flatten.uniq})
       else Person.find_by_identity(identity.to_s) or raise ActiveRecord::RecordNotFound
       end
     end
 
     # Used for identity/password authentication.  Return the person if authenticated.
-    def authenticate(login, password)
-      person = Person.find_by_identity(login)
-      person if person && person.password?(password)
+    def authenticate(identity, password)
+      person = Person.find_by_identity(identity)
+      person if person && person.authenticated?(password)
     end
 
   end
 
+  has_many :activities, :dependent=>:delete_all
+  has_many :stakeholders, :dependent=>:delete_all
+
+  attr_accessible :identity, :fullname, :email, :language, :timezone, :password
+
   def initialize(*args)
     super
-    self.access_key!
   end
 
   # Returns an identifier suitable for use with Person.resolve.
@@ -75,49 +79,46 @@ class Person < ActiveRecord::Base
   validates_email         :email, :message=>"I need a valid e-mail address."
   validates_uniqueness_of :email, :message=>'This e-mail is already in use.'
 
-  before_validation :fix_attributes
-  def fix_attributes
-    self.email = email.to_s.strip.downcase
-    self.identity = email.to_s.strip[/([^\s@]*)/, 1].downcase if identity.blank?
-    self.identity = identity.strip.gsub(/\s+/, '_').downcase
-    self.fullname = email.to_s.strip[/([^\s@]*)/, 1].split(/[_.]+/).map(&:capitalize).join(' ') if fullname.blank?
-    self.fullname = fullname.strip.gsub(/\s+/, ' ')
-  end
-  private :fix_attributes
-
-  # TODO:  Some way to check minimum size of passwords.
-
-  def password=(password)
-    salt = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
-    crypted = SHA1.hexdigest("#{salt}:#{password}")
-    self[:password] = "#{salt}:#{crypted}"
-  end
-
-  def password?(password)
-    return false unless self[:password]
-    salt, crypted = self[:password].split(':')
-    crypted == SHA1.hexdigest("#{salt}:#{password}")
-  end
-
-  def reset_password!
-    password = Array.new(10) { (65 + rand(58)).chr }.join
-    self.password = password  
-    save!
-    password
-  end
-
-  attr_protected :access_key
-
-  def access_key!
-    self.access_key = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
-    save! unless new_record?
+  before_validation do |record|
+    record.email = record.email.to_s.strip.downcase
+    record.identity = record.email.to_s.strip[/([^\s@]*)/, 1].downcase if record.identity.blank?
+    record.identity = record.identity.strip.gsub(/\s+/, '_').downcase
+    record.fullname = record.email.to_s.strip[/([^\s@]*)/, 1].split(/[_.]+/).map(&:capitalize).join(' ') if record.fullname.blank?
+    record.fullname = record.fullname.strip.gsub(/\s+/, ' ')
   end
 
   def url
     read_attribute(:identity)
   end
 
-  has_many :activities, :dependent=>:delete_all
-  has_many :stakeholders, :dependent=>:delete_all
+  # Sets a new password.
+  def password=(value)
+    salt = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
+    crypted = SHA1.hexdigest("#{salt}:#{value}")
+    super "#{salt}:#{crypted}"
+  end
+
+  # Authenticate against the supplied password.
+  def authenticated?(against)
+    return false unless password
+    salt, crypted = password.split(':')
+    crypted == SHA1.hexdigest("#{salt}:#{against}")
+  end
+
+  # Sets a new password for this person and returns the password in clear text.
+  def new_password!
+    self.password = Array.new(10) { (65 + rand(58)).chr }.join
+  end
+
+  # Sets a new access key for this person. Access key is read-only and this is the only way
+  # to change it, for example, if the previous access key has been compromised. Returns the
+  # new access key.
+  def new_access_key!
+    self.access_key = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
+  end
+
+  before_save do |record| 
+    record.new_access_key! unless record.access_key
+  end
 
 end
