@@ -40,8 +40,9 @@ module Spec::Helpers #:nodoc:
     end
 
     def defaults(attributes = {})
-      { :title=>'Test this',
-        :outcome_url=>'http://test.host/outcome' }.merge(attributes)
+      #{ :title=>'Test this',
+      #  :outcome_url=>'http://test.host/outcome' }.merge(attributes)
+      attributes.reverse_merge(:title=>'Add more specs')
     end
 
     def task_with_status(status, attributes = nil)

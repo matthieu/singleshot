@@ -21,30 +21,46 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module Spec::Helpers #:nodoc:
   module Models
 
+    # Checks that the record has a created_at timestamp attribute.
+    def have_created_at_timestamp
+      simple_matcher 'have created_at timestamp' do |given|
+        given.class.columns_hash['created_at'] && given.class.columns_hash['created_at'].type == :datetime
+      end
+    end
+
+    # Checks that the record has an updated_at timestamp attribute.
+    def have_updated_at_timestamp
+      simple_matcher 'have updated_at timestamp' do |given|
+        given.class.columns_hash['updated_at'] && given.class.columns_hash['updated_at'].type == :datetime
+      end
+    end
+
+
     # Checks that the attribute looks like a SHA1. For example:
     #   record.secret.should look_like_sha1
     def look_like_sha1
       simple_matcher('look like a SHA1') { |given| given =~ /^[0-9a-f]{40}$/ }
     end
 
-    # Check that model allows mass assigning of the specified attribute. As a side effect it
-    # resets the list of changed attributes and changes the attribute's value. For example:
-    #   it { should allow_mass_changing_of!(:name) }
-    def allow_mass_assigning_of!(attr, new_value = 'new value')
+    # Check that model allows mass assigning of the specified attribute. For example:
+    #   it { should allow_mass_assigning_of(:name) }
+    def allow_mass_assigning_of(attr, new_value = 'new value')
       simple_matcher "allow mass assigning of #{attr}" do |given|
-        given.changed.clear
-        given.attributes = { attr=>new_value }
-        given.changed.include?(attr.to_s)
+        given.class.send(:accessible_attributes).member?(attr.to_s)
       end
     end
 
-    # Check that model validates presence of an attribute. As a side effect it sets the
-    # attribute value to nil and attempts to save the record. For example:
-    #   it { should validate_presence_of!(:email) }
-    def validate_presence_of!(attr)
+    # Check that model validates presence of an attribute. For example:
+    #   it { should validate_presence_of(:email) }
+    def validate_presence_of(attr)
       simple_matcher "validate presence of #{attr}" do |given|
-        given.attributes = { attr=>nil }
-        !given.valid? && given.errors.on(attr)
+        begin
+          original = given.attributes[attr]
+          given.attributes = { attr=>nil }
+          !given.valid? && given.errors.on(attr)
+        ensure
+          given.attributes = { attr => original }
+        end
       end
     end
 
