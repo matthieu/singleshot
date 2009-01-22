@@ -24,7 +24,7 @@ class People < ActiveRecord::Migration
       t.integer  :timezone,   :limit => 4
       t.string   :password,   :limit => 64
       t.string   :access_key, :limit => 32, :null => false
-      t.timestamp
+      t.timestamps
     end
 
     add_index :people, [:identity],   :unique => true

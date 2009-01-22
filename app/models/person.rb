@@ -27,7 +27,10 @@
 #  timezone   :integer(4)
 #  password   :string(64)
 #  access_key :string(32)      not null
+#  created_at :datetime
+#  updated_at :datetime
 #
+
 
 require 'sha1'
 require 'openssl'

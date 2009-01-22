@@ -20,7 +20,7 @@ class Tasks < ActiveRecord::Migration
       t.string    :status,                    :null => false
       t.string    :title,                     :null => false
       t.string    :description
-      t.string    :language,    :limit => 5,  :null => false
+      t.string    :language,    :limit => 5
       t.integer   :priority,    :limit => 1,  :null => false
       t.date      :due_on
       t.date      :start_on
@@ -33,7 +33,7 @@ class Tasks < ActiveRecord::Migration
       t.string    :hooks
       t.string    :access_key,  :limit => 32
       t.integer   :version,                   :null => false
-      t.timestamp
+      t.timestamps
     end
 
     create_table :stakeholders do |t|
