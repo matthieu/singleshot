@@ -22,16 +22,16 @@ describe Person do
   describe :identity do
     subject { Person.new :email=>'john.smith@example.com' }
 
-    it { should allow_mass_assigning_of(:identity) }
+    it { should allow_mass_assigning_of!(:identity) }
     it('should set from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
-    it { should validate_uniquness_of(:identity) }
+    it { should validate_uniquness_of!(:identity) }
   end
 
 
   describe :fullname do
     subject { Person.new :email=>'john.smith@example.com' }
 
-    it { should allow_mass_assigning_of(:fullname) }
+    it { should allow_mass_assigning_of!(:fullname) }
     it('should set from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
   end
 
@@ -39,16 +39,16 @@ describe Person do
   describe :email do
     subject { Person.new :email=>'john.smith@example.com' }
 
-    it { should allow_mass_assigning_of(:email) }
-    it { should validate_presence_of(:email) }
-    it { should validate_uniquness_of(:email) }
+    it { should allow_mass_assigning_of!(:email) }
+    it { should validate_presence_of!(:email) }
+    it { should validate_uniquness_of!(:email) }
   end
 
 
   describe :timezone do
     subject { Person.new }
 
-    it { should allow_mass_assigning_of(:timezone) }
+    it { should allow_mass_assigning_of!(:timezone) }
   end
 
 
@@ -57,7 +57,7 @@ describe Person do
     def salt ; subject.password.split(':').first ; end
     def crypt ; subject.password.split(':').last ; end
 
-    it { should allow_mass_assigning_of(:password) }
+    it { should allow_mass_assigning_of!(:password) }
     it('should contain salt prefix') { salt.should =~ /^[0-9a-f]{10}$/ }
     it('should contain SHA1 crypt')  { crypt.should look_like_sha1 }
     it('should calculate crypt using salt') { crypt.should == SHA1.hexdigest("#{salt}:secret") }
@@ -89,7 +89,7 @@ describe Person do
       subject.access_key.should_not == Person.create!(:email=>'maple.syrup@example.com').access_key
     end
 
-    it { should_not allow_mass_assigning_of(:access_key) }
+    it { should_not allow_mass_assigning_of!(:access_key) }
 
     it 'should change by calling new_access_key!' do
       lambda { subject.new_access_key! }.should change { subject.access_key }

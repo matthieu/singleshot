@@ -29,8 +29,8 @@ module Spec::Helpers #:nodoc:
 
     # Check that model allows mass assigning of the specified attribute. As a side effect it
     # resets the list of changed attributes and changes the attribute's value. For example:
-    #   it { should allow_mass_changing_of(:name) }
-    def allow_mass_assigning_of(attr, new_value = 'new value')
+    #   it { should allow_mass_changing_of!(:name) }
+    def allow_mass_assigning_of!(attr, new_value = 'new value')
       simple_matcher "allow mass assigning of #{attr}" do |given|
         given.changed.clear
         given.attributes = { attr=>new_value }
@@ -40,8 +40,8 @@ module Spec::Helpers #:nodoc:
 
     # Check that model validates presence of an attribute. As a side effect it sets the
     # attribute value to nil and attempts to save the record. For example:
-    #   it { should validate_presence_of(:email) }
-    def validate_presence_of(attr)
+    #   it { should validate_presence_of!(:email) }
+    def validate_presence_of!(attr)
       simple_matcher "validate presence of #{attr}" do |given|
         given.attributes = { attr=>nil }
         !given.valid? && given.errors.on(attr)
@@ -51,8 +51,8 @@ module Spec::Helpers #:nodoc:
     # Checks that the model validates uniqueness of an attribute. As a side effect it
     # stores one record and attempts to store a second record with the same attributes.
     # For example:
-    #   it { should validate_uniquness_of(:nickname) }
-    def validate_uniquness_of(attr)
+    #   it { should validate_uniquness_of!(:nickname) }
+    def validate_uniquness_of!(attr)
       simple_matcher "validate uniqueness of #{attr}" do |given|
         given.save!
         clone = given.clone
