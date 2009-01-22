@@ -18,6 +18,63 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 
 describe Person do
+
+  def look_like_sha1
+    simple_matcher('look like a SHA1') { |given| given =~ /^[0-9a-f]{40}$/ }
+  end
+
+  def allow_mass_assigning_of(attr, new_value = 'new value')
+    simple_matcher "allow mass assigning of #{attr}" do |given|
+      given.attributes = { attr=>new_value }
+      given.changed.include?(attr.to_s)
+    end
+  end
+
+
+  describe :password do
+    subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
+    def salt ; subject.password.split(':').first ; end
+    def crypt ; subject.password.split(':').last ; end
+
+    it('should contain salt prefix') { salt.should =~ /^[0-9a-f]{10}$/ }
+    it('should contain SHA1 crypt')  { crypt.should look_like_sha1 }
+    it('should calculate crypt using salt') { crypt.should == SHA1.hexdigest("#{salt}:secret") }
+    it 'should not reuse salt' do
+      passwords = (1..10).map { Person.new(:password=>'secret').password }
+      passwords.uniq == passwords
+    end
+
+    it { should allow_mass_assigning_of(:password) }
+  end
+
+
+  describe :access_key do
+    subject { Person.create! :email=>'john.smith@example.com' }
+
+    it { subject.access_key.should look_like_sha1 }
+
+    it 'should be different for each person' do
+      subject.access_key.should_not == Person.create!(:email=>'maple.syrup@example.com').access_key
+    end
+
+    it { should_not allow_mass_assigning_of(:access_key) }
+
+    it 'should change by calling new_access_key!' do
+      lambda { subject.new_access_key! }.should change { subject.access_key }
+    end
+
+    it 'should allow lookup' do
+      subject.save
+      should == Person.find_by_access_key(subject.access_key)
+    end
+
+    after { Person.delete_all }
+  end
+end
+
+
+=begin
+describe Person do
   
   describe 'activities' do
     before do
@@ -44,3 +101,4 @@ describe Person do
   end
   
 end
+=end
