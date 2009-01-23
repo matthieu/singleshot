@@ -22,12 +22,12 @@ describe Person do
   subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
 
   it { should allow_mass_assigning_of(:identity) }
-  it { should validate_uniquness_of!(:identity) }
+  it { should validate_uniquness_of(:identity) }
   it('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
 
   it { should allow_mass_assigning_of(:email) }
   it { should validate_presence_of(:email) }
-  it { should validate_uniquness_of!(:email) }
+  it { should validate_uniquness_of(:email) }
 
   it { should allow_mass_assigning_of(:fullname) }
   it('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
@@ -70,7 +70,7 @@ describe Person do
     subject { Person.create! :email=>'john.smith@example.com', :password=>'secret' }
 
     # Expecting Person.authenticate(identity, password) to return subject
-    def authenticate(identity, password
+    def authenticate(identity, password)
       simple_matcher("authenticate '#{identity}:#{password}'") { |given| Person.authenticate(identity, password) == subject }
     end
 

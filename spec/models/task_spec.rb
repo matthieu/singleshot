@@ -14,9 +14,31 @@
 # the License.
 
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/helpers'
 
 
+describe Task do
+
+  subject { Task.new(defaults) }
+
+  it { should allow_mass_assigning_of(:title) }
+  it { should_not validate_uniquness_of(:title) }
+  it { should validate_presence_of(:title) }
+
+  it { should allow_mass_assigning_of(:description) }
+  it { should_not validate_uniquness_of(:description) }
+  it { should_not validate_presence_of(:description) }
+
+  it { should allow_mass_assigning_of(:language) }
+  it { should_not validate_uniquness_of(:language) }
+  it { should_not validate_presence_of(:language) }
+
+  it { should have_created_at_timestamp }
+  it { should have_updated_at_timestamp }
+
+end
+
+=begin
 describe Task do
 
   describe 'to_param' do
@@ -481,8 +503,6 @@ describe Task::Rendering do
   end
 
 end
-
-=begin
 
 
 describe Task, 'outcome_url' do

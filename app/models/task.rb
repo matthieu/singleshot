@@ -1,28 +1,44 @@
 # == Schema Information
-# Schema version: 20080621023051
+# Schema version: 20090121220044
 #
 # Table name: tasks
 #
-#  id            :integer         not null, primary key
-#  title         :string(255)     not null
-#  description   :string(255)     not null
-#  priority      :integer(1)      not null
-#  due_on        :date
-#  start_by      :date
-#  status        :string(255)     not null
-#  perform_url   :string(255)
-#  details_url   :string(255)
-#  instructions  :string(255)
-#  integrated_ui :boolean
-#  outcome_url   :string(255)
-#  outcome_type  :string(255)
-#  access_key    :string(32)
-#  data          :text            not null
-#  context_id    :integer         not null
-#  version       :integer         default(0), not null
-#  created_at    :datetime
-#  updated_at    :datetime
+#  id                 :integer         not null, primary key
+#  status             :string(255)     not null
+#  title              :string(255)     not null
+#  description        :string(255)
+#  language           :string(5)
+#  priority           :integer(1)      not null
+#  due_on             :date
+#  start_on           :date
+#  cancellation       :string(255)
+#  perform_integrated :boolean
+#  view_integrated    :boolean
+#  perform_url        :string(255)
+#  view_url           :string(255)
+#  data               :text            not null
+#  hooks              :string(255)
+#  access_key         :string(32)
+#  version            :integer         not null
+#  created_at         :datetime
+#  updated_at         :datetime
 #
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
 
 require 'openssl'
 require 'md5'
@@ -30,22 +46,38 @@ require 'md5'
 
 class Task < ActiveRecord::Base
 
-  #acts_as_ferret
+  def initialize(*args, &block)
+    super
+    self.status = 'active'
+    self.priority ||= 3
+    self.data ||= {}
+  end
 
+
+
+  # -- Descriptive --
+
+  attr_accessible :title, :description, :language
+  validates_presence_of :title  # Title is required, description and language are optional
+
+  
+  
+  
+  
+  # Locking column used for versioning and detecting update conflicts.
+  set_locking_column 'version'
+
+=begin
   def initialize(attributes = {}) #:nodoc:
     super
     self.description ||= ''
     self.data ||= {}
     self.access_key = MD5.hexdigest(OpenSSL::Random.random_bytes(128))
-    self.context ||= Context.new(:title=>self.title)
   end
 
   def to_param #:nodoc:
     id && id.to_s + ('-' + title).gsub(/[^\w]+/, '-').gsub(/-{2,}/, '-').sub(/-+$/, '')
   end
-
-  # Locking column used for versioning and detecting update conflicts.
-  set_locking_column 'version'
 
   # Returns an ETag that can identify changes to the task state.  No two tasks will have
   # the same ETag.  Changing the task state will also change its ETag.
@@ -185,10 +217,6 @@ class Task < ActiveRecord::Base
   validates_url :perform_url, :allow_nil=>true
   validates_url :details_url, :allow_nil=>true
 
-
-  # -- Descriptive --
-
-  validates_presence_of :title
 
   belongs_to :context
 
@@ -540,7 +568,7 @@ class Task < ActiveRecord::Base
     :extend=>RankingMethods
 
   named_scope :completed, lambda { |end_date|
-    { :conditions=>["tasks.status == 'completed' AND tasks.updated_at >= ?", end_date || Date.current - 7.days],
+    { :conditions=>["tasks.status = 'completed' AND tasks.updated_at >= ?", end_date || Date.current - 7.days],
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :following, lambda { |end_date|
@@ -548,4 +576,6 @@ class Task < ActiveRecord::Base
       :order=>'tasks.updated_at DESC' } }
 
   named_scope :visible, :conditions=>["tasks.status != 'reserved'"]
+
+=end
 end

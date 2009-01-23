@@ -62,14 +62,13 @@ module Spec::Helpers #:nodoc:
     end
 
     # Checks that the model validates uniqueness of an attribute. As a side effect it
-    # stores one record and attempts to store a second record with the same attributes.
+    # stores a clone of the record and then attempts to save the record itself.
     # For example:
-    #   it { should validate_uniquness_of!(:nickname) }
-    def validate_uniquness_of!(attr)
+    #   it { should validate_uniquness_of(:nickname) }
+    def validate_uniquness_of(attr)
       simple_matcher "validate uniqueness of #{attr}" do |given|
-        given.save!
-        clone = given.clone
-        !clone.save && clone.errors.on(attr)
+        given.clone.save!
+        !given.valid? && given.errors.on(attr)
       end
     end
 
