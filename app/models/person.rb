@@ -25,8 +25,8 @@
 #  email      :string(255)     not null
 #  language   :string(5)
 #  timezone   :integer(4)
-#  password   :string(64)
-#  access_key :string(32)      not null
+#  password   :string(255)
+#  access_key :string(40)      not null
 #  created_at :datetime
 #  updated_at :datetime
 #

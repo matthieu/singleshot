@@ -21,17 +21,40 @@ describe Task do
 
   subject { Task.new(defaults) }
 
+  # -- Descriptive --
+
+  it { should have_attribute(:title, :string, :null=>false) }
   it { should allow_mass_assigning_of(:title) }
   it { should_not validate_uniquness_of(:title) }
   it { should validate_presence_of(:title) }
 
+  it { should have_attribute(:description, :string, :null=>true) }
   it { should allow_mass_assigning_of(:description) }
   it { should_not validate_uniquness_of(:description) }
   it { should_not validate_presence_of(:description) }
 
+  it { should have_attribute(:language, :string, :null=>true, :limit=>5) }
   it { should allow_mass_assigning_of(:language) }
-  it { should_not validate_uniquness_of(:language) }
   it { should_not validate_presence_of(:language) }
+
+
+  # -- Urgency --
+
+  def allow_priority(value) # expecting priority to validate
+    simple_matcher("allow priority #{value}") { |given| given.priority = value ; given.valid? || given.errors.on(:priority).nil? }
+  end
+
+  it { should have_attribute(:priority, :integer, :null=>false, :limit=>1) }
+  it { should allow_mass_assigning_of(:priority) }
+  it('should default to priority 3')          { subject.priority.should == 3 }
+  it { should allow_priority(1) }
+  it { should allow_priority(5) }
+  it { should_not allow_priority(0) }
+  it { should_not allow_priority(6) }
+
+  it { should have_attribute(:due_on, :date, :null=>true) }
+  it { should allow_mass_assigning_of(:due_on) }
+
 
   it { should have_created_at_timestamp }
   it { should have_updated_at_timestamp }

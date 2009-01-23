@@ -21,18 +21,25 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module Spec::Helpers #:nodoc:
   module Models
 
+    # Checks that the subject has an attribute with the specified type and options.
+    # For example:
+    #   should have_attribute(:name, :string, :null=>false)
+    #   should have_attribute(:quantity, :integer, :default=>1)
+    def have_attribute(name, type, options = {})
+      simple_matcher("have attribute #{name} of type #{type}") { |given|
+        column = given.column_for_attribute(name)
+        column && column.type == type && options.all? { |key, value| options[key] == column.send(key) } }
+    end
+  
     # Checks that the record has a created_at timestamp attribute.
     def have_created_at_timestamp
-      simple_matcher('have created_at timestamp') { |given|
-        given.class.columns_hash['created_at'] && given.class.columns_hash['created_at'].type == :datetime }
+      have_attribute :created_at, :datetime
     end
 
     # Checks that the record has an updated_at timestamp attribute.
     def have_updated_at_timestamp
-      simple_matcher('have updated_at timestamp') { |given|
-        given.class.columns_hash['updated_at'] && given.class.columns_hash['updated_at'].type == :datetime }
+      have_attribute :updated_at, :datetime
     end
-
 
     # Checks that the attribute looks like a SHA1. For example:
     #   record.secret.should look_like_sha1
