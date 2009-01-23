@@ -19,101 +19,78 @@ require File.dirname(__FILE__) + '/helpers'
 
 describe Person do
 
+  subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
+
+  it { should allow_mass_assigning_of(:identity) }
+  it { should validate_uniquness_of!(:identity) }
+  it('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
+
+  it { should allow_mass_assigning_of(:email) }
+  it { should validate_presence_of(:email) }
+  it { should validate_uniquness_of!(:email) }
+
+  it { should allow_mass_assigning_of(:fullname) }
+  it('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
+
+  it { should allow_mass_assigning_of(:timezone) }
+  it { should_not validate_presence_of(:timezone) }
+
+  it { should allow_mass_assigning_of(:language) }
+  it { should_not validate_presence_of(:language) }
+
+  def salt # return the password's salt
+    subject.password.split(':').first
+  end
+  def crypt # return the password's crypt
+    subject.password.split(':').last
+  end
+  def authenticate(password) # expecting authenticated?(password) to return true
+    simple_matcher("authenticate '#{password}'") { |given| given.authenticated?(password) }
+  end
+
+  it { should allow_mass_assigning_of(:password) }
+  it { should_not validate_presence_of(:password) }
+  it('should store salt as part of password')             { salt.should =~ /^[0-9a-f]{10}$/ }
+  it('should store SHA1-like crypt as part of password')  { crypt.should look_like_sha1 }
+  it('should calculate password crypt using salt')        { crypt.should == SHA1.hexdigest("#{salt}:secret") }
+  it('should not have same crypt for two people')         { people('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
+  it('should authenticate the right password')            { should authenticate('secret') }
+  it('should not authenticate the wrong password')        { should_not authenticate('wrong') }
+  it('should not authenticate without a password')        { subject[:password] = nil ; should_not authenticate('') }
+
+  it { should_not allow_mass_assigning_of(:access_key) }
+  it('should create SHA1-like access key')                { subject.save ; subject.access_key.should look_like_sha1 }
+  it('should give each person unique access key')         { people('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
+
   it { should have_created_at_timestamp }
   it { should have_updated_at_timestamp }
 
 
-  describe :identity do
-    subject { Person.new :email=>'john.smith@example.com' }
-
-    it { should allow_mass_assigning_of(:identity) }
-    it('should set from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
-    it { should validate_uniquness_of!(:identity) }
-  end
-
-
-  describe :fullname do
-    subject { Person.new :email=>'john.smith@example.com' }
-
-    it { should allow_mass_assigning_of(:fullname) }
-    it('should set from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
-  end
-
-
-  describe :email do
-    subject { Person.new :email=>'john.smith@example.com' }
-
-    it { should allow_mass_assigning_of(:email) }
-    it { should validate_presence_of(:email) }
-    it { should validate_uniquness_of!(:email) }
-  end
-
-
-  describe :timezone do
-    subject { Person.new }
-
-    it { should allow_mass_assigning_of(:timezone) }
-  end
-
-
-  describe :password do
-    subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
-    def salt ; subject.password.split(':').first ; end
-    def crypt ; subject.password.split(':').last ; end
-
-    it { should allow_mass_assigning_of(:password) }
-    it('should contain salt prefix') { salt.should =~ /^[0-9a-f]{10}$/ }
-    it('should contain SHA1 crypt')  { crypt.should look_like_sha1 }
-    it('should calculate crypt using salt') { crypt.should == SHA1.hexdigest("#{salt}:secret") }
-    it 'should not reuse salt' do
-      passwords = (1..10).map { Person.new(:password=>'secret').password }
-      passwords.uniq == passwords
-    end
-    it('should authenticate if using the right password') { subject.authenticated?('secret').should be_true }
-    it('should not authenticate if using the wrong password') { subject.authenticated?('wrong').should be_false }
-    it('should not authenticate if missing') { Person.new.authenticated?('').should be_false }
-  end
-
   describe '#authenticate' do
-    subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
-    before  { subject.save! }
+    subject { Person.create! :email=>'john.smith@example.com', :password=>'secret' }
 
-    it('should authenticate person if identity & password match') { Person.authenticate('john.smith', 'secret').should == subject }
-    it('should not authenticate person if wrong password') { Person.authenticate('john.smith', 'wrong').should be_nil }
-    it('should not authenticate person if no such identity') { Person.authenticate('john.wrong', 'secret').should be_nil }
-  end
-
-
-  describe :access_key do
-    subject { Person.create! :email=>'john.smith@example.com' }
-
-    it { subject.access_key.should look_like_sha1 }
-
-    it 'should be different for each person' do
-      subject.access_key.should_not == Person.create!(:email=>'maple.syrup@example.com').access_key
+    # Expecting Person.authenticate(identity, password) to return subject
+    def authenticate(identity, password
+      simple_matcher("authenticate '#{identity}:#{password}'") { |given| Person.authenticate(identity, password) == subject }
     end
 
-    it { should_not allow_mass_assigning_of(:access_key) }
-
-    it 'should change by calling new_access_key!' do
-      lambda { subject.new_access_key! }.should change { subject.access_key }
-    end
-
-    it 'should allow lookup' do
-      subject.save
-      should == Person.find_by_access_key(subject.access_key)
-    end
-
-    after { Person.delete_all }
+    it('should return person if identity/password match')   { should authenticate('john.smith', 'secret') }
+    it('should not return person unless password matches')  { should_not authenticate('john.smith', 'wrong') }
+    it('should not return person unless identity matches')  { should_not authenticate('john.wrong', 'secret') }
   end
 
 
   describe '#identify' do
     subject { Person.create! :email=>'john.smith@example.com' }
+
+    # Expecting Person.identify(identity) to return subject
+    def identify(identity)
+      simple_matcher("identify '#{identity}'") { |given, matcher| wrap_expectation(matcher) { Person.identify(identity) == subject } }
+    end
    
-    it('should return same Person as argument') { Person.identify(subject).should == subject }
-    it('should return person with same identity') { Person.identify(subject.identity).should == subject }
-    it('should fail if no person identified') { lambda { Person.identify('missing') }.should raise_error(ActiveRecord::RecordNotFound) }
+    it('should return same Person as argument')   { should identify(subject) }
+    it('should return person with same identity') { should identify(subject.identity) }
+    it('should fail if no person identified')     { should_not identify('missing') }
   end
 
 end

@@ -23,16 +23,14 @@ module Spec::Helpers #:nodoc:
 
     # Checks that the record has a created_at timestamp attribute.
     def have_created_at_timestamp
-      simple_matcher 'have created_at timestamp' do |given|
-        given.class.columns_hash['created_at'] && given.class.columns_hash['created_at'].type == :datetime
-      end
+      simple_matcher('have created_at timestamp') { |given|
+        given.class.columns_hash['created_at'] && given.class.columns_hash['created_at'].type == :datetime }
     end
 
     # Checks that the record has an updated_at timestamp attribute.
     def have_updated_at_timestamp
-      simple_matcher 'have updated_at timestamp' do |given|
-        given.class.columns_hash['updated_at'] && given.class.columns_hash['updated_at'].type == :datetime
-      end
+      simple_matcher('have updated_at timestamp') { |given|
+        given.class.columns_hash['updated_at'] && given.class.columns_hash['updated_at'].type == :datetime }
     end
 
 
@@ -45,9 +43,8 @@ module Spec::Helpers #:nodoc:
     # Check that model allows mass assigning of the specified attribute. For example:
     #   it { should allow_mass_assigning_of(:name) }
     def allow_mass_assigning_of(attr, new_value = 'new value')
-      simple_matcher "allow mass assigning of #{attr}" do |given|
-        given.class.send(:accessible_attributes).member?(attr.to_s)
-      end
+      simple_matcher("allow mass assigning of #{attr}") { |given|
+        given.class.send(:accessible_attributes).member?(attr.to_s) }
     end
 
     # Check that model validates presence of an attribute. For example:
