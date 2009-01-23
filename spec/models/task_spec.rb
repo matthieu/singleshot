@@ -58,6 +58,20 @@ describe Task do
   it { should have_attribute(:start_on, :date, :null=>true) }
   it { should allow_mass_assigning_of(:start_on) }
 
+  it { should have_attribute(:data, :text, :null=>false) }
+  it { should allow_mass_assigning_of(:data) }
+  it('should have empty hash as default data')  { subject.data.should be_instance_of(Hash) }
+  it('should allowing assigning nil to data')   { subject.data = nil; subject.data.should == {} }
+  it('should allowing assigning "" to data')    { subject.data = ""; subject.data.should == {} }
+  it('should validate data is a hash')          { subject.data = 'foo' ; subject.should have(1).error_on(:data) }
+  it('should store and retrieve data')          { subject.update_attributes(:data=>{ 'foo'=>'bar'})
+                                                  subject.reload.data.should == { 'foo'=>'bar' } }
+
+  it { should have_attribute(:access_key, :string, :null=>false, :limit=>40) }
+  it { should_not allow_mass_assigning_of(:access_key) }
+  it('should create SHA1-like access key')                { subject.access_key.should look_like_sha1 }
+  it('should give each task unique access key')           { tasks('foo', 'bar', 'baz').map(&:access_key).uniq.size.should be(3) }
+
   it { should have_locking_column(:version) }
   it { should have_created_at_timestamp }
   it { should have_updated_at_timestamp }

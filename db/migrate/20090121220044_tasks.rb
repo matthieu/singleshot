@@ -17,22 +17,22 @@
 class Tasks < ActiveRecord::Migration
   def self.up
     create_table :tasks do |t|
-      t.string    :status,                    :null => false
-      t.string    :title,                     :null => false
-      t.string    :description
-      t.string    :language,    :limit => 5
-      t.integer   :priority,    :limit => 1,  :null => false
-      t.date      :due_on
-      t.date      :start_on
-      t.string    :cancellation
-      t.boolean   :perform_integrated
-      t.boolean   :view_integrated
-      t.string    :perform_url
-      t.string    :view_url
-      t.text      :data,                      :null => false
-      t.string    :hooks
-      t.string    :access_key,  :limit => 32
-      t.integer   :version,                   :null => false
+      t.string   :status,                     :null => false
+      t.string   :title,                      :null => false
+      t.string   :description
+      t.string   :language,     :limit => 5
+      t.integer  :priority,     :limit => 1,  :null => false
+      t.date     :due_on
+      t.date     :start_on
+      t.string   :cancellation
+      t.boolean  :perform_integrated
+      t.boolean  :view_integrated
+      t.string   :perform_url
+      t.string   :view_url
+      t.text     :data,                       :null => false
+      t.string   :hooks
+      t.string   :access_key,   :limit => 40, :null => false
+      t.integer  :version,                    :null => false
       t.timestamps
     end
 

@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(:version => 20090121220044) do
     t.string   "view_url"
     t.text     "data",                             :null => false
     t.string   "hooks"
-    t.string   "access_key",         :limit => 32
+    t.string   "access_key",         :limit => 40, :null => false
     t.integer  "version",                          :null => false
     t.datetime "created_at"
     t.datetime "updated_at"

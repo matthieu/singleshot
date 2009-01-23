@@ -39,9 +39,32 @@ module Spec::Helpers #:nodoc:
       identities.map { |identity| person(identity) }
     end
 
+    # Creates and returns a new task. You can pass the task title as the first argument (giving each task
+    # a title is highly recommended). You can pass additional task attributes as the last argument, or all
+    # task attributes as a single argument. Missing arguments are supplied by calling #defaults. For example:
+    #   task 'Testing task with defaults'
+    #   task 'Testing task with data', :data=>{ 'foo'=>'bar' }
+    #   task :title=>'Testing priority', :priority=>3
+    def task(*args)
+      attrs = args.extract_options!
+      attrs[:title] = args.shift if String === args.first
+      raise ArgumentError, "Expecting one/two arguments, received #{args.size + 2}" unless args.empty?
+      Task.create!(defaults(attrs))
+    end
+
+    # Creates and returns new tasks, one for each argument. Each argument can be a string (task title, with
+    # all other attributes supplied by #defaults), or a hash of the desired task attributes. For example:
+    #   tasks 'Task 1', 'Task 2', 'Task 3'
+    #   tasks({:title=>'P1', :priority=>1}, {:title=>'P5', :priority=>5}) 
+    def tasks(*args)
+      args.map { |arg| task(arg) }
+    end
+
+    # Merges task attributes with a default set. Useful for creating a task without bothering to specify
+    # all (or any) attributes. For example:
+    #   subject { Task.new(defaults) }
+    #   Task.create! defaults(:title=>'Testing task defaults')
     def defaults(attributes = {})
-      #{ :title=>'Test this',
-      #  :outcome_url=>'http://test.host/outcome' }.merge(attributes)
       attributes.reverse_merge(:title=>'Add more specs')
     end
 

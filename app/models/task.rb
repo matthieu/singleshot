@@ -1,3 +1,19 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
+
 # == Schema Information
 # Schema version: 20090121220044
 #
@@ -18,39 +34,25 @@
 #  view_url           :string(255)
 #  data               :text            not null
 #  hooks              :string(255)
-#  access_key         :string(32)
+#  access_key         :string(40)      not null
 #  version            :integer         not null
 #  created_at         :datetime
 #  updated_at         :datetime
 #
 
-# Licensed to the Apache Software Foundation (ASF) under one or more
-# contributor license agreements.  See the NOTICE file distributed with this
-# work for additional information regarding copyright ownership.  The ASF
-# licenses this file to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-# License for the specific language governing permissions and limitations under
-# the License.
 
-
+require 'sha1'
 require 'openssl'
-require 'md5'
 
 
 class Task < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
-    self.status = 'active'
-    self.priority ||= 3
-    self.data ||= {}
+    self[:status] = 'active'
+    self[:priority] ||= DEFAULT_PRIORITY
+    self[:data] ||= {}
+    self[:access_key] = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
   end
 
 
@@ -60,10 +62,194 @@ class Task < ActiveRecord::Base
   attr_accessible :title, :description, :language
   validates_presence_of :title  # Title is required, description and language are optional
 
+
+  # -- Urgency --
+ 
+  PRIORITY = 1..5 # Priority ranges from 1 to 5, 1 is the highest priority.
+  DEFAULT_PRIORITY = 3 # Default priority is 3.
+
+  attr_accessible :priority, :due_on, :start_on
+  validates_inclusion_of :priority, :in=>PRIORITY
+
   
+=begin
   
+
+
+  def over_due?
+    due_on ? (ready? || active?) && due_on < Date.current : false
+  end
+
+  # If t-0 is the due date for this task, return days past deadline as positive
+  # number, calculated so one wee 
+  #
+  # This only applies to tasks with due date that are ready or active, all
+  # other tasks return nil.
+  #
+  # T-0 is the task's due date.  If we're past that due date, return a positive
+  # value that is over-due / 7 (i.e. week over due = 1.0).
+  #
+  # If we're ahead of the due date, and there is no specified start date,
+  # return a negative value that is days-left / 7 (i.e. week left = -1.0).
+  #
+  # If we do have a start by date, return a negative value indicating progress,
+  # starting with -1.0 on the start date and working all the way up to 0 on the
+  # due date.
+  def deadline
+    return unless due_on && (ready? || active?)
+    today = Date.current
+    return (today - due_on).to_f / 7 if due_on < today
+    (today - due_on).to_f * (due_on - (start_by || today - 1.week)).to_f
+  end
+
+  # Scopes can use this to add ranking methods on returned records.
+  module RankingMethods
+
+    # Tasks are ranked by the following rules:
+    # - Tasks you're performing (owner of) always rank higher than all other tasks.
+    # - Tasks available to you rank higher than tasks not available to you
+    # - Over due tasks always rank higher than today's tasks
+    # - And today's tasks always rank higher than task with no due date
+    # - High priority tasks always rank higher than lower priority tasks
+    # - Older tasks rank higher than more recently created tasks
+    def rank_for(person)
+      today = Date.current
+      # Calculating an absolute rank value is tricky if not impossible, so instead we construct
+      # an array of values and compare these arrays against each other.  To create an array we
+      # need a person's name, so we can ranked their owned tasks higher.
+      rank = lambda { |task|
+        [ person == task.owner ? 1 : 0, task.can_claim?(person) ? 1 : 0,
+          (task.due_on && task.due_on <= today) ? today - task.due_on : -1,
+          -task.priority, today - task.created_at.to_date ] }
+        # involved.role <> 'owner'
+        # tasks.priority, tasks.created_at
+      self.sort { |a,b| rank[b] <=> rank[a] }
+    end
+
+  end
+
+=end
   
+
+  # -- Stakeholders --
+
+
+=begin
   
+  # Stakeholders and people (as stakeholders) associated with this task.
+  has_many :stakeholders, :include=>:person, :dependent=>:delete_all
+  attr_protected :stakeholders
+
+  # Eager loading of stakeholders associated with each task.
+  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
+  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
+  named_scope :for_stakeholder, lambda { |person|
+    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
+      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
+
+  # Task creator and owner.  Adds three methods for each role:
+  # * {role}          -- Returns person associated with this role, or nil.
+  # * {role}?(person) -- Returns true if person associated with this role.
+  # * {role}= person  -- Assocaites person with this role (can be nil).
+  Stakeholder::SINGULAR_ROLES.each do |role|
+    define_method(role) { in_role(role).first }
+    define_method("#{role}?") { |identity| in_role?(role, identity) }
+    define_method "#{role}=" do |identity|
+      old_value = in_role(role)
+      new_value = set_role(role, identity.blank? ? nil : identity)
+      changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
+    end
+    define_method("#{role}_changed?") { attribute_changed?(role) }
+    define_method("#{role}_change") { attribute_change(role) }
+    define_method("#{role}_was") { attribute_was(role) }
+  end
+
+  def creator_with_change_check=(creator)
+    changed_attributes['creator'] = creator
+    self.creator_without_change_check = creator if reserved? || new_record?
+  end
+  alias_method_chain :creator=, :change_check
+
+  ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
+                         'observer'=>'observers', 'admin'=>'admins' }
+
+  # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
+  # * {plural}            -- Returns people associated with this role.
+  # * {singular}?(person) -- Returns true if person associated with this role.
+  # * {plural}= people    -- Assocaites people with this role.
+  Stakeholder::PLURAL_ROLES.each do |role|
+    accessor = ACCESSOR_FROM_ROLE[role]
+    define_method(accessor) { in_role(role) }
+    define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
+    define_method("#{accessor}=") { |identities| set_role role, identities }
+  end
+
+  # Returns true if person is a stakeholder in this task: any role except excluded owners list.
+  def stakeholder?(person)
+    stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
+  end
+
+  # Return all people in this role.
+  def in_role(role)
+    stakeholders.select { |sh| sh.role == role }.map(&:person)
+  end
+
+  # Return true if person in this role.
+  def in_role?(role, identity)
+    person = Person.identify(identity)
+    stakeholders.any? { |sh| sh.role == role && sh.person == person }
+  end
+
+  # Set people associated with this role.
+  def set_role(role, identities)
+    new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+    keeping = stakeholders.select { |sh| sh.role == role }
+    stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+    (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+    return new_set
+  end
+
+  validate do |task|
+    # Can only have one member of a singular role.
+    Stakeholder::SINGULAR_ROLES.each do |role|
+      task.errors.add role, "Can only have one #{role}." if task.stakeholders.select { |sh| sh.role == role }.size > 1
+    end
+    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && ![nil, 'reserved'].include?(task.status_was)
+    task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
+      task.owner && task.excluded_owner?(task.owner)
+    to, from = task.owner_change
+    if task.potential_owners.empty?
+      # With no potential owners, task must have a set owner.
+      #task.errors.add :owner, "This task intended for one owner." unless task.owner || task.reserved?
+    else
+      # We have a limited set of potential owners, owner must be one of them.
+      #task.errors.add :owner, "#{task.owner.fullname} is not allowd as owner of this task" unless task.owner && task.potential_owners?(task.owner)
+    end
+    conflicting = task.potential_owners & task.excluded_owners
+    task.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
+      conflicting.empty?
+  end
+
+=end
+
+
+  # -- Data and reference --
+
+  attr_accessible :data
+  serialize :data
+  validate do |record|
+    record.errors.add :data, "Must be a hash" unless Hash === record.data
+  end
+
+  def data=(data) #:nodoc:
+    data_will_change!
+    self[:data] = data.blank? ? {} : data
+  end
+
+
+
+
+
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
 
@@ -72,7 +258,6 @@ class Task < ActiveRecord::Base
     super
     self.description ||= ''
     self.data ||= {}
-    self.access_key = MD5.hexdigest(OpenSSL::Random.random_bytes(128))
   end
 
   def to_param #:nodoc:
@@ -82,7 +267,7 @@ class Task < ActiveRecord::Base
   # Returns an ETag that can identify changes to the task state.  No two tasks will have
   # the same ETag.  Changing the task state will also change its ETag.
   def etag
-    MD5.hexdigest("#{id}:#{version}")
+    SHA1.hexdigest("#{id}:#{version}")
   end
 
 
@@ -219,181 +404,6 @@ class Task < ActiveRecord::Base
 
 
   belongs_to :context
-
-
-  # --- Task data ---
-
-  serialize :data
-  before_validation do |record|
-    record.data ||= {}
-  end
-
-  validate do |record|
-    record.errors.add :data, 'Must be a hash' unless Hash === record.data
-  end
-
-
-  # --- Stakeholders ---
-  
-  # Stakeholders and people (as stakeholders) associated with this task.
-  has_many :stakeholders, :include=>:person, :dependent=>:delete_all
-  attr_protected :stakeholders
-
-  # Eager loading of stakeholders associated with each task.
-  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
-  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
-  named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
-      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
-
-  # Task creator and owner.  Adds three methods for each role:
-  # * {role}          -- Returns person associated with this role, or nil.
-  # * {role}?(person) -- Returns true if person associated with this role.
-  # * {role}= person  -- Assocaites person with this role (can be nil).
-  Stakeholder::SINGULAR_ROLES.each do |role|
-    define_method(role) { in_role(role).first }
-    define_method("#{role}?") { |identity| in_role?(role, identity) }
-    define_method "#{role}=" do |identity|
-      old_value = in_role(role)
-      new_value = set_role(role, identity.blank? ? nil : identity)
-      changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
-    end
-    define_method("#{role}_changed?") { attribute_changed?(role) }
-    define_method("#{role}_change") { attribute_change(role) }
-    define_method("#{role}_was") { attribute_was(role) }
-  end
-
-  def creator_with_change_check=(creator)
-    changed_attributes['creator'] = creator
-    self.creator_without_change_check = creator if reserved? || new_record?
-  end
-  alias_method_chain :creator=, :change_check
-
-  ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
-                         'observer'=>'observers', 'admin'=>'admins' }
-
-  # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
-  # * {plural}            -- Returns people associated with this role.
-  # * {singular}?(person) -- Returns true if person associated with this role.
-  # * {plural}= people    -- Assocaites people with this role.
-  Stakeholder::PLURAL_ROLES.each do |role|
-    accessor = ACCESSOR_FROM_ROLE[role]
-    define_method(accessor) { in_role(role) }
-    define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
-    define_method("#{accessor}=") { |identities| set_role role, identities }
-  end
-
-  # Returns true if person is a stakeholder in this task: any role except excluded owners list.
-  def stakeholder?(person)
-    stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
-  end
-
-  # Return all people in this role.
-  def in_role(role)
-    stakeholders.select { |sh| sh.role == role }.map(&:person)
-  end
-
-  # Return true if person in this role.
-  def in_role?(role, identity)
-    person = Person.identify(identity)
-    stakeholders.any? { |sh| sh.role == role && sh.person == person }
-  end
-
-  # Set people associated with this role.
-  def set_role(role, identities)
-    new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
-    keeping = stakeholders.select { |sh| sh.role == role }
-    stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
-    (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-    return new_set
-  end
-
-  validate do |task|
-    # Can only have one member of a singular role.
-    Stakeholder::SINGULAR_ROLES.each do |role|
-      task.errors.add role, "Can only have one #{role}." if task.stakeholders.select { |sh| sh.role == role }.size > 1
-    end
-    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && ![nil, 'reserved'].include?(task.status_was)
-    task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-      task.owner && task.excluded_owner?(task.owner)
-    to, from = task.owner_change
-    if task.potential_owners.empty?
-      # With no potential owners, task must have a set owner.
-      #task.errors.add :owner, "This task intended for one owner." unless task.owner || task.reserved?
-    else
-      # We have a limited set of potential owners, owner must be one of them.
-      #task.errors.add :owner, "#{task.owner.fullname} is not allowd as owner of this task" unless task.owner && task.potential_owners?(task.owner)
-    end
-    conflicting = task.potential_owners & task.excluded_owners
-    task.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
-      conflicting.empty?
-  end
-
-
-  # --- Priority and ordering ---
-  
-  # Task priority: 1 is the highest, 3 the lowest, average is the default.
-  PRIORITIES = 1..3
-  validates_inclusion_of :priority, :in=>PRIORITIES
-  before_validation do |task|
-    task.priority ||= (PRIORITIES.min + PRIORITIES.max) >> 1
-  end
-
-  def high_priority?
-    priority == PRIORITIES.min
-  end
-
-  def over_due?
-    due_on ? (ready? || active?) && due_on < Date.current : false
-  end
-
-  # If t-0 is the due date for this task, return days past deadline as positive
-  # number, calculated so one wee 
-  #
-  # This only applies to tasks with due date that are ready or active, all
-  # other tasks return nil.
-  #
-  # T-0 is the task's due date.  If we're past that due date, return a positive
-  # value that is over-due / 7 (i.e. week over due = 1.0).
-  #
-  # If we're ahead of the due date, and there is no specified start date,
-  # return a negative value that is days-left / 7 (i.e. week left = -1.0).
-  #
-  # If we do have a start by date, return a negative value indicating progress,
-  # starting with -1.0 on the start date and working all the way up to 0 on the
-  # due date.
-  def deadline
-    return unless due_on && (ready? || active?)
-    today = Date.current
-    return (today - due_on).to_f / 7 if due_on < today
-    (today - due_on).to_f * (due_on - (start_by || today - 1.week)).to_f
-  end
-
-  # Scopes can use this to add ranking methods on returned records.
-  module RankingMethods
-
-    # Tasks are ranked by the following rules:
-    # - Tasks you're performing (owner of) always rank higher than all other tasks.
-    # - Tasks available to you rank higher than tasks not available to you
-    # - Over due tasks always rank higher than today's tasks
-    # - And today's tasks always rank higher than task with no due date
-    # - High priority tasks always rank higher than lower priority tasks
-    # - Older tasks rank higher than more recently created tasks
-    def rank_for(person)
-      today = Date.current
-      # Calculating an absolute rank value is tricky if not impossible, so instead we construct
-      # an array of values and compare these arrays against each other.  To create an array we
-      # need a person's name, so we can ranked their owned tasks higher.
-      rank = lambda { |task|
-        [ person == task.owner ? 1 : 0, task.can_claim?(person) ? 1 : 0,
-          (task.due_on && task.due_on <= today) ? today - task.due_on : -1,
-          -task.priority, today - task.created_at.to_date ] }
-        # involved.role <> 'owner'
-        # tasks.priority, tasks.created_at
-      self.sort { |a,b| rank[b] <=> rank[a] }
-    end
-
-  end
 
 
   # --- Activities ---
