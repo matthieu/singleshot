@@ -55,7 +55,10 @@ describe Task do
   it { should have_attribute(:due_on, :date, :null=>true) }
   it { should allow_mass_assigning_of(:due_on) }
 
+  it { should have_attribute(:start_on, :date, :null=>true) }
+  it { should allow_mass_assigning_of(:start_on) }
 
+  it { should have_locking_column(:version) }
   it { should have_created_at_timestamp }
   it { should have_updated_at_timestamp }
 

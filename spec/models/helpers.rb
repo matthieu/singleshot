@@ -21,16 +21,21 @@ require File.dirname(__FILE__) + '/../spec_helper'
 module Spec::Helpers #:nodoc:
   module Models
 
-    # Checks that the subject has an attribute with the specified type and options.
+    # Checks that the subject has an attribute with the specified type and characteristics.
     # For example:
     #   should have_attribute(:name, :string, :null=>false)
     #   should have_attribute(:quantity, :integer, :default=>1)
-    def have_attribute(name, type, options = {})
+    def have_attribute(name, type, other = {})
       simple_matcher("have attribute #{name} of type #{type}") { |given|
         column = given.column_for_attribute(name)
-        column && column.type == type && options.all? { |key, value| options[key] == column.send(key) } }
+        column && column.type == type && other.all? { |key, value| other[key] == column.send(key) } }
     end
-  
+ 
+    # Checks that the named locking column is used (default to 'lock_version').
+    def have_locking_column(name = 'lock_version')
+      simple_matcher("have locking column #{name}") { |given| given.class.locking_enabled? && given.class.locking_column == name.to_s }
+    end
+
     # Checks that the record has a created_at timestamp attribute.
     def have_created_at_timestamp
       have_attribute :created_at, :datetime
