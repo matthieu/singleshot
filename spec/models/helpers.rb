@@ -46,6 +46,43 @@ module Spec::Helpers #:nodoc:
       have_attribute :updated_at, :datetime
     end
 
+    # Checks that the record has has_many association with the specified model, class and options.
+    # For example:
+    #   it { should have_many(:authors) }
+    #   it { should have_many(:posts, Post) }
+    #   it { should have_many(:comments, Comment, :dependent=>:delete_all) }
+    def have_many(model, klass = ActiveRecord::Base, options = {})
+      simple_matcher "have many #{model}" do |given, matcher|
+        matcher.failure_message = "expected has_many :#{model}, #{options.merge(:class=>klass.name).inspect}"
+        assoc = given.class.reflect_on_association(model.to_sym)
+        if assoc && assoc.macro == :has_many
+          matcher.failure_message << " but got has_many :#{model}, #{assoc.options.merge(:class=>assoc.klass.name).inspect}"
+          assoc.klass <= klass && options.all? { |key, value| options[key] == assoc.options[key] }
+        else
+          matcher.failure_message << " but no has_many :#{model} association found"
+          false
+        end
+      end
+    end
+
+    # Checks that the record has belongs_to association with the specified model, class and options.
+    # For example:
+    #   it { should belong_to(:author) }
+    #   it { should belong_to(:post, Post) }
+    def belong_to(model, klass = ActiveRecord::Base, options = {})
+      simple_matcher "belong to #{model}" do |given, matcher|
+        matcher.failure_message = "expected belongs_to :#{model}, #{options.merge(:class=>klass.name).inspect}"
+        assoc = given.class.reflect_on_association(model.to_sym)
+        if assoc && assoc.macro == :belongs_to
+          matcher.failure_message << " but got belongs_to :#{model}, #{assoc.options.merge(:class=>assoc.klass.name).inspect}"
+          assoc.klass <= klass && options.all? { |key, value| options[key] == assoc.options[key] }
+        else
+          matcher.failure_message << " but no belongs_to :#{model} association found"
+          false
+        end
+      end
+    end
+
     # Checks that the attribute looks like a SHA1. For example:
     #   record.secret.should look_like_sha1
     def look_like_sha1
@@ -56,7 +93,7 @@ module Spec::Helpers #:nodoc:
     #   it { should allow_mass_assigning_of(:name) }
     def allow_mass_assigning_of(attr, new_value = 'new value')
       simple_matcher("allow mass assigning of #{attr}") { |given|
-        given.class.send(:accessible_attributes).member?(attr.to_s) }
+        (given.class.send(:accessible_attributes) || given.class.column_names).member?(attr.to_s) }
     end
 
     # Check that model validates presence of an attribute. For example:
@@ -81,6 +118,16 @@ module Spec::Helpers #:nodoc:
       simple_matcher "validate uniqueness of #{attr}" do |given|
         given.clone.save!
         !given.valid? && given.errors.on(attr)
+      end
+    end
+
+    def validate_inclusion_of(attr, options)
+      inclusion = [options[:in] && "in #{options[:in].inspect}", options[:not_in] && "not in #{options[:not_in].inspect}"].compact.to_sentence
+      simple_matcher "validate inclusion of #{attr} #{inclusion}" do |given, matcher|
+        matcher.failure_message = "expected inclusion #{inclusion}"  
+        clone = given.clone
+        Array(options[:in]).all? { |value| clone.attributes = { attr => value } ; clone.valid? || !clone.errors.on(attr) } &&
+          Array(options[:not_in]).all? { |value| clone.attributes = { attr => value } ; !clone.valid? && clone.errors.on(attr) }
       end
     end
 
