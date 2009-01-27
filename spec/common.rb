@@ -68,6 +68,7 @@ module Spec::Helpers #:nodoc:
       attributes.reverse_merge(:title=>'Add more specs')
     end
 
+
     def task_with_status(status, attributes = nil)
       attributes ||= {}
       attributes = attributes.reverse_merge(:admins=>person('admin'))
