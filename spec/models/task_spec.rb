@@ -58,6 +58,44 @@ describe Task do
   it { should have_attribute(:start_on, :date, :null=>true) }
   it { should allow_mass_assigning_of(:start_on) }
 
+  it { should have_many(:stakeholders, Stakeholder, :include=>:person, :dependent=>:delete_all) }
+  it { should_not allow_mass_assigning_of(:stakeholders) }
+
+  describe '#associate!' do
+    it('should associate! person with role') { subject.associate!(:role=>person('foo')).in_role(:role).should == people('foo') }
+    it('should associate! people with role') { subject.associate!(:role=>people('foo', 'bar')).in_role(:role).should == people('foo', 'bar') }
+    it('should associate! no one with role') { subject.associate!(:role=>nil).in_role(:role).should be_empty }
+  end
+
+  describe '#in_role' do
+    it('should return all people in a given role') { subject.associate!(:find=>people('foo', 'bar'), :miss=>people('baz')).
+      in_role(:find).should == people('foo', 'bar') }
+  end
+
+  describe '#in_role?' do
+    subject { Task.new(defaults).associate!(:find=>people('foo', 'bar'), :miss=>people('baz')) }
+    it('should identify all people in a given role') { [subject.in_role?(:find, 'foo'), subject.in_role?(:find, 'bar'),
+                                                        subject.in_role?(:miss, 'foo')].should == [true, true, false] }
+  end
+
+  describe :owner do
+    subject { task }
+    before { people('alice', 'bob') }
+
+    it { should allow_mass_assigning_of(:owner) }
+    it('should return owner')                             { subject.owner = 'bob'; subject.owner.should == person('bob') }
+    it('should return nil if no owner')                   { subject.owner.should be_nil }
+    it('should use owner? to identify owner')             { subject.owner = 'bob'; subject.owner?('bob').should be_true ; subject.owner?('alice').should be_false }
+    it('should allow setting new owner')                  { lambda { subject.owner = 'alice' }.should change { subject.owner }.to(person('alice')) }
+    it('should allow resetting owner')                    { lambda { subject.owner = nil }.should change { subject.owner }.to(nil) }
+    it('should use owner_changed? to indicate change')    { lambda { subject.owner = person('bob') }.
+                                                              should change(subject, :owner_changed?).to(true) }
+    it('should use owner_change to return change')        { lambda { subject.save ; subject.owner = 'alice' }.should change { subject.owner_change }.
+                                                              from([nil, person('bob')]).to([person('bob'), person('alice')])  }
+  end
+
+
+
   it { should have_attribute(:data, :text, :null=>false) }
   it { should allow_mass_assigning_of(:data) }
   it('should have empty hash as default data')  { subject.data.should be_instance_of(Hash) }
