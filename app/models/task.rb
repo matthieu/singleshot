@@ -49,7 +49,6 @@ class Task < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
-    self[:status] = 'active'
     self[:priority] ||= DEFAULT_PRIORITY
     self[:data] ||= {}
     self[:access_key] = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
@@ -133,19 +132,60 @@ class Task < ActiveRecord::Base
 
   # -- Stakeholders --
 
-
-=begin
-  
   # Stakeholders and people (as stakeholders) associated with this task.
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all
-  attr_protected :stakeholders
+  attr_accessible :stakeholders, :owner
 
-  # Eager loading of stakeholders associated with each task.
-  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
-  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
-  named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
-      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
+  # Return all people associate with the specified role. For example:
+  #   task.in_role(:observer)
+  def in_role(role)
+    stakeholders.select { |sh| sh.role == role }.map(&:person)
+  end
+
+  # Return true if a person is associated with this task in a particular role. For example:
+  #   task.in_role?(:owner, john)
+  #   task.in_role?(:owner, "john.smith")
+  def in_role?(role, identity)
+    return false unless identity
+    person = Person.identify(identity)
+    stakeholders.any? { |sh| sh.role == role && sh.person == person }
+  end
+
+  # Associate peoples with roles. Returns self. For example:
+  #   task.associate :owner=>"john.smith"
+  #   task.associate :observer=>observers
+  # Note: all previous associations with the given role are replaced.
+  def associate(map)
+    map.each do |role, identities|
+      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+      keeping = stakeholders.select { |sh| sh.role == role }
+      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+    end
+    self
+  end
+
+  # Similar to #associate but calls save! and return true if saved.
+  def associate!(map)
+    associate map
+    save!
+  end
+
+  def owner
+    in_role(:owner).first
+  end
+  def owner=(owner)
+    associate :owner=>owner
+  end
+
+=begin
+  def stakeholders=(list) #:nodoc: prevents delete/insert with no material update.
+    returning stakeholders do |current|
+      current.replace(list.map { |item| current.detect { |sh| sh.role == item.role && sh.person == item.person } || item })
+    end
+  end
+
+  attr_accessible *Stakeholder::SINGULAR_ROLES
 
   # Task creator and owner.  Adds three methods for each role:
   # * {role}          -- Returns person associated with this role, or nil.
@@ -155,14 +195,23 @@ class Task < ActiveRecord::Base
     define_method(role) { in_role(role).first }
     define_method("#{role}?") { |identity| in_role?(role, identity) }
     define_method "#{role}=" do |identity|
-      old_value = in_role(role)
-      new_value = set_role(role, identity.blank? ? nil : identity)
-      changed_attributes[role] = old_value unless changed_attributes.has_key?(role) || old_value == new_value
+      attribute_will_change!(role)
+      associate!(role=>identity.blank? ? nil : identity)
     end
     define_method("#{role}_changed?") { attribute_changed?(role) }
     define_method("#{role}_change") { attribute_change(role) }
-    define_method("#{role}_was") { attribute_was(role) }
   end
+=end
+
+=begin
+  
+  # Eager loading of stakeholders associated with each task.
+  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
+  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
+  named_scope :for_stakeholder, lambda { |person|
+    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
+      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
+
 
   def creator_with_change_check=(creator)
     changed_attributes['creator'] = creator
@@ -187,26 +236,6 @@ class Task < ActiveRecord::Base
   # Returns true if person is a stakeholder in this task: any role except excluded owners list.
   def stakeholder?(person)
     stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
-  end
-
-  # Return all people in this role.
-  def in_role(role)
-    stakeholders.select { |sh| sh.role == role }.map(&:person)
-  end
-
-  # Return true if person in this role.
-  def in_role?(role, identity)
-    person = Person.identify(identity)
-    stakeholders.any? { |sh| sh.role == role && sh.person == person }
-  end
-
-  # Set people associated with this role.
-  def set_role(role, identities)
-    new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
-    keeping = stakeholders.select { |sh| sh.role == role }
-    stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
-    (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-    return new_set
   end
 
   validate do |task|
@@ -236,18 +265,88 @@ class Task < ActiveRecord::Base
   # -- Data and reference --
 
   attr_accessible :data
-  serialize :data
-  validate do |record|
-    record.errors.add :data, "Must be a hash" unless Hash === record.data
-  end
+  serialize :data, Hash
+  validate { |record| record.errors.add :data, "Must be a hash" unless Hash === record.data }
 
   def data=(data) #:nodoc:
-    data_will_change!
-    self[:data] = data.blank? ? {} : data
+    write_attribute :data, data.blank? ? {} : data
+  end
+
+
+  # -- Status --
+
+  # A task can report one of these statuses:
+  # * available -- Task is available, can be claimed by owner.
+  # * active    -- Task is active, performed by owner.
+  # * suspended -- Task is suspended.
+  # * completed -- Task has completed.
+  # * cancelled -- Task was cancelled.
+  STATUSES = [:available, :active, :suspended, :completed, :cancelled]
+
+  attr_accessible :status
+  validates_inclusion_of :status, :in=>STATUSES
+  def status #:nodoc:
+    status = read_attribute(:status)
+    status.blank? ? nil : status.to_sym
+  end
+  def status=(status) #:nodoc:
+    write_attribute :status, status.to_s
+  end
+
+  # Check method for each status (active?, completed?, etc).
+  STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
+
+  before_validation do |task|
+    task.status ||= :available
+    case task.status
+    when :available
+      # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
+      if !task.owner && (potential = task.in_role(:potential_owner)) && potential.size == 1
+        task.owner = potential.first
+      end
+      # Assigned task becomes active.
+      task.status = :active if task.owner
+    when :active
+      # Unassigned task becomes available.
+      task.status = :available unless task.owner
+    end
+  end
+
+  validate do |task|
+    # Check state transitions.
+    from, to = task.status_change
+    from = from.to_sym if from
+    case from
+    #when 'suspended'
+    #  task.errors.add :status, 'You are not allowed to resume this task.' unless task.modified_by && task.admin?(task.modified_by)
+    when :completed, :cancelled
+      task.errors.add :status, "Cannot change status of #{from} task"
+    end
+    case to
+    when :active
+      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
+      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
+    when :suspended
+      task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, task.updated_by)
+    when :completed
+      #task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
+      #task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
+    when :cancelled
+      #task.errors.add :status, 'You are not allowed to cancel this task.' unless task.modified_by && task.admin?(task.modified_by)
+    end
+  end
+
+  def readonly? # :nodoc:
+    [:completed, :cancelled].include?(status_was)
   end
 
 
 
+  attr_reader :updated_by
+  def update_by(person)
+    @updated_by = person
+    self
+  end
 
 
   # Locking column used for versioning and detecting update conflicts.
@@ -268,66 +367,6 @@ class Task < ActiveRecord::Base
   # the same ETag.  Changing the task state will also change its ETag.
   def etag
     SHA1.hexdigest("#{id}:#{version}")
-  end
-
-
-  # --- Task status ---
-
-  # A task can report one of these statuses:
-  # * reserved  -- Task exists but is not yet ready or active.
-  # * ready     -- Task is ready and can be claimed by owner.
-  # * active    -- Task is performed by its owner.
-  # * suspended -- Task is suspended.
-  # * completed -- Task has completed.
-  # * cancelled -- Task was cancelled.
-  STATUSES = ['reserved', 'ready', 'active', 'suspended', 'completed', 'cancelled']
-
-  validates_inclusion_of :status, :in=>STATUSES
-
-  # Check method for each status (active?, completed?, etc).
-  STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
-
-  before_validation do |task|
-    # Default status is ready.
-    task.status ||= 'ready' if task.new_record?
-    case task.status
-    when 'ready'
-      # When task first created, if we only have one potential owner, pick them as owner.
-      task.owner = task.potential_owners.first if task.owner.nil? && task.potential_owners.size == 1
-      # Assigned task => active.
-      task.status = 'active' if task.owner
-    when 'active'
-      # Unassigned task => ready.
-      task.status = 'ready' unless task.owner
-    end
-  end
-
-  validate do |task|
-    # Check state transitions.
-    from, to = task.status_change
-    case from # States you cannot transition from.
-    when 'suspended'
-      task.errors.add :status, 'You are not allowed to resume this task.' unless task.modified_by && task.admin?(task.modified_by)
-    when 'completed'
-      task.errors.add :status, 'Cannot change status of completed task.'
-    when 'cancelled'
-      task.errors.add :status, 'Cannot change status of cancelled task.'
-    end
-    case to # or, states you cannot transition to.
-    when 'reserved'
-      task.errors.add :status, 'Cannot change status to reserved.' unless from.nil?
-    when 'active'
-      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
-      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
-    when 'suspended'
-      task.errors.add :status, 'You are not allowed to suspend this task.' unless task.modified_by && task.admin?(task.modified_by)
-    when 'completed'
-      task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
-      task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
-    when 'cancelled'
-      task.errors.add :status, 'You are not allowed to cancel this task.' unless task.modified_by && task.admin?(task.modified_by)
-    end
-    task.readonly! if !task.status_changed? && (task.completed? || task.cancelled?)
   end
 
 

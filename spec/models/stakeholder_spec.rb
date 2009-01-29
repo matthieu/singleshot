@@ -19,18 +19,16 @@ require File.dirname(__FILE__) + '/helpers'
 
 describe Stakeholder do
 
-  subject { Stakeholder.new :person=>person('john.smith'), :task=>task, :role=>:owner }
+  subject { Stakeholder.new :person=>person('john.smith'), :task=>new_task, :role=>:owner }
 
   it { should belong_to(:person, Person) }
   it { should validate_presence_of(:person) }
 
   it { should belong_to(:task, Task) }
-  it { should validate_presence_of(:task) }
+  it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.should raise_error(ActiveRecord::StatementInvalid) }
 
   it { should have_attribute(:role, :string, :null=>false) }
   it { should validate_presence_of(:role) }
-  it('should accept symbol as role name and return it')     { subject.update_attributes(:role=>:owner) ; subject.reload.role.should == :owner }
-  it('should accept string as role name but return symbol') { subject.update_attributes(:role=>'owner') ; subject.reload.role.should == :owner }
   it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner], :not_in=>:foo) }
   it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
 

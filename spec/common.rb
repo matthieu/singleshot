@@ -42,22 +42,44 @@ module Spec::Helpers #:nodoc:
     # Creates and returns a new task. You can pass the task title as the first argument (giving each task
     # a title is highly recommended). You can pass additional task attributes as the last argument, or all
     # task attributes as a single argument. Missing arguments are supplied by calling #defaults. For example:
-    #   task 'Testing task with defaults'
-    #   task 'Testing task with data', :data=>{ 'foo'=>'bar' }
-    #   task :title=>'Testing priority', :priority=>3
-    def task(*args)
+    #   new_task 'Testing task with defaults'
+    #   new_task 'Testing task with data', :data=>{ 'foo'=>'bar' }
+    #   new_task :title=>'Testing priority', :priority=>3
+    def new_task(*args)
       attrs = args.extract_options!
       attrs[:title] = args.shift if String === args.first
       raise ArgumentError, "Expecting one/two arguments, received #{args.size + 2}" unless args.empty?
-      Task.create!(defaults(attrs))
+      case status = attrs.delete(:status)
+      when :available, nil
+        Task.create! defaults(attrs) do |task|
+          task.stakeholders.build :role=>:supervisor, :person=>person('supervisor')
+        end
+      when :active
+        returning new_task(attrs) do |task|
+          task.update_by(person('owner')).update_attributes :owner=>person('owner')
+        end
+      when :suspended
+        returning new_task(attrs) do |task|
+          task.update_by(person('supervisor')).update_attributes! :status=>:suspended
+        end
+      when :completed
+        returning new_task(attrs.merge(:status=>:active)) do |task|
+          task.update_by(task.owner).update_attributes! :status=>:completed
+        end
+      when :cancelled
+        returning new_task() do |task|
+          task.update_by(person('supervisor')).update_attributes! :status=>:cancelled
+        end
+      else raise "Invalid status code #{status}"
+      end
     end
 
     # Creates and returns new tasks, one for each argument. Each argument can be a string (task title, with
     # all other attributes supplied by #defaults), or a hash of the desired task attributes. For example:
-    #   tasks 'Task 1', 'Task 2', 'Task 3'
-    #   tasks({:title=>'P1', :priority=>1}, {:title=>'P5', :priority=>5}) 
-    def tasks(*args)
-      args.map { |arg| task(arg) }
+    #   new_tasks 'Task 1', 'Task 2', 'Task 3'
+    #   new_tasks({:title=>'P1', :priority=>1}, {:title=>'P5', :priority=>5}) 
+    def new_tasks(*args)
+      args.map { |arg| new_task(arg) }
     end
 
     # Merges task attributes with a default set. Useful for creating a task without bothering to specify
@@ -67,6 +89,10 @@ module Spec::Helpers #:nodoc:
     def defaults(attributes = {})
       attributes.reverse_merge(:title=>'Add more specs')
     end
+
+
+
+
 
 
     def task_with_status(status, attributes = nil)

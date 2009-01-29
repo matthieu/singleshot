@@ -48,23 +48,15 @@ class Stakeholder < ActiveRecord::Base
 
   # Stakeholder associated with a task.
   belongs_to :task
-  validates_presence_of :task
 
   # Stakeholder associated with a person.
   belongs_to :person
   validates_presence_of :person
 
-  # Role for this stakeholder.
-  def role
-    self[:role].to_sym if self[:role]
-  end
-  def role=(role)
-    self[:role] = role && role.to_s
-  end
-  validates_inclusion_of :role, :in=>ALL_ROLES
+  symbolize :role, :in=>ALL_ROLES
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
 
-  def readonly?
+  def readonly? #:nodoc:
     !new_record?
   end
 
