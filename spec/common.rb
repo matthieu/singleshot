@@ -39,6 +39,11 @@ module Spec::Helpers #:nodoc:
       identities.map { |identity| person(identity) }
     end
 
+    # Convenient methods for roles, so owner() returns owner, and so forth.
+    [:owner, :supervisor, :potential].each do |role|
+      define_method(role) { person(role.to_s) }
+    end
+
     # Creates and returns a new task. You can pass the task title as the first argument (giving each task
     # a title is highly recommended). You can pass additional task attributes as the last argument, or all
     # task attributes as a single argument. Missing arguments are supplied by calling #defaults. For example:
@@ -53,6 +58,9 @@ module Spec::Helpers #:nodoc:
       when :available, nil
         Task.create! defaults(attrs) do |task|
           task.stakeholders.build :role=>:supervisor, :person=>person('supervisor')
+          task.stakeholders.build :role=>:potential_owner, :person=>person('owner')     # so owner can claim task
+          task.stakeholders.build :role=>:potential_owner, :person=>person('potential') # so owner is not selected by default
+          task.stakeholders.build :role=>:excluded_owner, :person=>person('excluded')
         end
       when :active
         returning new_task(attrs) do |task|
@@ -88,42 +96,6 @@ module Spec::Helpers #:nodoc:
     #   Task.create! defaults(:title=>'Testing task defaults')
     def defaults(attributes = {})
       attributes.reverse_merge(:title=>'Add more specs')
-    end
-
-
-
-
-
-
-    def task_with_status(status, attributes = nil)
-      attributes ||= {}
-      attributes = attributes.reverse_merge(:admins=>person('admin'))
-      task = case status
-      when 'active'
-        Task.create!(defaults(attributes).merge(:status=>'active', :owner=>person('owner')))
-      when 'completed' # Start as active, modified by owner.
-        active = task_with_status('active', attributes)
-        active.modify_by(person('owner')).update_attributes! :status=>'completed'
-        active
-      when 'cancelled', 'suspended' # Start as active, modified by admin.
-        active = task_with_status('ready', attributes)
-        active.modify_by(person('admin')).update_attributes! :status=>status
-        active
-      else
-        Task.create!(defaults(attributes).merge(:status=>status))
-      end
-
-      def task.transition_to(status, attributes = nil)
-        attributes ||= {}
-        modify_by(attributes.delete(:modified_by) || Person.identify('admin')).update_attributes attributes.merge(:status=>status)
-        self
-      end
-      def task.can_transition?(status, attributes = nil)
-        transition_to(status, attributes).errors_on(:status).empty?
-      rescue ActiveRecord::ReadOnlyRecord
-        false
-      end
-      task
     end
 
   end

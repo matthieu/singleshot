@@ -84,16 +84,37 @@ describe Task do
     end
 
     describe 'owner' do
-      subject { Task.new(defaults) }
+      subject { new_task }
 
       it { should allow_mass_assigning_of(:owner) }
       it('should be nil if no person in this role') { subject.owner.should be_nil }
-      it('should return person in role owner')      { subject.associate(:owner=>person('owner')).owner.should == person('owner') }
-      it('should accept new owner if none')         { lambda { subject.owner = person('owner') }.should change(subject, :owner) }
+      it('should return person in role owner')      { subject.associate(:owner=>owner).owner.should == owner }
+      it('should accept new owner if none')         { lambda { subject.owner = owner }.should change(subject, :owner) }
       it 'should choose only potential owner by default' do
         subject.associate! :potential_owner=>people('bob', 'alice')
         lambda { subject.associate! :potential_owner=>people('alice') }.should change(subject, :owner).to(person('alice'))
       end
+      it('should not have two owners') { lambda { subject.associate!(:owner=>people('foo', 'bar')) }.should raise_error }
+
+      it { should allow_assigning('potential') } # potential owner can claim to themselves
+      it { should_not allow_assigning('other') }
+      it { should_not allow_assigning('excluded') }
+      it { should allow_assigning('supervisor') } # supervisor can claim to anyone but excluded
+
+      it { should_not allow_assigning('potential', 'other') }
+      it { should allow_assigning('supervisor', 'potential') }
+      it { should allow_assigning('supervisor', 'other') }
+      it { should_not allow_assigning('supervisor', 'excluded') }
+      
+      it { should allow_delegation('owner', 'potential') } # Can delegate to another potential owner, or noone (release),
+      it { should_not allow_delegation('owner', 'other') } # but can't delegate to random person.
+      it { should_not allow_delegation('owner', 'excluded') }
+      it { should allow_delegation('owner', nil) }
+      it { should_not allow_delegation('other', 'other') }  # Random person can't delegate to themselves, neither can potential owners.
+      it { should_not allow_delegation('potential', 'potential') }
+      it { should allow_delegation('supervisor', 'other') } # Supervisor can delegate to anyone, except excluded owners.
+      it { should_not allow_delegation('supervisor', 'excluded') }
+
     end
 
   end
@@ -109,26 +130,33 @@ describe Task do
       subject { new_task }
 
       it('should be the default status for new tasks')            { subject.status.should == :available }
-      it { should change_status_to(:active, "with new owner")     { subject.update_attributes! :owner=>person('owner') } }
+      it { should change_status_to(:active, "with new owner")     { subject.update_attributes! :owner=>owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
+      it { should honor_cancellation_policy }
+      it { should_not change_status_to(:completed)                { subject.update_by(supervisor).update_attributes :owner=>owner, :status=>:completed } }
     end
 
     describe 'active' do
       subject { new_task(:status=>:active) }
 
       it('should be status for owned tasks')                  { subject.status.should == :active }
-      it { should change_status_to(:available, "if no owner") { subject.update_attributes! :owner=>nil } }
-      it { should_not change_status("with owner change")      { subject.update_attributes! :owner=>person('alice') } }
-      it { should change_status_to(:suspended, "if suspended by supervisor")  { subject.update_by(person('supervisor')).
-                                                                                  update_attributes :status=>:suspended } }
-      it { should_not change_status("unless suspended by supervisor")         { subject.update_attributes :status=>:suspended } }
+      it { should change_status_to(:available, "if no owner") { subject.update_by(owner).update_attributes! :owner=>nil } }
+      it { should_not change_status("with owner change")      { subject.update_by(owner).update_attributes! :owner=>potential } }
+      it { should change_status_to(:suspended, "if suspended by supervisor")  { subject.update_by(supervisor).update_attributes :status=>:suspended } }
+      it { should_not change_status("unless suspended by supervisor")         { subject.update_by(owner).update_attributes :status=>:suspended } }
+      it { should honor_cancellation_policy }
+      it { should change_status_to(:completed, "when completed by owner")     { subject.update_by(owner).update_attributes :status=>:completed } }
+      it { should_not change_status_to(:completed, "unless by owner")         { subject.update_by(supervisor).update_attributes :status=>:completed } }
     end
 
     describe 'suspended' do
-      subject { new_task(:status=>:suspended).update_by(person('supervisor')) }
+      subject { new_task(:status=>:suspended) }
 
-      it { should change_status_to(:available, "if resumed and no owner") { subject.update_attributes! :status=>:active } }
-      it { should change_status_to(:active, "if resumed with owner")      { subject.update_attributes! :status=>:available, :owner=>person('owner') } }
+      it { should change_status_to(:available, "if resumed and no owner") { subject.update_by(supervisor).update_attributes! :status=>:active } }
+      it { should change_status_to(:active, "if resumed with owner")      { subject.update_by(supervisor).update_attributes! :status=>:available, :owner=>owner } }
+      it { should_not change_status("unless resumed by supervisor")       { subject.update_attributes :status=>:active } }
+      it { should honor_cancellation_policy }
+      it { should_not change_status_to(:completed)                        { subject.update_by(owner).update_attributes :owner=>owner, :status=>:completed } }
     end
 
     describe 'completed' do
@@ -171,30 +199,30 @@ describe Task do
   #   it { should_not change_status("when changing title") { subject.title = "modified" } }
   def change_status(reason, &block)
     simple_matcher "change status #{reason}" do |given, matcher|
-      before = subject.status
+      before = given.status
       block.call
-      after = subject.status
+      after = given.status
       matcher.failure_message = "expected status to change from #{before.inspect}, but did not change"
       matcher.negative_failure_message = "expected status not to change from #{before.inspect}, but changed to #{after.inspect}"
-      subject.valid? && before != after
+      given.valid? && before != after
     end
   end
 
   # Expecting the subject to change status to the specific status after executing the block.
   # Uses the reason argument as part of the description. For example:
   #   it { should change_status_to(:cancelled, "if cancelled") { subject.cancel! } }
-  def change_status_to(status, reason, &block)
+  def change_status_to(status, reason = nil, &block)
     simple_matcher "change status to #{status} #{reason}" do |given, matcher|
       matcher.failure_message = "expected status to change to #{status.inspect}, but already #{status.inspect}"
       matcher.negative_failure_message = "expected status not to change to #{status.inspect}, but already #{status.inspect}"
-      before = subject.status
-      unless (before = subject.status) == status
+      before = given.status
+      unless (before = given.status) == status
         block.call
-        after = subject.status
+        after = given.status
         matcher.failure_message = before == after ? "expected status to change to #{status.inspect}, but did not change" :
                                                     "expected status to change to #{status.inspect}, but changed to #{after.inspect}"
         matcher.negative_failure_message = "expected message not to change to #{status.inspect}, but changed to #{status.inspect}"
-        subject.valid? && after == status
+        given.valid? && after == status
       end
     end
   end
@@ -209,6 +237,49 @@ describe Task do
       failed = check.select { |status| given.clone.update_attributes(:status=>status) }
       matcher.failure_message = "expected status to be terminal, but managed to change to #{failed.map(&:inspect).to_sentence}"
       failed.empty?
+    end
+  end
+
+  # Expecting the current to allow cancellation only on behalf of supervisor. For example:
+  #  it { should honor_cancellation_policy }
+  def honor_cancellation_policy
+    simple_matcher "honor cancellation policy" do |given, matcher|
+      matcher.failure_message = "did not expect status to change, but change to :cancelled"
+      unless given.update_by(nil).update_attributes(:status=>:cancelled)
+        matcher.failure_message = "expected status to change to :cancelled, but did not change"
+        given.update_by(supervisor).update_attributes(:status=>:cancelled)
+      end
+    end
+  end
+
+  # Expecting that person {by} can assign task to person {to}, or if unspecified claim it to
+  # themselves. The task has no owner, but people in other roles (potential, supervisor, excluded, etc).
+  # For example:
+  #   it { should allow_assigning 'supervisor' }
+  def allow_assigning(by, to = nil)
+    simple_matcher do |given, matcher|
+      matcher.description = "allow #{to ? 'assigning' : 'claiming'} by #{by}"
+      matcher.description << " #{to}" if to
+      matcher.failure_message = "expected that #{by} can assign task to #{to || 'themselves'}"
+      matcher.negative_failure_message = "expected that #{by} could not assign task to #{to || 'themselves'}"
+      wrap_expectation matcher do
+        subject.update_by(person(by)).associate :owner=>person(to || by)
+      end
+    end
+  end
+
+  # Expecting that person {by} can delegate task to person {to}, or if unspecified release it to
+  # any available potential owner. The task is assigned to an owner, and other roles exist (potential,
+  # excluded, etc). For example:
+  #   it { should allow_delegation 'owner', 'potential' }
+  def allow_delegation(by, to)
+    simple_matcher "allow #{by} to delegate to #{to || 'no one'}" do |given, matcher|
+      subject.associate! :owner=>owner
+      matcher.failure_message = "expected that #{by} can delegate task to #{to || 'no one'}"
+      matcher.negative_failure_message = "expected that #{by} could not delegate task to #{to || 'no one'}"
+      wrap_expectation matcher do
+        subject.update_by(person(by)).associate! :owner=>(to && person(to))
+      end
     end
   end
 

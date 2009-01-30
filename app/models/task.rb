@@ -133,7 +133,8 @@ class Task < ActiveRecord::Base
   # -- Stakeholders --
 
   # Stakeholders and people (as stakeholders) associated with this task.
-  has_many :stakeholders, :include=>:person, :dependent=>:delete_all
+  has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
+    :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
   attr_accessible :stakeholders, :owner
 
   # Return all people associate with the specified role. For example:
@@ -174,9 +175,30 @@ class Task < ActiveRecord::Base
   def owner
     in_role(:owner).first
   end
+
   def owner=(owner)
     associate :owner=>owner
   end
+
+  def stakeholders_before_add(sh)
+    if sh.role == :owner
+      errors.add :owner, "Potential owners can only assign task to themselves" unless
+        in_role?(:potential_owner, sh.person) || in_role?(:supervisor, updated_by)
+      errors.add :owner, "Cannot assign task to excluded owner" if in_role?(:excluded_owner, sh.person)
+      errors.add :owner, "Task cannot have two owners" unless in_role(:owner).empty?
+    end
+    raise ActiveRecord::RecordInvalid, self if errors.on(:owner)
+  end
+
+  def stakeholders_before_remove(sh)
+    # Only owner/supervisor can assign to someone else.
+    errors.add :owner, "Only owner or supervisor can change ownership" if sh.role == :owner &&
+      !(sh.person == updated_by || in_role?(:supervisor, updated_by))
+    raise ActiveRecord::RecordInvalid, self if errors.on(:owner)
+  end
+
+  private :stakeholders_before_add, :stakeholders_before_remove
+
 
 =begin
   def stakeholders=(list) #:nodoc: prevents delete/insert with no material update.
@@ -283,15 +305,8 @@ class Task < ActiveRecord::Base
   # * cancelled -- Task was cancelled.
   STATUSES = [:available, :active, :suspended, :completed, :cancelled]
 
+  symbolize :status, :in=>STATUSES
   attr_accessible :status
-  validates_inclusion_of :status, :in=>STATUSES
-  def status #:nodoc:
-    status = read_attribute(:status)
-    status.blank? ? nil : status.to_sym
-  end
-  def status=(status) #:nodoc:
-    write_attribute :status, status.to_s
-  end
 
   # Check method for each status (active?, completed?, etc).
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
@@ -317,22 +332,19 @@ class Task < ActiveRecord::Base
     from, to = task.status_change
     from = from.to_sym if from
     case from
-    #when 'suspended'
-    #  task.errors.add :status, 'You are not allowed to resume this task.' unless task.modified_by && task.admin?(task.modified_by)
+    when :suspended
+      task.errors.add :status, "Only supervisor is allowed to resume this task" unless task.in_role?(:supervisor, task.updated_by) || task.cancelled?
     when :completed, :cancelled
       task.errors.add :status, "Cannot change status of #{from} task"
     end
     case to
-    when :active
-      #task.errors.add :status, "#{task.owner.fullname} is not allowed to claim this task." unless
-      #  task.potential_owners.empty? || task.potential_owner?(task.owner) || task.admin?(task.owner)
     when :suspended
       task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, task.updated_by)
     when :completed
-      #task.errors.add :status, 'Cannot change to completed from any status but active.' unless from =='active'
-      #task.errors.add :status, 'Only owner can complete task.' unless task.owner && task.modified_by == task.owner && !task.owner_changed?
+      task.errors.add :status, "Can only complete task if currently active" unless from == :active
+      task.errors.add :status, "Only owner can complete task" unless task.in_role?(:owner, task.updated_by)
     when :cancelled
-      #task.errors.add :status, 'You are not allowed to cancel this task.' unless task.modified_by && task.admin?(task.modified_by)
+      task.errors.add :status, "Only supervisor is allowed to cancel this task" unless task.in_role?(:supervisor, task.updated_by)
     end
   end
 
@@ -347,10 +359,21 @@ class Task < ActiveRecord::Base
     @updated_by = person
     self
   end
-
+  after_save { |task| task.update_by(nil) }
 
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
+
+  def clone
+    returning super do |clone|
+      clone.stakeholders = stakeholders.map(&:clone)
+    end
+  end
+
+
+  
+
+
 
 =begin
   def initialize(attributes = {}) #:nodoc:
