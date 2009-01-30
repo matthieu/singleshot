@@ -73,7 +73,7 @@ describe Person do
   it { should have_updated_at_timestamp }
 
 
-  describe '#authenticate' do
+  describe '.authenticate' do
     subject { Person.create! :email=>'john.smith@example.com', :password=>'secret' }
 
     # Expecting Person.authenticate(identity, password) to return subject
@@ -87,7 +87,7 @@ describe Person do
   end
 
 
-  describe '#identify' do
+  describe '.identify' do
     subject { Person.create! :email=>'john.smith@example.com' }
 
     # Expecting Person.identify(identity) to return subject
@@ -99,5 +99,15 @@ describe Person do
     it('should return person with same identity') { should identify(subject.identity) }
     it('should fail if no person identified')     { should_not identify('missing') }
   end
+
+
+  describe '#update_task' do
+    it('should only allow stakeholder to update task')
+    it('should return true if no errors')
+    it('should save updated if no errors')
+    it('should return false if errors')
+    it('should not save updates if errors')
+  end
+
 
 end

@@ -49,6 +49,7 @@ class Task < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
+    self[:status] = 'available'
     self[:priority] ||= DEFAULT_PRIORITY
     self[:data] ||= {}
     self[:access_key] = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
@@ -133,14 +134,19 @@ class Task < ActiveRecord::Base
   # -- Stakeholders --
 
   # Stakeholders and people (as stakeholders) associated with this task.
-  has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
-    :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
+  has_many :stakeholders, :include=>:person, :dependent=>:delete_all, :before_add=>:stakeholders_before_add
   attr_accessible :stakeholders, :owner
 
   # Return all people associate with the specified role. For example:
   #   task.in_role(:observer)
   def in_role(role)
     stakeholders.select { |sh| sh.role == role }.map(&:person)
+  end
+
+  # Return all people associated with the specified roles. For example:
+  #   task.in_roles(:owner, :potential)
+  def in_roles(*roles)
+    stakeholders.select { |sh| roles.include?(sh.role) }.map(&:person).uniq
   end
 
   # Return true if a person is associated with this task in a particular role. For example:
@@ -182,22 +188,13 @@ class Task < ActiveRecord::Base
 
   def stakeholders_before_add(sh)
     if sh.role == :owner
-      errors.add :owner, "Potential owners can only assign task to themselves" unless
-        in_role?(:potential_owner, sh.person) || in_role?(:supervisor, updated_by)
       errors.add :owner, "Cannot assign task to excluded owner" if in_role?(:excluded_owner, sh.person)
       errors.add :owner, "Task cannot have two owners" unless in_role(:owner).empty?
     end
     raise ActiveRecord::RecordInvalid, self if errors.on(:owner)
   end
 
-  def stakeholders_before_remove(sh)
-    # Only owner/supervisor can assign to someone else.
-    errors.add :owner, "Only owner or supervisor can change ownership" if sh.role == :owner &&
-      !(sh.person == updated_by || in_role?(:supervisor, updated_by))
-    raise ActiveRecord::RecordInvalid, self if errors.on(:owner)
-  end
-
-  private :stakeholders_before_add, :stakeholders_before_remove
+  private :stakeholders_before_add
 
 
 =begin
@@ -303,63 +300,34 @@ class Task < ActiveRecord::Base
   # * suspended -- Task is suspended.
   # * completed -- Task has completed.
   # * cancelled -- Task was cancelled.
-  STATUSES = [:available, :active, :suspended, :completed, :cancelled]
+  STATUSES = ['available', 'active', 'suspended', 'completed', 'cancelled']
 
-  symbolize :status, :in=>STATUSES
+  validates_inclusion_of :status, :in=>STATUSES
   attr_accessible :status
 
   # Check method for each status (active?, completed?, etc).
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
 
   before_validation do |task|
-    task.status ||= :available
     case task.status
-    when :available
+    when 'available'
       # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
       if !task.owner && (potential = task.in_role(:potential_owner)) && potential.size == 1
         task.owner = potential.first
       end
       # Assigned task becomes active.
-      task.status = :active if task.owner
-    when :active
+      task.status = 'active' if task.owner
+    when 'active'
       # Unassigned task becomes available.
-      task.status = :available unless task.owner
-    end
-  end
-
-  validate do |task|
-    # Check state transitions.
-    from, to = task.status_change
-    from = from.to_sym if from
-    case from
-    when :suspended
-      task.errors.add :status, "Only supervisor is allowed to resume this task" unless task.in_role?(:supervisor, task.updated_by) || task.cancelled?
-    when :completed, :cancelled
-      task.errors.add :status, "Cannot change status of #{from} task"
-    end
-    case to
-    when :suspended
-      task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, task.updated_by)
-    when :completed
-      task.errors.add :status, "Can only complete task if currently active" unless from == :active
-      task.errors.add :status, "Only owner can complete task" unless task.in_role?(:owner, task.updated_by)
-    when :cancelled
-      task.errors.add :status, "Only supervisor is allowed to cancel this task" unless task.in_role?(:supervisor, task.updated_by)
+      task.status = 'available' unless task.owner
     end
   end
 
   def readonly? # :nodoc:
-    [:completed, :cancelled].include?(status_was)
+    ['completed', 'cancelled'].include?(status_was)
   end
 
 
-
-  attr_reader :updated_by
-  def update_by(person)
-    @updated_by = person
-    self
-  end
-  after_save { |task| task.update_by(nil) }
 
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
@@ -531,7 +499,7 @@ class Task < ActiveRecord::Base
   end
 
   def complete!(data = nil)
-    self.status = :completed
+    self.status = 'completed'
     self.data = data if data
     # TODO: Update outcome, observers
     save!
@@ -593,7 +561,7 @@ class Task < ActiveRecord::Base
       # and limit status change to active/suspended.
       lambda { |attrs|
         status = attrs[:status].to_s
-        attrs.update(:suspended=> status == 'suspended') if ['active', 'suspended'].include?(status)
+        attrs.update('suspended'=> status == 'suspended') if ['active', 'suspended'].include?(status)
         attrs.update(:admins=>Array(attrs[:admins]) << person) }
     elsif active?
       if owner?(person)

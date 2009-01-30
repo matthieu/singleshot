@@ -138,4 +138,33 @@ class Person < ActiveRecord::Base
     record.new_access_key! unless record.access_key
   end
 
+
+  def update_task(task, attributes)
+    if attributes[:owner] && attributes[:owner] != task.owner && !task.in_role?(:supervisor, self)
+      task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.owner.nil? || task.in_role?(:owner, self)
+      task.errors.add :owner, "Potential owners can only assign task to themselves" unless task.in_role?(:potential_owner, attributes[:owner])
+    end
+
+    task.attributes = attributes
+
+    # Check authorization to state changes.
+    if task.status_changed?
+      task.errors.add :status, "Only supervisor is allowed to resume this task" if task.status_was == 'suspended' && !task.cancelled? && !task.in_role?(:supervisor, self)
+      case task.status
+      when 'suspended'
+        task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, self)
+      when 'completed'
+        task.errors.add :status, "Only owner can complete task" unless task.owner == self
+      #when 'cancelled'
+        #task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
+      end
+    end
+
+    task.errors.empty? && task.save
+  end
+
+  def update_task!(task, attributes)
+    update_task(task, attributes) or raise ActiveRecord::InvalidRecord, task
+  end
+
 end

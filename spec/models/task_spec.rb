@@ -129,45 +129,45 @@ describe Task do
     describe 'available' do
       subject { new_task }
 
-      it('should be the default status for new tasks')            { subject.status.should == :available }
-      it { should change_status_to(:active, "with new owner")     { subject.update_attributes! :owner=>owner } }
+      it('should be the initial status for new tasks')            { Task.new(:status=>'active').status.should == 'available' }
+      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to(:completed)                { subject.update_by(supervisor).update_attributes :owner=>owner, :status=>:completed } }
+      it { should_not change_status_to('completed')               { supervisor.update_task subject, :owner=>owner, :status=>'completed' } }
     end
 
     describe 'active' do
-      subject { new_task(:status=>:active) }
+      subject { new_task(:status=>'active') }
 
-      it('should be status for owned tasks')                  { subject.status.should == :active }
-      it { should change_status_to(:available, "if no owner") { subject.update_by(owner).update_attributes! :owner=>nil } }
-      it { should_not change_status("with owner change")      { subject.update_by(owner).update_attributes! :owner=>potential } }
-      it { should change_status_to(:suspended, "if suspended by supervisor")  { subject.update_by(supervisor).update_attributes :status=>:suspended } }
-      it { should_not change_status("unless suspended by supervisor")         { subject.update_by(owner).update_attributes :status=>:suspended } }
+      it('should be status for owned tasks')                  { subject.status.should == 'active' }
+      it { should change_status_to('available', "if no owner") { owner.update_task subject, :owner=>nil } }
+      it { should_not change_status("with owner change")      { owner.update_task subject, :owner=>potential } }
+      it { should change_status_to('suspended', "if suspended by supervisor")  { supervisor.update_task subject, :status=>'suspended' } }
+      it { should_not change_status("unless suspended by supervisor")         { owner.update_task subject, :status=>'suspended' } }
       it { should honor_cancellation_policy }
-      it { should change_status_to(:completed, "when completed by owner")     { subject.update_by(owner).update_attributes :status=>:completed } }
-      it { should_not change_status_to(:completed, "unless by owner")         { subject.update_by(supervisor).update_attributes :status=>:completed } }
+      it { should change_status_to('completed', "when completed by owner")     { owner.update_task subject, :status=>'completed' } }
+      it { should_not change_status_to('completed', "unless by owner")         { supervisor.update_task subject, :status=>'completed' } }
     end
 
     describe 'suspended' do
-      subject { new_task(:status=>:suspended) }
+      subject { new_task(:status=>'suspended') }
 
-      it { should change_status_to(:available, "if resumed and no owner") { subject.update_by(supervisor).update_attributes! :status=>:active } }
-      it { should change_status_to(:active, "if resumed with owner")      { subject.update_by(supervisor).update_attributes! :status=>:available, :owner=>owner } }
-      it { should_not change_status("unless resumed by supervisor")       { subject.update_attributes :status=>:active } }
+      it { should change_status_to('available', "if resumed and no owner") { supervisor.update_task! subject, :status=>'active' } }
+      it { should change_status_to('active', "if resumed with owner")      { supervisor.update_task! subject, :status=>'available', :owner=>owner } }
+      it { should_not change_status("unless resumed by supervisor")       { owner.update_task subject, :status=>'active' } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to(:completed)                        { subject.update_by(owner).update_attributes :owner=>owner, :status=>:completed } }
+      it { should_not change_status_to('completed')                        { owner.update_task subject, :owner=>owner, :status=>'completed' } }
     end
 
     describe 'completed' do
-      subject { new_task(:status=>:completed) }
+      subject { new_task(:status=>'completed') }
 
       it { should be_in_terminal_state }
       it { should be_readonly }
     end
 
     describe 'cancelled' do
-      subject { new_task(:status=>:cancelled) }
+      subject { new_task(:status=>'cancelled') }
 
       it { should be_in_terminal_state }
       it { should be_readonly }
@@ -200,29 +200,31 @@ describe Task do
   def change_status(reason, &block)
     simple_matcher "change status #{reason}" do |given, matcher|
       before = given.status
-      block.call
-      after = given.status
-      matcher.failure_message = "expected status to change from #{before.inspect}, but did not change"
-      matcher.negative_failure_message = "expected status not to change from #{before.inspect}, but changed to #{after.inspect}"
-      given.valid? && before != after
+      if block.call
+        after = given.status
+        matcher.failure_message = "expected status to change from #{before}, but did not change"
+        matcher.negative_failure_message = "expected status not to change from #{before}, but changed to #{after}"
+        before != after
+      end
     end
   end
 
   # Expecting the subject to change status to the specific status after executing the block.
   # Uses the reason argument as part of the description. For example:
-  #   it { should change_status_to(:cancelled, "if cancelled") { subject.cancel! } }
+  #   it { should change_status_to('cancelled', "if cancelled") { subject.cancel! } }
   def change_status_to(status, reason = nil, &block)
     simple_matcher "change status to #{status} #{reason}" do |given, matcher|
-      matcher.failure_message = "expected status to change to #{status.inspect}, but already #{status.inspect}"
-      matcher.negative_failure_message = "expected status not to change to #{status.inspect}, but already #{status.inspect}"
+      matcher.failure_message = "expected status to change to #{status}, but already #{status}"
+      matcher.negative_failure_message = "expected status not to change to #{status}, but already #{status}"
       before = given.status
       unless (before = given.status) == status
-        block.call
-        after = given.status
-        matcher.failure_message = before == after ? "expected status to change to #{status.inspect}, but did not change" :
-                                                    "expected status to change to #{status.inspect}, but changed to #{after.inspect}"
-        matcher.negative_failure_message = "expected message not to change to #{status.inspect}, but changed to #{status.inspect}"
-        given.valid? && after == status
+        if block.call
+          after = given.status
+          matcher.failure_message = before == after ? "expected status to change to #{status}, but did not change" :
+                                                      "expected status to change to #{status}, but changed to #{after}"
+          matcher.negative_failure_message = "expected message not to change to #{status}, but changed to #{status}"
+          after == status
+        end
       end
     end
   end
@@ -235,20 +237,17 @@ describe Task do
     simple_matcher "be terminal state" do |given, matcher|
       check = Task::STATUSES - [given.status]
       failed = check.select { |status| given.clone.update_attributes(:status=>status) }
-      matcher.failure_message = "expected status to be terminal, but managed to change to #{failed.map(&:inspect).to_sentence}"
+      matcher.failure_message = "expected status to be terminal, but managed to change to #{failed.to_sentence}"
       failed.empty?
     end
   end
 
-  # Expecting the current to allow cancellation only on behalf of supervisor. For example:
+  # Expecting task in current status to allow cancellation only on behalf of supervisor. For example:
   #  it { should honor_cancellation_policy }
   def honor_cancellation_policy
     simple_matcher "honor cancellation policy" do |given, matcher|
-      matcher.failure_message = "did not expect status to change, but change to :cancelled"
-      unless given.update_by(nil).update_attributes(:status=>:cancelled)
-        matcher.failure_message = "expected status to change to :cancelled, but did not change"
-        given.update_by(supervisor).update_attributes(:status=>:cancelled)
-      end
+      matcher.failure_message = "expected status to change to cancelled, but did not change"
+      supervisor.update_task given, :status=>'cancelled'
     end
   end
 
@@ -263,7 +262,7 @@ describe Task do
       matcher.failure_message = "expected that #{by} can assign task to #{to || 'themselves'}"
       matcher.negative_failure_message = "expected that #{by} could not assign task to #{to || 'themselves'}"
       wrap_expectation matcher do
-        subject.update_by(person(by)).associate :owner=>person(to || by)
+        person(by).update_task subject, :owner=>person(to || by)
       end
     end
   end
@@ -278,7 +277,7 @@ describe Task do
       matcher.failure_message = "expected that #{by} can delegate task to #{to || 'no one'}"
       matcher.negative_failure_message = "expected that #{by} could not delegate task to #{to || 'no one'}"
       wrap_expectation matcher do
-        subject.update_by(person(by)).associate! :owner=>(to && person(to))
+        person(by).update_task subject, :owner=>(to && person(to))
       end
     end
   end
