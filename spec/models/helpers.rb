@@ -26,8 +26,9 @@ module Spec::Helpers #:nodoc:
     #   it { should have_attribute(:name, :string, :null=>false) }
     #   it { should have_attribute(:quantity, :integer, :default=>1) }
     def have_attribute(name, type, other = {})
-      simple_matcher("have attribute #{name} of type #{type}") { |given|
+      simple_matcher("have attribute #{name} of type #{type}") { |given, matcher|
         column = given.column_for_attribute(name)
+        matcher.failure_message = "expected attribute #{name} of type #{type} with options #{other.inspect}"
         column && column.type == type && other.all? { |key, value| other[key] == column.send(key) } }
     end
 
@@ -83,10 +84,10 @@ module Spec::Helpers #:nodoc:
       end
     end
 
-    # Expecting attribute value to look like a SHA1. For example:
-    #   record.secret.should look_like_sha
-    def look_like_sha
-      simple_matcher('look like a SHA') { |given| given =~ /^[0-9a-f]{40}$/ }
+    # Expecting attribute value to look like hexdigest of specificed size. For example:
+    #   secret.should look_like_hex_digest(32)
+    def look_like_hexdigest(size = 32)
+      simple_matcher("look like hexdigest of #{size} digits") { |given| given =~ /^[0-9a-f]{#{size}}$/ }
     end
 
     # Expecting the named attribute to be accessible for mass assigning. For example:

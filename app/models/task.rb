@@ -14,6 +14,9 @@
 # the License.
 
 
+require 'openssl'
+
+
 # == Schema Information
 # Schema version: 20090121220044
 #
@@ -34,14 +37,11 @@
 #  view_url           :string(255)
 #  data               :text            not null
 #  hooks              :string(255)
-#  access_key         :string(40)      not null
+#  access_key         :string(32)      not null
 #  version            :integer         not null
 #  created_at         :datetime
 #  updated_at         :datetime
 #
-
-
-require 'openssl'
 
 
 class Task < ActiveRecord::Base
@@ -51,7 +51,7 @@ class Task < ActiveRecord::Base
     self[:status] = 'available'
     self[:priority] ||= DEFAULT_PRIORITY
     self[:data] ||= {}
-    self[:access_key] = OpenSSL::Digest::SHA.hexdigest(OpenSSL::Random.random_bytes(128))
+    self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
 

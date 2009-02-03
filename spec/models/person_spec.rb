@@ -44,29 +44,30 @@ describe Person do
   it { should_not validate_presence_of(:language) }
 
   def salt # return the password's salt
-    subject.password.split(':').first
+    subject.password.split('::').first
   end
   def crypt # return the password's crypt
-    subject.password.split(':').last
+    subject.password.split('::').last
   end
   def authenticate(password) # expecting authenticated?(password) to return true
     simple_matcher("authenticate '#{password}'") { |given| given.authenticated?(password) }
   end
 
-  it { should have_attribute(:password, :string, :null=>true) }
+  it { should have_attribute(:password, :string, :null=>true, :limit=>64) }
   it { should allow_mass_assigning_of(:password) }
   it { should_not validate_presence_of(:password) }
   it('should store salt as part of password')             { salt.should =~ /^[0-9a-f]{10}$/ }
-  it('should store SHA-like crypt as part of password')   { crypt.should look_like_sha }
+  it('should store hexdigest as part of password')        { crypt.should look_like_hexdigest(40) }
   it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, "secret") }
+  it('should be <= 64 digits in crypt form')              { subject.password.size.should <= 64 }
   it('should not have same crypt for two people')         { people('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
   it('should authenticate the right password')            { should authenticate('secret') }
   it('should not authenticate the wrong password')        { should_not authenticate('wrong') }
   it('should not authenticate without a password')        { subject[:password] = nil ; should_not authenticate('') }
 
-  it { should have_attribute(:access_key, :string, :null=>false, :limit=>40) }
+  it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
   it { should_not allow_mass_assigning_of(:access_key) }
-  it('should create SHA-like access key')                 { subject.save ; subject.access_key.should look_like_sha }
+  it('should create secure random access key')            { subject.save ; subject.access_key.should look_like_hexdigest(32) }
   it('should give each person unique access key')         { people('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
 
   it { should have_created_at_timestamp }

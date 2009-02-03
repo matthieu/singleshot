@@ -184,9 +184,9 @@ describe Task do
   it('should store and retrieve data')          { subject.update_attributes(:data=>{ 'foo'=>'bar'})
                                                   subject.reload.data.should == { 'foo'=>'bar' } }
 
-  it { should have_attribute(:access_key, :string, :null=>false, :limit=>40) }
+  it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
   it { should_not allow_mass_assigning_of(:access_key) }
-  it('should create SHA-like access key')                 { subject.access_key.should look_like_sha }
+  it('should create hexdigest access key')                { subject.access_key.should look_like_hexdigest(32) }
   it('should give each task unique access key')           { new_tasks('foo', 'bar', 'baz').map(&:access_key).uniq.size.should be(3) }
 
   it { should have_locking_column(:version) }

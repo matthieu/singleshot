@@ -37,7 +37,8 @@ Rails::Initializer.run do |config|
   config.time_zone = 'UTC'
 
   config.action_controller.use_accept_header = true
-  config.action_controller.session = { :key => '_singleshot_session', :secret => File.read("#{Rails.root}/secret.key") }
+  secret = File.read(Rails.root + 'secret.key') rescue ActiveSupport::SecureRandom.hex(64)
+  config.action_controller.session = { :key => '_singleshot_session', :secret=>secret }
 
   config.active_record.schema_format = :sql
   config.active_record.partial_updates = true

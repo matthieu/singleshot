@@ -14,6 +14,9 @@
 # the License.
 
 
+require 'openssl'
+
+
 # == Schema Information
 # Schema version: 20090121220044
 #
@@ -25,14 +28,11 @@
 #  email      :string(255)     not null
 #  language   :string(5)
 #  timezone   :integer(4)
-#  password   :string(255)
-#  access_key :string(40)      not null
+#  password   :string(64)
+#  access_key :string(32)      not null
 #  created_at :datetime
 #  updated_at :datetime
 #
-
-
-require 'openssl'
 
 
 # Internally we keep a primary key association between the person and various other records.
@@ -112,15 +112,15 @@ class Person < ActiveRecord::Base
   # Sets a new password.
   def password=(value)
     return super if value.nil?
-    salt = OpenSSL::Digest::SHA.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
+    salt = ActiveSupport::SecureRandom.hex(5)
     crypt = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, value)
-    super "#{salt}:#{crypt}"
+    super "#{salt}::#{crypt}"
   end
 
   # Authenticate against the supplied password.
   def authenticated?(against)
     return false unless password
-    salt, crypt = password.split(':')
+    salt, crypt = password.split('::')
     crypt == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, against)
   end
 
@@ -133,7 +133,7 @@ class Person < ActiveRecord::Base
   # to change it, for example, if the previous access key has been compromised. Returns the
   # new access key.
   def new_access_key!
-    self.access_key = OpenSSL::Digest::SHA.hexdigest(OpenSSL::Random.random_bytes(128))
+    self.access_key = ActiveSupport::SecureRandom.hex(16)
   end
 
   before_save do |record| 

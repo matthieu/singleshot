@@ -26,8 +26,8 @@ ActiveRecord::Schema.define(:version => 20090121220044) do
     t.string   "email",                    :null => false
     t.string   "language",   :limit => 5
     t.integer  "timezone",   :limit => 4
-    t.string   "password"
-    t.string   "access_key", :limit => 40, :null => false
+    t.string   "password",   :limit => 64
+    t.string   "access_key", :limit => 32, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(:version => 20090121220044) do
     t.string   "view_url"
     t.text     "data",                             :null => false
     t.string   "hooks"
-    t.string   "access_key",         :limit => 40, :null => false
+    t.string   "access_key",         :limit => 32, :null => false
     t.integer  "version",                          :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
