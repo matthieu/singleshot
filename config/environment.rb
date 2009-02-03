@@ -17,15 +17,15 @@
 # Be sure to restart your web server when you modify this file.
 
 ENV['RAILS_ENV'] ||= 'production'
-RAILS_GEM_VERSION = '2.2.2' unless defined? RAILS_GEM_VERSION
+RAILS_GEM_VERSION = '2.3.0' unless defined? RAILS_GEM_VERSION
 # Bootstrap the Rails environment, frameworks, and default configuration
 require File.join(File.dirname(__FILE__), 'boot')
 
 
 Rails::Initializer.run do |config|
   config.gem 'rest-open-uri',                   :version=>'~>1.0'
-  config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.7'
-  config.gem 'sparklines',                      :version=>'~>0.5'
+ # config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.8'
+  #config.gem 'sparklines',                      :version=>'~>0.5'
   #config.gem 'acts_as_ferret',                  :version=>'~>0.4'
   config.gem 'mislav-will_paginate', :lib=>'will_paginate',
     :source=>'http://gems.github.com',          :version=>'~>2.3'
@@ -37,10 +37,7 @@ Rails::Initializer.run do |config|
   config.time_zone = 'UTC'
 
   config.action_controller.use_accept_header = true
-  config.action_controller.session = {
-    :session_key => '_singleshot_session',
-    :secret      => File.read("#{Rails.root}/secret.key")
-  }
+  config.action_controller.session = { :key => '_singleshot_session', :secret => File.read("#{Rails.root}/secret.key") }
 
   config.active_record.schema_format = :sql
   config.active_record.partial_updates = true

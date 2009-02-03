@@ -22,7 +22,7 @@ atom_feed :root_url=>@alternate[Mime::HTML] do |feed|
       end
       # TODO: Should we add last person who modified the task as secondary/primary author?
       [Mime::JSON, Mime::XML, Mime::ICS].each do |mime|
-        feed.link :href=>formatted_tasks_url(task, :format=>mime), :rel=>'alternate', :type=>mime
+        feed.link :href=>tasks_url(task, :format=>mime), :rel=>'alternate', :type=>mime
       end
     end
   end

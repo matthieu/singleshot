@@ -18,7 +18,7 @@ atom_feed :root_url=>@root_url do |feed|
         author.email person.email if person && person.email
       end
       [Mime::JSON, Mime::XML, Mime::ICS].each do |mime|
-        feed.link :href=>formatted_tasks_url(task, :format=>mime), :rel=>'related', :type=>mime
+        feed.link :href=>tasks_url(task, :format=>mime), :rel=>'related', :type=>mime
       end
     end
   end

@@ -75,7 +75,7 @@ describe ActivityController, 'index' do
 
   it 'should provide link to Atom feed (HTML only)' do
     authenticate ; get 'index', :page=>'2'
-    assigns[:atom_feed_url].should == formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key)
+    assigns[:atom_feed_url].should == activity_url(:format=>:atom, :access_key=>authenticated.access_key)
   end
   
   it 'should include graph with all activities in the past month (HTML only)' do

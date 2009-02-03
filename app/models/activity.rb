@@ -1,11 +1,10 @@
 # == Schema Information
-# Schema version: 20080621023051
+# Schema version: 20090121220044
 #
 # Table name: activities
 #
 #  id         :integer         not null, primary key
 #  person_id  :integer         not null
-#  person_id  :integer
 #  task_id    :integer         not null
 #  name       :string(255)     not null
 #  created_at :datetime        not null
@@ -59,6 +58,6 @@ class Activity < ActiveRecord::Base
     { :conditions=>{ :created_at=>range } } }
 
   # Returns activities by recently added order.
-  named_scope :recently_added, :order=>'created_at desc'
+  default_scope :order=>'created_at desc'
 
 end

@@ -19,7 +19,7 @@ require 'rest-open-uri'
 require File.join(Rails.root, 'lib/extensions')
 require File.join(Rails.root, 'lib/singleshot')
 
-require 'sparklines'
-module ApplicationHelper
-  include SparklinesHelper
-end
+#require 'sparklines'
+#module ApplicationHelper
+#  include SparklinesHelper
+#end

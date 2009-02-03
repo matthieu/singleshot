@@ -139,6 +139,16 @@ class Person < ActiveRecord::Base
   end
 
 
+  # Use this instead of update_attributes to update a task, subject to this person's
+  # role in the task. It will check that this person is associated with the task, and
+  # based on their role, which changes are allowed, and finally record an activity for
+  # that person.
+  #
+  # Saves the record and returns true if successful. You can query task#errors for
+  # a list of validation and authorization errors.
+  #
+  # For example:
+  #   supervisor.udpate_task task, :status=>:cancel
   def update_task(task, attributes)
     if attributes[:owner] && attributes[:owner] != task.owner && !task.in_role?(:supervisor, self)
       task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.owner.nil? || task.in_role?(:owner, self)
@@ -163,6 +173,7 @@ class Person < ActiveRecord::Base
     task.errors.empty? && task.save
   end
 
+  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of error.
   def update_task!(task, attributes)
     update_task(task, attributes) or raise ActiveRecord::InvalidRecord, task
   end

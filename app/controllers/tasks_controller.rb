@@ -7,8 +7,8 @@ class TasksController < ApplicationController
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
     @alternate = { Mime::HTML=>tasks_url,
-                   Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
-                   Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+                   Mime::ATOM=>tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+                   Mime::ICS=>tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
     respond_to do |wants|
       wants.html { render :action=>'index' }
@@ -22,8 +22,8 @@ class TasksController < ApplicationController
   def completed
     @title, @subtitle = 'Completed', 'Completed tasks'
     @alternate = { Mime::HTML=>completed_tasks_url,
-                   Mime::ATOM=>formatted_completed_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
-                   Mime::ICS=>formatted_completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+                   Mime::ATOM=>completed_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+                   Mime::ICS=>completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
       wants.html do
@@ -39,8 +39,8 @@ class TasksController < ApplicationController
   def following
     @title, @subtitle = 'Following', 'Tasks you created, observing or managing.'
     @alternate = { Mime::HTML=>following_tasks_url,
-                   Mime::ATOM=>formatted_following_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
-                   Mime::ICS=>formatted_following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+                   Mime::ATOM=>following_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+                   Mime::ICS=>following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
     respond_to do |wants|
       wants.html { render :action=>'tasks' }
@@ -54,8 +54,8 @@ class TasksController < ApplicationController
   def search
     @query = @title = params['query'] || ''
     #@alternate = { Mime::HTML=>search_url('query'=>@query)
-    #               Mime::ATOM=>formatted_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
-    #               Mime::ICS=>formatted_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
+    #               Mime::ATOM=>tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
+    #               Mime::ICS=>tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     ids = Task.find_id_by_contents(@query).last.map { |h| h[:id] }
     @tasks = Task.for_stakeholder(authenticated).with_stakeholders.find(:all, :conditions=>{ :id=>ids })
     respond_to do |wants|
@@ -80,8 +80,8 @@ class TasksController < ApplicationController
   def show
     @title = @task.title
 #    @alternate = { Mime::HTML=>task_url(@task),
-#                   Mime::ICS=>formatted_task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
-#                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
+#                   Mime::ICS=>task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
+#                   Mime::ATOM=>task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
     @alternate = {}
     respond_to do |wants|
       wants.html { render :layout=>'head' }
@@ -143,8 +143,8 @@ class TasksController < ApplicationController
     @title = "Activities - #{@task.title}"
     @subtitle = "Track all activities in the task #{@task.title}"
     @alternate = { Mime::HTML=>task_activity_url(@task),
-                   Mime::ATOM=>formatted_task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key),
-                   Mime::ICS=>formatted_task_activity_url(@task, :format=>:ics, :access_key=>authenticated.access_key) }
+                   Mime::ATOM=>task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key),
+                   Mime::ICS=>task_activity_url(@task, :format=>:ics, :access_key=>authenticated.access_key) }
     respond_to do |want|
       want.html { @graph = @activities ; render :action=>'index' }
       want.atom { render :action=>'index' }

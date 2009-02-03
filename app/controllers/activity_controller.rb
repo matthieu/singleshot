@@ -23,7 +23,7 @@ class ActivityController < ApplicationController
     @activities = for_stakeholder.with_dependents.paginate(:page=>params['page'], :per_page=>50)
     respond_to do |want|
       want.html do
-        @atom_feed_url = formatted_activity_url(:format=>:atom, :access_key=>authenticated.access_key)
+        @atom_feed_url = activity_url(:format=>:atom, :access_key=>authenticated.access_key)
         @next = activity_url(:page=>@activities.next_page) if @activities.next_page
         @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
         @graph = for_stakeholder.for_dates(Date.current - 1.month)
