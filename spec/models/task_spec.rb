@@ -186,7 +186,7 @@ describe Task do
 
   it { should have_attribute(:access_key, :string, :null=>false, :limit=>40) }
   it { should_not allow_mass_assigning_of(:access_key) }
-  it('should create SHA1-like access key')                { subject.access_key.should look_like_sha1 }
+  it('should create SHA-like access key')                 { subject.access_key.should look_like_sha }
   it('should give each task unique access key')           { new_tasks('foo', 'bar', 'baz').map(&:access_key).uniq.size.should be(3) }
 
   it { should have_locking_column(:version) }

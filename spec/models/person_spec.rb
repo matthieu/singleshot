@@ -57,8 +57,8 @@ describe Person do
   it { should allow_mass_assigning_of(:password) }
   it { should_not validate_presence_of(:password) }
   it('should store salt as part of password')             { salt.should =~ /^[0-9a-f]{10}$/ }
-  it('should store SHA1-like crypt as part of password')  { crypt.should look_like_sha1 }
-  it('should calculate password crypt using salt')        { crypt.should == SHA1.hexdigest("#{salt}:secret") }
+  it('should store SHA-like crypt as part of password')   { crypt.should look_like_sha }
+  it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, "secret") }
   it('should not have same crypt for two people')         { people('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
   it('should authenticate the right password')            { should authenticate('secret') }
   it('should not authenticate the wrong password')        { should_not authenticate('wrong') }
@@ -66,7 +66,7 @@ describe Person do
 
   it { should have_attribute(:access_key, :string, :null=>false, :limit=>40) }
   it { should_not allow_mass_assigning_of(:access_key) }
-  it('should create SHA1-like access key')                { subject.save ; subject.access_key.should look_like_sha1 }
+  it('should create SHA-like access key')                 { subject.save ; subject.access_key.should look_like_sha }
   it('should give each person unique access key')         { people('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
 
   it { should have_created_at_timestamp }
@@ -102,12 +102,21 @@ describe Person do
 
 
   describe '#update_task' do
-    it('should only allow stakeholder to update task')
-    it('should return true if no errors')
-    it('should save updated if no errors')
-    it('should return false if errors')
-    it('should not save updates if errors')
+    subject { new_task }
+
+    it('should return true if no errors')   { supervisor.update_task(subject, {}).should be_true }
+    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task(subject, {}) }
+    it('should return false if errors')     { owner.update_task(subject, :title=>'oops').should be_false } 
+    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task(subject, :title=>'oops') }
   end
 
+  describe '#update_task!' do
+    subject { new_task }
+
+    it('should return true if no errors')   { supervisor.update_task!(subject, {}).should be_true }
+    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task!(subject, {}) }
+    it('should raise exception if errors')  { lambda { owner.update_task!(subject, :title=>'oops').should be_false }.should raise_error }
+    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task!(subject, :title=>'oops') rescue nil }
+  end
 
 end

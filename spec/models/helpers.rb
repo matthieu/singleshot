@@ -84,9 +84,9 @@ module Spec::Helpers #:nodoc:
     end
 
     # Expecting attribute value to look like a SHA1. For example:
-    #   record.secret.should look_like_sha1
-    def look_like_sha1
-      simple_matcher('look like a SHA1') { |given| given =~ /^[0-9a-f]{40}$/ }
+    #   record.secret.should look_like_sha
+    def look_like_sha
+      simple_matcher('look like a SHA') { |given| given =~ /^[0-9a-f]{40}$/ }
     end
 
     # Expecting the named attribute to be accessible for mass assigning. For example:

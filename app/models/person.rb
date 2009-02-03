@@ -32,8 +32,8 @@
 #
 
 
-require 'sha1'
 require 'openssl'
+
 
 # Internally we keep a primary key association between the person and various other records.
 # Externally, we use a public identifier returned from #to_param and resolved with Person.identify.
@@ -70,6 +70,7 @@ class Person < ActiveRecord::Base
     end
 
   end
+
 
   has_many :activities, :dependent=>:delete_all
   has_many :stakeholders, :dependent=>:delete_all
@@ -110,16 +111,17 @@ class Person < ActiveRecord::Base
 
   # Sets a new password.
   def password=(value)
-    salt = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
-    crypted = SHA1.hexdigest("#{salt}:#{value}")
-    super "#{salt}:#{crypted}"
+    return super if value.nil?
+    salt = OpenSSL::Digest::SHA.hexdigest(OpenSSL::Random.random_bytes(128))[0,10]
+    crypt = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, value)
+    super "#{salt}:#{crypt}"
   end
 
   # Authenticate against the supplied password.
   def authenticated?(against)
     return false unless password
-    salt, crypted = password.split(':')
-    crypted == SHA1.hexdigest("#{salt}:#{against}")
+    salt, crypt = password.split(':')
+    crypt == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, against)
   end
 
   # Sets a new password for this person and returns the password in clear text.
@@ -131,7 +133,7 @@ class Person < ActiveRecord::Base
   # to change it, for example, if the previous access key has been compromised. Returns the
   # new access key.
   def new_access_key!
-    self.access_key = SHA1.hexdigest(OpenSSL::Random.random_bytes(128))
+    self.access_key = OpenSSL::Digest::SHA.hexdigest(OpenSSL::Random.random_bytes(128))
   end
 
   before_save do |record| 
