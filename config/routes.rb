@@ -29,7 +29,7 @@ ActionController::Routing::Routes.draw do |map|
   map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
  
   map.activity '/activity', :controller=>'activity', :action=>'index'
-  map.formatted_activity '/activity.:format', :controller=>'activity', :action=>'index'
+  #map.formatted_activity '/activity.:format', :controller=>'activity', :action=>'index'
   map.recent_activity '/activity/recent', :controller=>'activity', :action=>'recent'
   
   map.sparklines '/sparklines', :controller=>'sparklines'

@@ -21,4 +21,3 @@ require 'rake/testtask'
 require 'rake/rdoctask'
 
 require 'tasks/rails'
-require(File.join(File.dirname(__FILE__), 'config', 'boot'))

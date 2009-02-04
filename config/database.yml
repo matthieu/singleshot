@@ -3,6 +3,7 @@
 development:
   adapter: sqlite3
   database: db/development.sqlite3
+  pool: 5
   timeout: 5000
 
 # Warning: The database defined as 'test' will be erased and
@@ -11,6 +12,7 @@ development:
 test:
   adapter: sqlite3
   database: db/test.sqlite3
+  pool: 5
   timeout: 5000
 
 # MySQL.  Versions 4.1 and 5.0 are recommended.
@@ -37,3 +39,5 @@ production:
   password: 
   #socket: /var/lib/mysql/mysql.sock
   host: localhost
+  pool: 5
+  timeout: 5000
