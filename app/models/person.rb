@@ -180,4 +180,27 @@ class Person < ActiveRecord::Base
     update_task(task, attributes) or raise ActiveRecord::InvalidRecord, task
   end
 
+  # -- Access control to task --
+
+  def can_claim?(task)
+    task.available? && !task.in_role?(:excluded_owner, self)
+  #  owner.nil? && (potential_owners.empty? || potential_owner?(person)) && !excluded_owner?(person)
+  end
+
+  def can_suspend?(task)
+    task.available? && task.in_role?(:supervisor, self)
+  end
+
+  def can_resume?(task)
+    task.suspended? && task.in_role?(:supervisor, self)
+  end
+
+  def can_cancel?(task)
+    !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
+  end
+
+  def can_complete?(task)
+    task.active? && task.in_role?(:owner, self)
+  end
+
 end

@@ -186,11 +186,16 @@ class Task < ActiveRecord::Base
   end
 
   def stakeholders_before_add(sh)
-    if sh.role == :owner
-      errors.add :owner, "Cannot assign task to excluded owner" if in_role?(:excluded_owner, sh.person)
-      errors.add :owner, "Task cannot have two owners" unless in_role(:owner).empty?
+    case sh.role
+    when :creator
+      errors.add :stakeholders, "Task cannot have two creators" unless in_role(:creator).empty?
+    when :owner
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if in_role?(:excluded_owner, sh.person)
+      errors.add :stakeholders, "Task cannot have two owners" unless in_role(:owner).empty?
+    when :potential_owner
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if in_role?(:excluded_owner, sh.person)
     end
-    raise ActiveRecord::RecordInvalid, self if errors.on(:owner)
+    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
 
   private :stakeholders_before_add
@@ -343,12 +348,6 @@ class Task < ActiveRecord::Base
 
 
 =begin
-  def initialize(attributes = {}) #:nodoc:
-    super
-    self.description ||= ''
-    self.data ||= {}
-  end
-
   def to_param #:nodoc:
     id && id.to_s + ('-' + title).gsub(/[^\w]+/, '-').gsub(/-{2,}/, '-').sub(/-+$/, '')
   end
@@ -518,37 +517,9 @@ class Task < ActiveRecord::Base
 
   # --- Access control ---
 
-  # Person who is modifying this task: required to activity logging and access control.
-  attr_reader :modified_by
-
-  # Changes the modified_by person and return self.
-  def modify_by(person)
-    @modified_by = person
-    self
-  end
-
-  after_save do |task|
-    task.modify_by nil
-  end
 
 
 #  enumerable :cancellation, [:admin, :owner], :default=>:admin
-
-  def can_cancel?(person)
-    admin?(person) && !completed? && !cancelled?
-  end
-
-  def can_complete?(person)
-    active? && owner?(person)
-  end
-
-  def can_suspend?(person)
-    admin?(person) && (active? || ready? || suspended?)
-  end
-
-  def can_claim?(person)
-    owner.nil? && (potential_owners.empty? || potential_owner?(person)) && !excluded_owner?(person)
-  end
 
   def can_delegate?(person)
     (owner?(person) && active? && !(potential_owners - [owner]).empty?) || (admin?(person) && (active? || ready?))
