@@ -17,66 +17,72 @@
 class PopulateDatabase
     
   def populate
-    puts "Populating database for #{you.identity}"
     Activity.delete_all
     Stakeholder.delete_all
     Task.delete_all
     Person.delete_all
     
+    puts "Populating database for #{you.identity}"
+
     # Tasks you should not see.
-    create :title=>'You will not see this task since this task is reserved.', :status=>'reserved', :creator=>you, :potential_owners=>[]
-    create :title=>'You will not see this task since you are not a stakeholder.', :potential_owners=>[]
+    new_task 
     # Tasks in which we are:
     # - creator
     # - owner
     # - observer
     # - admin
-    create :creator=>you
-    create(:creator=>you).delay(25.minutes).modify_by(you).update_attributes :owner=>you
-    create :observers=>you
-    create :admins=>you
+    new_task.associate! :creator=>you
+    new_task.associate! :creator=>you
+    you.update_task! Task.last, :owner=>you
+    new_task.associate! :observer=>you
+    new_task.associate! :supervisor=>you
     # Tasks in which we are only or one of many potential owners.
-    create :potential_owners=>you
-    create(:potential_owners=>[you, other]).delay(45.minutes).update_attributes :owner=>other
+    new_task.associate! :potential_owner=>you
+    new_task.associate! :potential_owner=>[you, other]
+    Task.last.update_attributes! :owner=>other
     # High priority should show first.
-    create :owner=>you, :priority=>Task::PRIORITIES.first
+    new_task(:priority=>Task::PRIORITY.first).associate! :owner=>you
     # Over-due before due today before anything else.
-    create :owner=>you, :due_on=>Date.current - 1.day
-    create :owner=>you, :due_on=>Date.current
-    create :owner=>you, :due_on=>Date.current + 1.day
+    new_task(:due_on=>Date.current - 1.day).associate! :owner=>you
+    new_task(:due_on=>Date.current).associate! :owner=>you
+    new_task(:due_on=>Date.current + 1.day).associate! :owner=>you
     # Completed, cancelled, suspended
-    create(:potential_owners=>[you, other]).delay(30.minutes).modify_by(other).update_attributes(:status=>'suspended')
-    create(:owner=>you, :status=>'active').delay(2.hours).modify_by(you).update_attributes(:status=>'completed')
-    create(:owner=>you, :status=>'active').delay(96.minutes).modify_by(other).update_attributes(:status=>'cancelled')      
+    new_task.associate! :potential_owner=>[you, other], :supervisor=>other
+    other.update_task! Task.last, :status=>'suspended'
+    new_task.associate! :owner=>you
+    you.update_task! Task.last, :status=>'completed'
+    new_task.associate! :supervisor=>you
+    you.update_task! Task.last, :status=>'cancelled'
   end
     
 protected
   
   def you
-    @you ||= Person.identify(ENV['USER']) rescue begin
+    @you ||= begin
+      Person.identify(ENV['USER'])
+    rescue
       puts "Creating an account for you:"
       puts "  Username: #{ENV['USER']}"
       puts "  Password: secret"
-      Person.create!(:email=>"#{ENV['USER']}@apache.org", :password=>'secret')
+      Person.create! :email=>"#{ENV['USER']}@example.com", :password=>'secret'
     end
   end
   
   def other
-    @other ||= Person.identify('anon') rescue Person.create(:email=>'anon@apache.org')
+    @other ||= begin
+      Person.identify('anon')
+    rescue
+      Person.create! :email=>'anon@example.com'
+    end
   end
 
-  def create(attributes)
-    PopulateDatabase.delay 
-    defaults = { :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
-                 :rendering=>{ :perform_url=>'http://localhost:3001/sandwich', :integrated_ui=>true },
-                 :potential_owners=>[you, other] }
-    task = Task.new(defaults.merge(attributes || {}))
-    task.modify_by(you).save!
-    def task.delay(duration = 2.hours)
-      PopulateDatabase.delay(duration)
-      self
+  def new_task(attributes = nil)
+    #delay
+    Task.create! attributes do |task|
+      task.title ||= Faker::Lorem.sentence
+      task.description ||= Faker::Lorem.paragraphs(3).join("\n\n")
+      task.associate :potential_owner=>[you, other]
     end
-    task
   end
 
   def self.delay(duration = 2.hours)
