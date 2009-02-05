@@ -40,7 +40,7 @@ module Spec::Helpers #:nodoc:
     end
 
     # Convenient methods for roles, so owner() returns owner, and so forth.
-    [:creator, :owner, :supervisor, :potential, :excluded, :other].each do |role|
+    [:creator, :owner, :supervisor, :potential, :excluded, :observer, :other].each do |role|
       define_method(role) { person(role.to_s) }
     end
 
@@ -61,6 +61,7 @@ module Spec::Helpers #:nodoc:
           task.stakeholders.build :role=>:creator, :person=>creator
           task.stakeholders.build :role=>:potential_owner, :person=>owner     # so owner can claim task
           task.stakeholders.build :role=>:potential_owner, :person=>potential # so owner is not selected by default
+          task.stakeholders.build :role=>:observer, :person=>observer
           task.stakeholders.build :role=>:excluded_owner, :person=>excluded
         end
       when 'active'

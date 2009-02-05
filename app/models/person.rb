@@ -159,7 +159,7 @@ class Person < ActiveRecord::Base
     return false
   end
 
-  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of error.
+  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of validation error.
   def update_task!(task, attributes)
     task.errors.clear
 
@@ -193,7 +193,7 @@ class Person < ActiveRecord::Base
     end
     raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
 
-    task.save!
+    task.save or raise ActiveRecord::RecordNotSaved
   end
 
   # -- Access control to task --

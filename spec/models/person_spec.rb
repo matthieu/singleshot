@@ -107,8 +107,8 @@ describe Person do
 
     it('should return true if no errors')   { supervisor.update_task(subject, {}).should be_true }
     it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task(subject, {}) }
-    it('should return false if errors')     { owner.update_task(subject, :title=>'oops').should be_false } 
-    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task(subject, :title=>'oops') }
+    it('should return false if errors')     { owner.update_task(subject, :status=>'suspended').should be_false } 
+    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task(subject, :status=>'suspended') }
   end
 
   describe '#update_task!' do
@@ -116,8 +116,8 @@ describe Person do
 
     it('should return true if no errors')   { supervisor.update_task!(subject, {}).should be_true }
     it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task!(subject, {}) }
-    it('should raise exception if errors')  { lambda { owner.update_task!(subject, :title=>'oops').should be_false }.should raise_error }
-    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task!(subject, :title=>'oops') rescue nil }
+    it('should raise exception if errors')  { lambda { owner.update_task!(subject, :status=>'suspended').should be_false }.should raise_error }
+    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task!(subject, :status=>'suspended') rescue nil }
   end
 
 end

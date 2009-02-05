@@ -164,6 +164,17 @@ describe Task do
       it { should_not able_to_complete_task }
     end
 
+    describe 'observer' do
+      subject { person('observer') }
+
+      it { should_not able_to_claim_task }
+      it { should_not able_to_delegate_task }
+      it { should_not able_to_suspend_task }
+      it { should_not able_to_resume_task }
+      it { should_not able_to_cancel_task }
+      it { should_not able_to_complete_task }
+    end
+
     describe 'other' do
       subject { person('other') }
 
@@ -258,14 +269,19 @@ describe Task do
 
   end
 
+
+  # -- Data --
+
   it { should have_attribute(:data, :text, :null=>false) }
   it { should allow_mass_assigning_of(:data) }
-  it('should have empty hash as default data')  { subject.data.should be_instance_of(Hash) }
-  it('should allowing assigning nil to data')   { subject.data = nil; subject.data.should == {} }
-  it('should allowing assigning "" to data')    { subject.data = ""; subject.data.should == {} }
-  it('should validate data is a hash')          { subject.data = 'foo' ; subject.should have(1).error_on(:data) }
+  it('should have empty hash as default data')  { subject.data.should == {} }
+  it('should allowing assigning nil to data')   { subject.update_attributes :data => nil; subject.data.should == {} }
+  it('should validate data is a hash')          { lambda { subject.update_attributes :data=>'string' }.should raise_error }
   it('should store and retrieve data')          { subject.update_attributes(:data=>{ 'foo'=>'bar'})
                                                   subject.reload.data.should == { 'foo'=>'bar' } }
+
+
+  # -- Access key --
 
   it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
   it { should_not allow_mass_assigning_of(:access_key) }

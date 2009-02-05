@@ -55,7 +55,6 @@ class Task < ActiveRecord::Base
   end
 
 
-
   # -- Descriptive --
 
   attr_accessible :title, :description, :language
@@ -289,11 +288,8 @@ class Task < ActiveRecord::Base
 
   attr_accessible :data
   serialize :data, Hash
+  before_validation(:unless=>:data) { |record| record.data = {} }
   validate { |record| record.errors.add :data, "Must be a hash" unless Hash === record.data }
-
-  def data=(data) #:nodoc:
-    write_attribute :data, data.blank? ? {} : data
-  end
 
 
   # -- Status --
