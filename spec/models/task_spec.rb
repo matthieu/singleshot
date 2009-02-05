@@ -95,6 +95,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should_not able_to_change_task }
     end
 
     describe '#owner' do
@@ -118,6 +119,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should able_to_complete_task }
+      it { should able_to_change_task(:data) }
 =begin
 
       it { should allow_delegation('owner', 'potential') } # Can delegate to another potential owner, or noone (release),
@@ -140,6 +142,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should_not able_to_change_task }
     end
 
     describe 'excluded owner' do
@@ -151,6 +154,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should_not able_to_change_task }
     end
 
     describe 'supervisor' do
@@ -162,6 +166,7 @@ describe Task do
       it { should able_to_resume_task }
       it { should able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should able_to_change_task }
     end
 
     describe 'observer' do
@@ -173,6 +178,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should_not able_to_change_task }
     end
 
     describe 'other' do
@@ -184,6 +190,7 @@ describe Task do
       it { should_not able_to_resume_task }
       it { should_not able_to_cancel_task }
       it { should_not able_to_complete_task }
+      it { should_not able_to_change_task }
     end
 
   end
@@ -426,6 +433,13 @@ describe Task do
       task = new_task(:status=>'active')
       fail unless subject.can_complete?(task) == subject.update_task(task, :status=>'completed')
       task.reload.status == 'completed'
+    end
+  end
+
+  def able_to_change_task(*attrs)
+    simple_matcher "be able to change task" do |given|
+      { :title=>'new title', :priority=>5, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' } }.
+        all? { |attr, value| subject.update_task(new_task(:status=>'active'), attr=>value) == (attrs.empty? || attrs.include?(attr)) }
     end
   end
 

@@ -191,10 +191,20 @@ class Person < ActiveRecord::Base
         task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
       end
     end
-    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
 
+    unless task.in_role?(:supervisor, self)
+      # Supervisors can change anything, owners only data, status is looked at separately. 
+      changed = task.changed - ['status']
+      changed -= ['data'] if task.in_role?(:owner, self)
+      unless changed.empty?
+        task.errors.add_to_base "You are not allowed to change the attributes #{changed.to_sentence}"
+      end
+    end
+
+    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
     task.save or raise ActiveRecord::RecordNotSaved
   end
+
 
   # -- Access control to task --
 
