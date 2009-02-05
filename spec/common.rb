@@ -40,7 +40,7 @@ module Spec::Helpers #:nodoc:
     end
 
     # Convenient methods for roles, so owner() returns owner, and so forth.
-    [:owner, :supervisor, :potential].each do |role|
+    [:creator, :owner, :supervisor, :potential, :excluded, :other].each do |role|
       define_method(role) { person(role.to_s) }
     end
 
@@ -57,29 +57,26 @@ module Spec::Helpers #:nodoc:
       case status = attrs.delete(:status)
       when 'available', nil
         Task.create! defaults(attrs) do |task|
-          task.stakeholders.build :role=>:supervisor, :person=>person('supervisor')
-          task.stakeholders.build :role=>:potential_owner, :person=>person('owner')     # so owner can claim task
-          task.stakeholders.build :role=>:potential_owner, :person=>person('potential') # so owner is not selected by default
-          task.stakeholders.build :role=>:excluded_owner, :person=>person('excluded')
+          task.stakeholders.build :role=>:supervisor, :person=>supervisor
+          task.stakeholders.build :role=>:creator, :person=>creator
+          task.stakeholders.build :role=>:potential_owner, :person=>owner     # so owner can claim task
+          task.stakeholders.build :role=>:potential_owner, :person=>potential # so owner is not selected by default
+          task.stakeholders.build :role=>:excluded_owner, :person=>excluded
         end
       when 'active'
         returning new_task(attrs) do |task|
-          #task.update_by(person('owner')).update_attributes :owner=>person('owner')
-          task.update_attributes :owner=>person('owner')
+          task.update_attributes :owner=>owner
         end
       when 'suspended'
         returning new_task(attrs) do |task|
-          #task.update_by(person('supervisor')).update_attributes! :status=>'suspended'
           task.update_attributes! :status=>'suspended'
         end
       when 'completed'
         returning new_task(attrs.merge(:status=>'active')) do |task|
-          #task.update_by(task.owner).update_attributes! :status=>'completed'
           task.update_attributes! :status=>'completed'
         end
       when 'cancelled'
         returning new_task() do |task|
-          #task.update_by(person('supervisor')).update_attributes! :status=>'cancelled'
           task.update_attributes! :status=>'cancelled'
         end
       else raise "Invalid status code #{status}"

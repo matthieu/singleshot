@@ -141,6 +141,8 @@ class Person < ActiveRecord::Base
   end
 
 
+  # -- Guarded task update --
+
   # Use this instead of update_attributes to update a task, subject to this person's
   # role in the task. It will check that this person is associated with the task, and
   # based on their role, which changes are allowed, and finally record an activity for
@@ -152,53 +154,80 @@ class Person < ActiveRecord::Base
   # For example:
   #   supervisor.udpate_task task, :status=>:cancel
   def update_task(task, attributes)
-    if attributes[:owner] && attributes[:owner] != task.owner && !task.in_role?(:supervisor, self)
-      task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.owner.nil? || task.in_role?(:owner, self)
-      task.errors.add :owner, "Potential owners can only assign task to themselves" unless task.in_role?(:potential_owner, attributes[:owner])
+    update_task!(task, attributes)
+  rescue ActiveRecord::RecordInvalid
+    return false
+  end
+
+  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of error.
+  def update_task!(task, attributes)
+    task.errors.clear
+
+    new_owner = attributes[:owner] && Person.identify(attributes[:owner])
+    if new_owner != task.owner
+      if task.owner # owned, so delegating to someone else
+        task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.in_role?(:owner, self) || task.in_role?(:supervisor, self)
+      else # not owned, so claiming task
+        task.errors.add :owner, "#{new_owner.to_param} is not allowed to claim task" unless new_owner.can_claim?(task)
+      end
     end
+    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
 
     task.attributes = attributes
 
     # Check authorization to state changes.
     if task.status_changed?
-      task.errors.add :status, "Only supervisor is allowed to resume this task" if task.status_was == 'suspended' && !task.cancelled? && !task.in_role?(:supervisor, self)
+      case task.status_was
+      when 'suspended'
+        task.errors.add :status, "Only supervisor is allowed to resume this task" unless task.cancelled? || task.in_role?(:supervisor, self)
+      end
+
       case task.status
       when 'suspended'
         task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, self)
       when 'completed'
         task.errors.add :status, "Only owner can complete task" unless task.owner == self
-      #when 'cancelled'
-        #task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
+      when 'cancelled'
+        task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
       end
     end
+    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
 
-    task.errors.empty? && task.save
-  end
-
-  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of error.
-  def update_task!(task, attributes)
-    update_task(task, attributes) or raise ActiveRecord::InvalidRecord, task
+    task.save!
   end
 
   # -- Access control to task --
 
+  # Returns true if this person can claim the task.
   def can_claim?(task)
-    task.available? && !task.in_role?(:excluded_owner, self)
-  #  owner.nil? && (potential_owners.empty? || potential_owner?(person)) && !excluded_owner?(person)
+    task.available? && can_own?(task, self)
   end
 
+  def can_delegate?(task, person)
+    (task.owner == self || task.in_role?(:supervisor, self)) && can_own?(task, person)
+  end
+
+  def can_own?(task, person)
+    (task.in_role?(:potential_owner, person) || task.in_role?(:supervisor, person)) && !task.in_role?(:excluded_owner, person)
+  end
+  private :can_own?
+
+  # Returns true if this person can suspend the task.
   def can_suspend?(task)
     task.available? && task.in_role?(:supervisor, self)
   end
 
+  # Returns true if this person can resume the task.
   def can_resume?(task)
     task.suspended? && task.in_role?(:supervisor, self)
   end
 
+  # Returns true if this person can cancel the task.
   def can_cancel?(task)
     !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
   end
 
+  # Returns true if this person can complete the task.
   def can_complete?(task)
     task.active? && task.in_role?(:owner, self)
   end
