@@ -94,7 +94,7 @@ module Spec::Helpers #:nodoc:
     #   it { should allow_mass_assigning_of(:name) }
     def allow_mass_assigning_of(attr, new_value = 'new value')
       simple_matcher("allow mass assigning of #{attr}") { |given|
-        (given.class.send(:accessible_attributes) || given.class.column_names).member?(attr.to_s) }
+        (given.class.accessible_attributes || given.class.column_names).member?(attr.to_s) }
     end
 
     # Expecting the model to validate presence of the named attribute. For example:
