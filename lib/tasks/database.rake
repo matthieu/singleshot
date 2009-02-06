@@ -24,13 +24,9 @@ namespace 'db' do
     PopulateDatabase.new.populate
   end
 
-  begin
-    # Conditional, otherwise rake setup fails not finding annotate_models.
-    require 'annotate_models/tasks'
-
-    desc task('annotate_models').comment
-    task 'annotate'=>'annotate_models'
-  rescue LoadError
+  task 'annotate'=>['environment'] do
+    require 'annotate/annotate_models'
+    AnnotateModels.do_annotations(:position=>:before) rescue p $!.backtrace
   end
 
 end
