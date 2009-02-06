@@ -60,4 +60,8 @@ class Stakeholder < ActiveRecord::Base
     !new_record?
   end
 
+  def to_hash
+    { 'role'=>role.to_s, 'person'=>person.to_param }
+  end
+
 end

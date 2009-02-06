@@ -52,10 +52,10 @@ class Task < ActiveRecord::Base
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-
   # -- Descriptive --
 
   attr_accessible :title, :description, :language
+  attr_readable   :title, :description, :language
   validates_presence_of :title  # Title is required, description and language are optional
 
 
@@ -65,6 +65,7 @@ class Task < ActiveRecord::Base
   DEFAULT_PRIORITY = 3 # Default priority is 3.
 
   attr_accessible :priority, :due_on, :start_on
+  attr_readable   :priority, :due_on, :start_on
   validates_inclusion_of :priority, :in=>PRIORITY
 
   
@@ -132,6 +133,7 @@ class Task < ActiveRecord::Base
   # Stakeholders and people (as stakeholders) associated with this task.
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all, :before_add=>:stakeholders_before_add
   attr_accessible :stakeholders, :owner
+  attr_readable   :stakeholders
 
   # Return all people associate with the specified role. For example:
   #   task.in_role(:observer)
@@ -285,6 +287,7 @@ class Task < ActiveRecord::Base
   # -- Data and reference --
 
   attr_accessible :data
+  attr_readable   :data
   serialize :data, Hash
   before_validation(:unless=>:data) { |record| record.data = {} }
   validate { |record| record.errors.add :data, "Must be a hash" unless Hash === record.data }
@@ -302,6 +305,7 @@ class Task < ActiveRecord::Base
 
   symbolize :status, :in=>STATUSES
   attr_accessible :status
+  attr_readable   :status
 
   # Check method for each status (active?, completed?, etc).
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
@@ -329,6 +333,7 @@ class Task < ActiveRecord::Base
 
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
+  attr_readable :version, :created_at, :updated_at
 
   def clone
     returning super do |clone|
