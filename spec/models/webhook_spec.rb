@@ -20,32 +20,41 @@ require File.dirname(__FILE__) + '/helpers'
 # == Schema Information
 # Schema version: 20090206215123
 #
-# Table name: stakeholders
+# Table name: webhooks
 #
 #  id         :integer         not null, primary key
-#  person_id  :integer         not null
 #  task_id    :integer         not null
-#  role       :string(255)     not null
-#  created_at :datetime        not null
+#  event      :string(255)     not null
+#  url        :string(255)     not null
+#  method     :string(255)     default("post"), not null
+#  enctype    :string(255)
+#  secret     :string(255)
+#  created_at :datetime
+#  updated_at :datetime
 #
 
 
-describe Stakeholder do
-
-  subject { Stakeholder.new :person=>person('john.smith'), :task=>new_task, :role=>:owner }
-
-  it { should belong_to(:person, Person) }
-  it { should validate_presence_of(:person) }
+describe Webhook do
+  subject { Webhook.new :task=>new_task, :event=>'completed', :url=>'http://example.com/callback' }
 
   it { should belong_to(:task, Task) }
   it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.should raise_error(ActiveRecord::StatementInvalid) }
 
-  it { should have_attribute(:role, :string, :null=>false) }
-  it { should validate_presence_of(:role) }
-  it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner], :not_in=>:foo) }
-  it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
+  it { should have_attribute(:event, :string, :null=>false) }
+  it { should validate_presence_of(:event) }
 
-  it('should not allow person/task/role duplicate')         { subject.clone.save! ; subject.should have(1).error_on(:role) }
-  it('should be readonly')                                  { subject.save! ; subject.reload.should be_readonly }
+  it { should have_attribute(:url, :string, :null=>false) }
+  it { should validate_presence_of(:url) }
+
+  it { should have_attribute(:method, :string, :null=>false) }
+  it { should validate_presence_of(:method) }
+  it('should have method=post by default') { subject.method.should == 'post' }
+
+  it { should have_attribute(:enctype, :string, :null=>false) }
+  it { should validate_presence_of(:enctype) }
+  it('should have enctype=url-encoded by default') { subject.enctype.should == Mime::URL_ENCODED_FORM.to_s }
+
+  it { should have_attribute(:hmac_key, :string) }
+  it { should_not validate_presence_of(:hmac_key) }
 
 end
