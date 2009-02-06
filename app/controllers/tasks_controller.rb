@@ -101,6 +101,7 @@ class TasksController < ApplicationController #:nodoc:
     @alternate = {}
     respond_to do |wants|
       wants.html { render :layout=>'head' }
+      wants.xml { render :xml=>presenting(@task) }
       # TODO: wants.xml
       # TODO: wants.json
       wants.ics  do
@@ -171,7 +172,7 @@ class TasksController < ApplicationController #:nodoc:
 private
 
   def set_task
-    @task = Task.for_stakeholder(authenticated).with_stakeholders.find(params[:id])
+    @task = Task.find(params[:id]) # for_stakeholder(authenticated).with_stakeholders.find(params[:id])
   end
 
   # Determines the outcome content type based on the request content type.
