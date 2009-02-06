@@ -17,6 +17,33 @@
 require File.dirname(__FILE__) + '/helpers'
 
 
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: tasks
+#
+#  id                 :integer         not null, primary key
+#  status             :string(255)     not null
+#  title              :string(255)     not null
+#  description        :string(255)
+#  language           :string(5)
+#  priority           :integer(1)      not null
+#  due_on             :date
+#  start_on           :date
+#  cancellation       :string(255)
+#  perform_integrated :boolean
+#  view_integrated    :boolean
+#  perform_url        :string(255)
+#  view_url           :string(255)
+#  data               :text            not null
+#  hooks              :string(255)
+#  access_key         :string(32)      not null
+#  version            :integer         not null
+#  created_at         :datetime
+#  updated_at         :datetime
+#
+
+
 describe Task do
 
   subject { Task.new(defaults) }

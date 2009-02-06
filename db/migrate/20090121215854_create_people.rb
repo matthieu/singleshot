@@ -14,7 +14,7 @@
 # the License.
 
 
-class People < ActiveRecord::Migration
+class CreatePeople < ActiveRecord::Migration
   def self.up
     create_table :people do |t|
       t.string   :identity,                 :null => false

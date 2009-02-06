@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090121220044) do
+ActiveRecord::Schema.define(:version => 20090206215123) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id",  :null => false
@@ -38,8 +38,8 @@ ActiveRecord::Schema.define(:version => 20090121220044) do
   add_index "people", ["identity"], :name => "index_people_on_identity", :unique => true
 
   create_table "stakeholders", :force => true do |t|
-    t.integer  "task_id",    :null => false
     t.integer  "person_id",  :null => false
+    t.integer  "task_id",    :null => false
     t.string   "role",       :null => false
     t.datetime "created_at", :null => false
   end
@@ -66,5 +66,18 @@ ActiveRecord::Schema.define(:version => 20090121220044) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  create_table "webhooks", :force => true do |t|
+    t.integer  "task_id",                        :null => false
+    t.string   "event",                          :null => false
+    t.string   "url",                            :null => false
+    t.string   "method",     :default => "post", :null => false
+    t.string   "enctype"
+    t.string   "secret"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "webhooks", ["task_id"], :name => "index_webhooks_on_task_id", :unique => true
 
 end

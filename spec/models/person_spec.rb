@@ -17,6 +17,24 @@
 require File.dirname(__FILE__) + '/helpers'
 
 
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: people
+#
+#  id         :integer         not null, primary key
+#  identity   :string(255)     not null
+#  fullname   :string(255)     not null
+#  email      :string(255)     not null
+#  language   :string(5)
+#  timezone   :integer(4)
+#  password   :string(64)
+#  access_key :string(32)      not null
+#  created_at :datetime
+#  updated_at :datetime
+#
+
+
 describe Person do
 
   subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }

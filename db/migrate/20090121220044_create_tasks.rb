@@ -14,7 +14,7 @@
 # the License.
 
 
-class Tasks < ActiveRecord::Migration
+class CreateTasks < ActiveRecord::Migration
   def self.up
     create_table :tasks do |t|
       t.string   :status,                     :null => false
@@ -37,18 +37,18 @@ class Tasks < ActiveRecord::Migration
     end
 
     create_table :stakeholders do |t|
-      t.integer  :task_id,    :null => false
-      t.integer  :person_id,  :null => false
-      t.string   :role,       :null => false
-      t.datetime :created_at, :null => false
+      t.belongs_to  :person,      :null => false
+      t.belongs_to  :task,        :null => false
+      t.string      :role,        :null => false
+      t.datetime    :created_at,  :null => false
     end
     add_index :stakeholders, [:person_id, :task_id, :role], :unique => true
 
     create_table :activities do |t|
-      t.integer  :person_id,  :null => false
-      t.integer  :task_id,    :null => false
-      t.string   :name,       :null => false
-      t.datetime :created_at, :null => false
+      t.belongs_to  :person,      :null => false
+      t.belongs_to  :task,        :null => false
+      t.string      :name,        :null => false
+      t.datetime    :created_at,  :null => false
     end
     add_index :activities, [:person_id, :task_id, :name], :unique => true
   end

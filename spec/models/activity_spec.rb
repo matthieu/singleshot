@@ -17,6 +17,19 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: activities
+#
+#  id         :integer         not null, primary key
+#  person_id  :integer         not null
+#  task_id    :integer         not null
+#  name       :string(255)     not null
+#  created_at :datetime        not null
+#
+
+
 describe Activity do
   
   before :each do
