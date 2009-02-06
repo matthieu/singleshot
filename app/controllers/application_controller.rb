@@ -31,14 +31,14 @@ protected
     # given the lax security, only for these resources and only for GET requests.
     if params[:access_key] && (request.format.atom? || request.format.ics?)
       raise ActionController::MethodNotAllowed, 'GET' unless request.get?
-      session.data.clear # don't send back cookies
+      reset_session # don't send back cookies
       @authenticated = Person.find_by_access_key(params[:access_key])
       head :forbidden unless @authenticated
     else
       # Favoring HTTP Basic over sessions makes my debugging life easier.
       if ActionController::HttpAuthentication::Basic.authorization(request)
         @authenticated = authenticate_or_request_with_http_basic(request.host) { |login, password| Person.authenticate(login, password) }
-        session.data.clear
+        reset_session
       else
         @authenticated = Person.find(session[:person_id]) rescue nil
         unless @authenticated
@@ -49,7 +49,7 @@ protected
             flash[:return_to] = request.url
             redirect_to session_url
           else
-            session.data.clear
+            reset_session
             request_http_basic_authentication
           end
         end
