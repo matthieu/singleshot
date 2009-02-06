@@ -8,6 +8,7 @@ secret = Rails.root + 'secret.key'
 File.open secret, 'w' do |file|
   file.write ActiveSupport::SecureRandom.hex(64)
 end unless File.exist?(secret)
+
 ActionController::Base.session = {
   :key         => '_singleshot_session',
   :secret      => File.read(secret)
