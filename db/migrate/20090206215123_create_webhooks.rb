@@ -14,35 +14,21 @@
 # the License.
 
 
-# == Schema Information
-# Schema version: 20090206215123
-#
-# Table name: webhooks
-#
-#  id         :integer         not null, primary key
-#  task_id    :integer         not null
-#  event      :string(255)     not null
-#  url        :string(255)     not null
-#  method     :string(255)     default("post"), not null
-#  enctype    :string(255)
-#  secret     :string(255)
-#  created_at :datetime
-#  updated_at :datetime
-#
+class CreateWebhooks < ActiveRecord::Migration
+  def self.up
+    create_table :webhooks do |t|
+      t.belongs_to :task,     :null=>false
+      t.string     :event,    :null=>false
+      t.string     :url,      :null=>false
+      t.string     :method,   :null=>false
+      t.string     :enctype,  :null=>false
+      t.string     :hmac_key
+    end
 
-class Webhook < ActiveRecord::Base
-
-  def initialize(*args)
-    super
-    self[:method] ||= 'post'
-    self.enctype ||= Mime::URL_ENCODED_FORM.to_s
+    add_index :webhooks, [:task_id], :unique => true
   end
 
-  # Stakeholder associated with a task.
-  belongs_to :task
-
-  validates_presence_of :event
-  validates_presence_of :url
-  validates_presence_of :method
-  validates_presence_of :enctype
+  def self.down
+    drop_table :webhooks
+  end
 end
