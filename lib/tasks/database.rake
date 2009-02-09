@@ -26,7 +26,7 @@ namespace 'db' do
 
   task 'annotate'=>['environment'] do
     require 'annotate/annotate_models'
-    AnnotateModels.do_annotations(:position=>:before) rescue p $!.backtrace
+    AnnotateModels.do_annotations(:position=>:before)
   end
 
 end

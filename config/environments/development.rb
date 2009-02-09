@@ -25,7 +25,7 @@ config.action_mailer.raise_delivery_errors = false
 # These Gems are used exclusively during development/testing, they're listed here
 # to be included when running rake setup. Some of these are only used from rake
 # tasks or command line (e.g. rspec, thin), so don't load them as part of Rails.
-config.gem 'annotate',        :lib=>false
+config.gem 'annotate',        :lib=>false,      :version=>'~>2.0.1'
 config.gem 'rspec-rails',     :lib=>false,      :version=>'1.1.12'
 config.gem 'faker',           :lib=>false,      :version=>'~>0.3'  # Faker: Used to populate development database with fake data.
 config.gem 'thin',            :lib=>false,      :version=>'~>1.0'  # Thin: Not essential, but development scripts (e.g. rake run) are hard wired to use Thin.
