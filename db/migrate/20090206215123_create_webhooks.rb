@@ -14,19 +14,21 @@
 # the License.
 
 
-require 'faker'
+class CreateWebhooks < ActiveRecord::Migration
+  def self.up
+    create_table :webhooks do |t|
+      t.belongs_to :task,     :null=>false
+      t.string     :event,    :null=>false
+      t.string     :url,      :null=>false
+      t.string     :method,   :null=>false
+      t.string     :enctype,  :null=>false
+      t.string     :hmac_key
+    end
 
-namespace 'db' do
-
-  desc 'Populate the database with mock values'
-  task 'populate'=>['environment', 'create', 'migrate'] do
-    require File.join(Rails.root, 'db/populate')
-    PopulateDatabase.new.populate
+    add_index :webhooks, [:task_id], :unique => true
   end
 
-  task 'annotate'=>['environment'] do
-    require 'annotate/annotate_models'
-    AnnotateModels.do_annotations(:position=>:before)
+  def self.down
+    drop_table :webhooks
   end
-
 end

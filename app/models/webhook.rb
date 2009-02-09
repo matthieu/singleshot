@@ -31,4 +31,18 @@
 #
 
 class Webhook < ActiveRecord::Base
+
+  def initialize(*args)
+    super
+    self[:method] ||= 'post'
+    self.enctype ||= Mime::URL_ENCODED_FORM.to_s
+  end
+
+  # Stakeholder associated with a task.
+  belongs_to :task
+
+  validates_presence_of :event
+  validates_presence_of :url
+  validates_presence_of :method
+  validates_presence_of :enctype
 end
