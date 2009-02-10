@@ -33,9 +33,9 @@ Rails::Initializer.run do |config|
 
   # Specify gems that this application depends on and have them installed with rake gems:install
   gems = YAML.load_file(File.join(File.dirname(__FILE__), 'gems.yml')).
-    values_at('all', Rails.env).compact.inject { |combo, i| combo.merge(i) }
+    values_at('all', RAILS_ENV).compact.inject { |combo, i| combo.merge(i) }
   gems.each do |name, options|
-    config.gem name, (options || {}).symbolize_keys
+    config.gem name, (options || {}).inject({}) { |hash, (k,v)| hash.update(k.to_sym=>v) }
   end
 
   # Only load the plugins named here, in the order given (default is alphabetical).

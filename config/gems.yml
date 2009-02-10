@@ -11,7 +11,7 @@ all:
 # These Gems are used exclusively during development/testing, they're listed here
 # to be included when running initial setup. Some of these are only used from rake
 # tasks or command line (e.g. rspec, thin), so don't load them as part of Rails.
-development:
+development: &development
   'rspec-rails':
     version:  1.1.12
     source:   'http://gems.rubyforge.org'
@@ -36,3 +36,5 @@ development:
     version:  ~>1.2    # Development and test databases use SQLite3 by default. 
     source:   'http://gems.rubyforge.org'
     lib:      'sqlite3'
+
+test: *development
