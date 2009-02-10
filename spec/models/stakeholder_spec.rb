@@ -48,7 +48,7 @@ describe Stakeholder do
   describe 'existing' do
     subject { Stakeholder.make }
 
-    it('should be readonly')                                { subject.should be_readonly }
+    it { should be_readonly }
     it('should not allow person/task/role duplicate')       { subject.clone.should have(1).error_on(:role) }
   end
 
