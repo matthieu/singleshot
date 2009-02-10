@@ -32,12 +32,14 @@ Rails::Initializer.run do |config|
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
   # Specify gems that this application depends on and have them installed with rake gems:install
-  config.gem 'rest-open-uri',                   :version=>'~>1.0'
+  #config.gem 'rest-open-uri',                   :version=>'~>1.0'
   #config.gem 'rmagick', :lib=>'RMagick',        :version=>'~>2.8'
   #config.gem 'sparklines',                      :version=>'~>0.5'
   #config.gem 'acts_as_ferret',                  :version=>'~>0.4'
-  config.gem 'mislav-will_paginate', :lib=>'will_paginate',
-    :source=>'http://gems.github.com',          :version=>'~>2.3'
+  config.gem 'friendly_id',                      :version=>'~>2.0',
+    :source=>'http://gems.rubyforge.org'
+  config.gem 'mislav-will_paginate',             :version=>'~> 2.3.4',
+    :source=>'http://gems.github.com', :lib=>'will_paginate'
 
 
   # Only load the plugins named here, in the order given (default is alphabetical).
