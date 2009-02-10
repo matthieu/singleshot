@@ -20,19 +20,16 @@ class TasksController < ApplicationController #:nodoc:
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
   skip_filter :authenticate, :only=>[:opensearch]
 
+
+  respond_to :html, :json, :xml, :atom, :ics
+
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
     @alternate = { Mime::HTML=>tasks_url,
                    Mime::ATOM=>tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.pending.for_stakeholder(authenticated).with_stakeholders.rank_for(authenticated)
-    respond_to do |wants|
-      wants.html { render :action=>'index' }
-      # TODO: wants.xml
-      # TODO: wants.json
-      wants.atom { render :action=>'tasks' }
-      wants.ics  { render :action=>'tasks' }
-    end
+    respond_with @tasks
   end
 
   def completed
@@ -41,15 +38,8 @@ class TasksController < ApplicationController #:nodoc:
                    Mime::ATOM=>completed_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>completed_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.completed.for_stakeholder(authenticated).with_stakeholders
-    respond_to do |wants|
-      wants.html do
-        @graph = Task.connection.select_values("SELECT tasks.updated_at FROM tasks, stakeholders WHERE stakeholders.task_id = tasks.id AND person_id=#{authenticated.id} AND role='owner' AND status='completed' AND tasks.updated_at >= '#{Date.current - 1.month}'")
-      end
-      # TODO: wants.xml
-      # TODO: wants.json
-      wants.atom { render :action=>'tasks' }
-      wants.ics  { render :action=>'tasks' }
-    end
+    respond_with @tasks
+    #@graph = Task.connection.select_values("SELECT tasks.updated_at FROM tasks, stakeholders WHERE stakeholders.task_id = tasks.id AND person_id=#{authenticated.id} AND role='owner' AND status='completed' AND tasks.updated_at >= '#{Date.current - 1.month}'")
   end
 
   def following
@@ -58,13 +48,7 @@ class TasksController < ApplicationController #:nodoc:
                    Mime::ATOM=>following_tasks_url(:format=>:atom, :access_key=>authenticated.access_key), 
                    Mime::ICS=>following_tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     @tasks = Task.following.for_stakeholder(authenticated).with_stakeholders
-    respond_to do |wants|
-      wants.html { render :action=>'tasks' }
-      # TODO: wants.xml
-      # TODO: wants.json
-      wants.atom { render :action=>'tasks' }
-      wants.ics  { render :action=>'tasks' }
-    end
+    respond_with @tasks, :action=>'tasks'
   end
 
   def search
@@ -74,13 +58,7 @@ class TasksController < ApplicationController #:nodoc:
     #               Mime::ICS=>tasks_url(:format=>:ics, :access_key=>authenticated.access_key) }
     ids = Task.find_id_by_contents(@query).last.map { |h| h[:id] }
     @tasks = Task.for_stakeholder(authenticated).with_stakeholders.find(:all, :conditions=>{ :id=>ids })
-    respond_to do |wants|
-      wants.html { render :action=>'tasks' }
-      # TODO: wants.xml
-      # TODO: wants.json
-      wants.atom { render :action=>'tasks' }
-      wants.ics  { render :action=>'tasks' }
-    end
+    respond_with @tasks, :action=>'tasks'
   end
 
   def opensearch
@@ -90,7 +68,7 @@ class TasksController < ApplicationController #:nodoc:
 
   def create
     @task = Task.create!(params[:task])
-    head :created, :location=>@task
+    respond_with @task, :action=>'show', :status=>:created, :location=>@task
   end
 
   def show
@@ -99,17 +77,12 @@ class TasksController < ApplicationController #:nodoc:
 #                   Mime::ICS=>task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
 #                   Mime::ATOM=>task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
     @alternate = {}
-    respond_to do |wants|
-      wants.html { render :layout=>'head' }
-      wants.xml { render :xml=>presenting(@task) }
-      # TODO: wants.xml
-      # TODO: wants.json
-      wants.ics  do
-        @title = @task.title
-        @tasks = [@task]
-        render :action=>'index'
-      end
-    end
+    respond_with @task
+    #wants.ics  do
+    #  @title = @task.title
+    #  @tasks = [@task]
+    #  render :action=>'index'
+    #end
   end
 
   def update
