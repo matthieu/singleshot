@@ -129,7 +129,7 @@ module Spec::Helpers #:nodoc:
       simple_matcher "validate inclusion of #{attr} #{inclusion}" do |given, matcher|
         matcher.failure_message = "expected inclusion #{inclusion}"
         expect, all = options[:in], [options[:in], options[:not_in]].flatten.compact
-        expect == all.select { |value| given.clone.update_attributes(attr=>value) }
+        expect == all.select { |value| clone = given.clone ; clone.update_attributes(attr=>value) ; clone.errors_on(attr).empty? }
       end
     end
 

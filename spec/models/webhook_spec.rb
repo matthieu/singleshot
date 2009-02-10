@@ -35,7 +35,7 @@ require File.dirname(__FILE__) + '/helpers'
 
 
 describe Webhook do
-  subject { Webhook.new :task=>new_task, :event=>'completed', :url=>'http://example.com/callback' }
+  subject { Webhook.make }
 
   it { should belong_to(:task, Task) }
   it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.should raise_error(ActiveRecord::StatementInvalid) }

@@ -37,7 +37,7 @@ require File.dirname(__FILE__) + '/helpers'
 
 describe Person do
 
-  subject { Person.new :email=>'john.smith@example.com', :password=>'secret' }
+  subject { Person.make }
 
   it { should have_attribute(:identity, :string, :null=>false) }
   it { should allow_mass_assigning_of(:identity) }
@@ -78,7 +78,7 @@ describe Person do
   it('should store hexdigest as part of password')        { crypt.should look_like_hexdigest(40) }
   it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, "secret") }
   it('should be <= 64 digits in crypt form')              { subject.password.size.should <= 64 }
-  it('should not have same crypt for two people')         { people('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
+  it('should not have same crypt for two people')         { Person.named('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
   it('should authenticate the right password')            { should authenticate('secret') }
   it('should not authenticate the wrong password')        { should_not authenticate('wrong') }
   it('should not authenticate without a password')        { subject[:password] = nil ; should_not authenticate('') }
@@ -86,14 +86,14 @@ describe Person do
   it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
   it { should_not allow_mass_assigning_of(:access_key) }
   it('should create secure random access key')            { subject.save ; subject.access_key.should look_like_hexdigest(32) }
-  it('should give each person unique access key')         { people('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
+  it('should give each person unique access key')         { Person.named('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
 
   it { should have_created_at_timestamp }
   it { should have_updated_at_timestamp }
 
 
   describe '.authenticate' do
-    subject { Person.create! :email=>'john.smith@example.com', :password=>'secret' }
+    subject { Person.make }
 
     # Expecting Person.authenticate(identity, password) to return subject
     def authenticate(identity, password)
@@ -107,7 +107,7 @@ describe Person do
 
 
   describe '.identify' do
-    subject { Person.create! :email=>'john.smith@example.com' }
+    subject { Person.make }
 
     # Expecting Person.identify(identity) to return subject
     def identify(identity)
@@ -121,21 +121,25 @@ describe Person do
 
 
   describe '#update_task' do
-    subject { new_task }
+    subject { Task.make }
 
-    it('should return true if no errors')   { supervisor.update_task(subject, {}).should be_true }
-    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task(subject, {}) }
-    it('should return false if errors')     { owner.update_task(subject, :status=>'suspended').should be_false } 
-    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task(subject, :status=>'suspended') }
+    it('should return true if no errors')   { Person.supervisor.update_task(subject, {}).should be_true }
+    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true)
+                                              Person.supervisor.update_task(subject, {}) }
+    it('should return false if errors')     { Person.owner.update_task(subject, :status=>'suspended').should be_false } 
+    it('should not save updates if errors') { subject.should_not_receive(:save)
+                                              Person.owner.update_task(subject, :status=>'suspended') }
   end
 
   describe '#update_task!' do
-    subject { new_task }
+    subject { Task.make }
 
-    it('should return true if no errors')   { supervisor.update_task!(subject, {}).should be_true }
-    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true) ; supervisor.update_task!(subject, {}) }
-    it('should raise exception if errors')  { lambda { owner.update_task!(subject, :status=>'suspended').should be_false }.should raise_error }
-    it('should not save updates if errors') { subject.should_not_receive(:save) ; owner.update_task!(subject, :status=>'suspended') rescue nil }
+    it('should return true if no errors')   { Person.supervisor.update_task!(subject, {}).should be_true }
+    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true)
+                                              Person.supervisor.update_task!(subject, {}) }
+    it('should raise exception if errors')  { lambda { Person.owner.update_task!(subject, :status=>'suspended').should be_false }.should raise_error }
+    it('should not save updates if errors') { subject.should_not_receive(:save)
+                                              Person.owner.update_task!(subject, :status=>'suspended') rescue nil }
   end
 
 end

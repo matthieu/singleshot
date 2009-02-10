@@ -31,21 +31,27 @@ require File.dirname(__FILE__) + '/helpers'
 
 
 describe Stakeholder do
+  describe 'new' do
+    subject { Stakeholder.make_unsaved }
 
-  subject { Stakeholder.new :person=>person('john.smith'), :task=>new_task, :role=>:owner }
+    it { should belong_to(:person, Person) }
+    it { should validate_presence_of(:person) }
 
-  it { should belong_to(:person, Person) }
-  it { should validate_presence_of(:person) }
+    it { should belong_to(:task, Task) }
+    it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.
+                                              should raise_error(ActiveRecord::StatementInvalid) }
 
-  it { should belong_to(:task, Task) }
-  it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.should raise_error(ActiveRecord::StatementInvalid) }
+    it { should have_attribute(:role, :string, :null=>false) }
+    it { should validate_presence_of(:role) }
+    it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner], :not_in=>:foo) }
+    it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
+  end
 
-  it { should have_attribute(:role, :string, :null=>false) }
-  it { should validate_presence_of(:role) }
-  it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner], :not_in=>:foo) }
-  it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
+  describe 'existing' do
+    subject { Stakeholder.make }
 
-  it('should not allow person/task/role duplicate')         { subject.clone.save! ; subject.should have(1).error_on(:role) }
-  it('should be readonly')                                  { subject.save! ; subject.reload.should be_readonly }
+    it('should be readonly')                                { subject.should be_readonly }
+    it('should not allow person/task/role duplicate')       { subject.clone.should have(1).error_on(:role) }
+  end
 
 end

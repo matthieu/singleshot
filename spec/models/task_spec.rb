@@ -46,7 +46,7 @@ require File.dirname(__FILE__) + '/helpers'
 
 describe Task do
 
-  subject { Task.new(defaults) }
+  subject { Task.make }
 
   # -- Descriptive --
 
@@ -94,27 +94,28 @@ describe Task do
     it { should allow_mass_assigning_of(:owner) }
 
     describe '#associate' do
-      it('should associate person with role') { subject.associate(:role=>person('foo')).in_role(:role).should == people('foo') }
-      it('should associate people with role') { subject.associate(:role=>people('foo', 'bar')).in_role(:role).should == people('foo', 'bar') }
+      before { @foo, @bar = Person.named('foo', 'bar') }
+      it('should associate person with role') { subject.associate(:role=>@foo).in_role(:role).should == [@foo] }
+      it('should associate people with role') { subject.associate(:role=>[@foo, @bar]).in_role(:role).should == [@foo, @bar] }
       it('should associate no one with role') { subject.associate(:role=>nil).in_role(:role).should be_empty }
     end
 
     describe '#in_role' do
-      it('should return all people in a given role') { subject.associate(:find=>people('foo', 'bar'), :miss=>people('baz')).
-        in_role(:find).should == people('foo', 'bar') }
+      before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
+      it('should return all people in a given role') { subject.associate(:find=>[@foo, @bar], :miss=>@baz).in_role(:find).should == [@foo, @bar] }
     end
 
     describe '#in_role?' do
-      subject { Task.new(defaults).associate(:find=>people('foo', 'bar'), :miss=>people('baz')) }
+      subject { Task.make.associate(:find=>Person.named('foo', 'bar'), :miss=>Person.named('baz')) }
       it('should identify all people in a given role') { [subject.in_role?(:find, 'foo'), subject.in_role?(:find, 'bar'),
                                                           subject.in_role?(:miss, 'foo')].should == [true, true, false] }
       it('should return nil if no identity given')     { subject.in_role?(:find, nil).should be_false }
     end
 
     describe 'creator' do
-      subject { person('creator') }
+      subject { Person.creator }
 
-      it('should not have more than one creator')     { lambda { new_task.associate! :creator=>[subject, owner] }.
+      it('should not have more than one creator')     { lambda { Task.make.associate! :creator=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
       it { should_not able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -126,20 +127,20 @@ describe Task do
     end
 
     describe '#owner' do
-      subject { new_task }
+      subject { Task.make }
 
       it('should be nil if no person in this role') { subject.owner.should be_nil }
-      it('should return person in role owner')      { subject.associate(:owner=>owner).owner.should == owner }
-      it('should accept new owner')                 { lambda { subject.owner = owner }.should change(subject, :owner).to(owner) and
-                                                      lambda { subject.owner = other }.should change(subject, :owner).to(other) }
+      it('should return person in role owner')      { subject.associate(:owner=>Person.owner).owner.should == Person.owner }
+      it('should accept new owner')                 { lambda { subject.owner = Person.owner }.should change(subject, :owner).to(Person.owner) and
+                                                      lambda { subject.owner = Person.other }.should change(subject, :owner).to(Person.other) }
     end
 
     describe 'owner' do
-      subject { person('owner') }
+      subject { Person.owner }
 
-      it('should not have more than one owner')       { lambda { new_task.associate! :owner=>[subject, owner] }.
+      it('should not have more than one owner')       { lambda { Task.make.associate! :owner=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
-      it('should default to single potential owner')  { new_task.tap { |t| t.associate!(:potential_owner=>subject) }.owner.should == subject }
+      it('should default to single potential owner')  { Task.make.tap { |t| t.associate!(:potential_owner=>subject) }.owner.should == subject }
       it { should able_to_claim_task }
       it { should able_to_delegate_task }
       it { should_not able_to_suspend_task }
@@ -161,7 +162,7 @@ describe Task do
     end
 
     describe 'potential owner' do
-      subject { person('potential') }
+      subject { Person.potential }
 
       it { should able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -173,7 +174,7 @@ describe Task do
     end
 
     describe 'excluded owner' do
-      subject { person('excluded') }
+      subject { Person.excluded }
 
       it { should_not able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -185,7 +186,7 @@ describe Task do
     end
 
     describe 'supervisor' do
-      subject { person('supervisor') }
+      subject { Person.supervisor }
 
       it { should able_to_claim_task }
       it { should able_to_delegate_task }
@@ -197,7 +198,7 @@ describe Task do
     end
 
     describe 'observer' do
-      subject { person('observer') }
+      subject { Person.observer }
 
       it { should_not able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -209,7 +210,7 @@ describe Task do
     end
 
     describe 'other' do
-      subject { person('other') }
+      subject { Person.other }
 
       it { should_not able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -230,13 +231,13 @@ describe Task do
     it('should not allow random values') { subject.status = :random ; subject.should have(1).error_on(:status) }
 
     describe 'available' do
-      subject { new_task }
+      subject { Task.make }
 
       it('should be the initial status for new tasks')            { Task.new(:status=>'active').status.should == 'available' }
-      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>owner } }
+      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>Person.owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to('completed')               { supervisor.update_task subject, :owner=>owner, :status=>'completed' } }
+      it { should_not change_status_to('completed')               { Person.supervisor.update_task subject, :owner=>Person.owner, :status=>'completed' } }
       it { should offer_potential_owner_to_claim }
       it { should offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -245,16 +246,16 @@ describe Task do
     end
 
     describe 'active' do
-      subject { new_task(:status=>'active') }
+      subject { Task.make_active }
 
       it('should be status for owned tasks')                  { subject.status.should == 'active' }
-      it { should change_status_to('available', "if no owner") { owner.update_task subject, :owner=>nil } }
-      it { should_not change_status("with owner change")      { owner.update_task subject, :owner=>potential } }
-      it { should change_status_to('suspended', "if suspended by supervisor")  { supervisor.update_task subject, :status=>'suspended' } }
-      it { should_not change_status("unless suspended by supervisor")         { owner.update_task subject, :status=>'suspended' } }
+      it { should change_status_to('available', "if no owner") { Person.owner.update_task subject, :owner=>nil } }
+      it { should_not change_status("with owner change")      { Person.owner.update_task subject, :owner=>Person.potential } }
+      it { should change_status_to('suspended', "if suspended by supervisor")  { Person.supervisor.update_task subject, :status=>'suspended' } }
+      it { should_not change_status("unless suspended by supervisor")         { Person.owner.update_task subject, :status=>'suspended' } }
       it { should honor_cancellation_policy }
-      it { should change_status_to('completed', "when completed by owner")     { owner.update_task subject, :status=>'completed' } }
-      it { should_not change_status_to('completed', "unless by owner")         { supervisor.update_task subject, :status=>'completed' } }
+      it { should change_status_to('completed', "when completed by owner")     { Person.owner.update_task subject, :status=>'completed' } }
+      it { should_not change_status_to('completed', "unless by owner")         { Person.supervisor.update_task subject, :status=>'completed' } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -263,13 +264,13 @@ describe Task do
     end
 
     describe 'suspended' do
-      subject { new_task(:status=>'suspended') }
+      subject { Task.make_suspended }
 
-      it { should change_status_to('available', "if resumed and no owner")  { supervisor.update_task! subject, :status=>'active' } }
-      it { should change_status_to('active', "if resumed with owner")       { subject.owner = owner ; supervisor.update_task! subject, :status=>'available' } }
-      it { should_not change_status("unless resumed by supervisor")         { owner.update_task subject, :status=>'active' } }
+      it { should change_status_to('available', "if resumed and no owner")  { Person.supervisor.update_task! subject, :status=>'active' } }
+      it { should change_status_to('active', "if resumed with owner")       { subject.owner = Person.owner ; Person.supervisor.update_task! subject, :status=>'available' } }
+      it { should_not change_status("unless resumed by supervisor")         { Person.owner.update_task subject, :status=>'active' } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to('completed')                         { owner.update_task subject, :owner=>owner, :status=>'completed' } }
+      it { should_not change_status_to('completed')                         { Person.owner.update_task subject, :owner=>Person.owner, :status=>'completed' } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should offer_supervisor_to_resume }
@@ -278,7 +279,7 @@ describe Task do
     end
 
     describe 'completed' do
-      subject { new_task(:status=>'completed') }
+      subject { Task.make_completed }
 
       it { should be_in_terminal_state }
       it { should be_readonly }
@@ -290,7 +291,7 @@ describe Task do
     end
 
     describe 'cancelled' do
-      subject { new_task(:status=>'cancelled') }
+      subject { Task.make_cancelled }
 
       it { should be_in_terminal_state }
       it { should be_readonly }
@@ -320,7 +321,7 @@ describe Task do
   it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
   it { should_not allow_mass_assigning_of(:access_key) }
   it('should create hexdigest access key')                { subject.access_key.should look_like_hexdigest(32) }
-  it('should give each task unique access key')           { new_tasks('foo', 'bar', 'baz').map(&:access_key).uniq.size.should be(3) }
+  it('should give each task unique access key')           { [Task.make, Task.make, Task.make].map(&:access_key).uniq.size.should be(3) }
 
   it { should have_locking_column(:version) }
   it { should have_created_at_timestamp }
@@ -380,19 +381,19 @@ describe Task do
   def honor_cancellation_policy
     simple_matcher "honor cancellation policy" do |given, matcher|
       matcher.failure_message = "expected status to change to cancelled, but did not change"
-      supervisor.update_task given, :status=>'cancelled'
+      Person.supervisor.update_task given, :status=>'cancelled'
     end
   end
 
   # Expecting that potential own can claim subject.
   def offer_potential_owner_to_claim
-    simple_matcher("offer potential owner to claim task") { |given| potential.can_claim?(subject) }
+    simple_matcher("offer potential owner to claim task") { |given| Person.potential.can_claim?(subject) }
   end
 
   # Expecting that subject is offered to and can claim task.
   def able_to_claim_task
     simple_matcher "be offered/able to claim task" do |given|
-      task = new_task
+      task = Task.make
       fail unless subject.can_claim?(task) == subject.update_task(task, :owner=>subject)
       task.reload.owner == subject
     end
@@ -401,21 +402,21 @@ describe Task do
   # Expecting that subject is able to delegate task to one of its potential owners.
   def able_to_delegate_task
     simple_matcher "be offered/able to delegate task" do |given|
-      task = new_task(:status=>'active')
-      fail unless subject.can_delegate?(task, potential) == subject.update_task(task, :owner=>potential)
-      task.reload.owner == potential
+      task = Task.make_active
+      fail unless subject.can_delegate?(task, Person.potential) == subject.update_task(task, :owner=>Person.potential)
+      task.reload.owner == Person.potential
     end
   end
 
   # Expecting that supervisor own can suspend subject.
   def offer_supervisor_to_suspend
-    simple_matcher("offer supervisor to suspend task") { |given| supervisor.can_suspend?(subject) }
+    simple_matcher("offer supervisor to suspend task") { |given| Person.supervisor.can_suspend?(subject) }
   end
 
   # Expecting that subject is offered to and can suspend task.
   def able_to_suspend_task
     simple_matcher "be offered/able to suspend task" do |given|
-      task = new_task
+      task = Task.make
       fail unless subject.can_suspend?(task) == subject.update_task(task, :status=>'suspended')
       task.reload.status == 'suspended'
     end
@@ -423,13 +424,13 @@ describe Task do
 
   # Expecting that supervisor own can suspend subject.
   def offer_supervisor_to_resume
-    simple_matcher("offer supervisor to resume task") { |given| supervisor.can_resume?(subject) }
+    simple_matcher("offer supervisor to resume task") { |given| Person.supervisor.can_resume?(subject) }
   end
 
   # Expecting that subject is offered to and can resume suspended task.
   def able_to_resume_task
     simple_matcher "be offered/able to resume task" do |given|
-      task = new_task(:status=>'suspended')
+      task = Task.make_suspended
       fail unless subject.can_resume?(task) == subject.update_task(task, :status=>'available')
       task.reload.status == 'available'
     end
@@ -437,13 +438,13 @@ describe Task do
 
   # Expecting that supervisor own can cancel subject.
   def offer_supervisor_to_cancel
-    simple_matcher("offer supervisor to cancel task") { |given| supervisor.can_cancel?(subject) }
+    simple_matcher("offer supervisor to cancel task") { |given| Person.supervisor.can_cancel?(subject) }
   end
 
   # Expecting that subject is offered to and can cancel task.
   def able_to_cancel_task
     simple_matcher "be offered/able to cancel task" do |given, matcher|
-      task = new_task
+      task = Task.make
       fail unless subject.can_cancel?(task) == subject.update_task(task, :status=>'cancelled')
       task.reload.status == 'cancelled'
     end
@@ -451,13 +452,13 @@ describe Task do
 
   # Expecting that owner own can complete subject.
   def offer_owner_to_complete
-    simple_matcher("offer owner to complete task") { |given| owner.can_complete?(subject) }
+    simple_matcher("offer owner to complete task") { |given| Person.owner.can_complete?(subject) }
   end
 
   # Expecting that subject is offered to and can complete active task.
   def able_to_complete_task
     simple_matcher "be offered/able to complete task" do |given, matcher|
-      task = new_task(:status=>'active')
+      task = Task.make_active
       fail unless subject.can_complete?(task) == subject.update_task(task, :status=>'completed')
       task.reload.status == 'completed'
     end
@@ -466,7 +467,7 @@ describe Task do
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
       { :title=>'new title', :priority=>5, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' } }.
-        all? { |attr, value| subject.update_task(new_task(:status=>'active'), attr=>value) == (attrs.empty? || attrs.include?(attr)) }
+        all? { |attr, value| subject.update_task(Task.make_active, attr=>value) == (attrs.empty? || attrs.include?(attr)) }
     end
   end
 
