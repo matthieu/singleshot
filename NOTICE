@@ -12,8 +12,7 @@ prototype.js, copyright of Sam Stephenson, licensed under the MIT license.
 http://www.prototypejs.org
 
 script.aculo.us, copyright of Thomas Fuchs, Ivan Krstic, Jon Tirsen and Sammi
-Williams, licensed under the MIT license.
-http://script.aculo.us/
+Williams, licensed under the MIT license.  http://script.aculo.us/
 
 RSpec on Rails, licensed under the MIT license:
 RSpec, Copyright (c) 2005-2007 The RSpec Development Team
@@ -30,30 +29,37 @@ http://rmagick.rubyforge.org/
 
 Sparklines, copyright of Geoffrey Grosenbach, licensed under MIT license.
 http://nubyonrails.com/pages/sparklines
+http://github.com/topfunky/sparklines/
 
 Acts As Ferret, copyright of Kasper Weibel Nielsen-Refs (original author) and
-Jens Kraemer, licensed under MIT license.
-http://actsasferret.rubyforge.org/
+Jens Kraemer, licensed under MIT license.  http://actsasferret.rubyforge.org/
 
 Ferret, copyright of Dave Balmain, licensed under MIT license.
 http://ferret.davebalmain.com/trac/
 
+Friendly-id, copyright of Norman Clarke, Adrian Mugnolo and Emilio Tagua,
+licensed under the MIT license.  http://github.com/norman/friendly_id/
+
+Will Paginate, copyright of PJ Hyett and Mislav Marohnić, licensed under MIT
+license. http://github.com/mislav/will_paginate/
+
+Machinist, copyright Peter Yandell, licensed under MIT license.
+http://github.com/notahat/machinist/
+
 Annotate Models, copyright of Cuong Tran, licensed under MIT license.
-http://annotate-models.rubyforge.org/
+http://github.com/ctran/annotate_models/
 
 Faker, copyright of Benjamin Curtis, licensed under MIT license.
 http://faker.rubyforge.org/
 
 SQLite Ruby, copyright of Jamis Buck, licensed under BSD license.
 http://sqlite-ruby.rubyforge.org/
+http://github.com/jamis/sqlite3-ruby/tree/master
 
 Thin, copyright of Marc-Andre Cournoyer, with MIT license but supposedly
 under Ruby license with some GPL code thrown in.  Not a runtime dependency.
 http://code.macournoyer.com/thin/
-
-Will Paginate, copyright of PJ Hyett and Mislav Marohnić, licensed under MIT
-license.
-http://errtheblog.com/posts/56-im-paginating-again
+http://github.com/macournoyer/thin/
 
 Silk icon set, copyright of Mark James, licensed under the Creative Commons
 Attribution 2.5 License.
