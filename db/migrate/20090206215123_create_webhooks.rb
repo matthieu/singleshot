@@ -17,11 +17,11 @@
 class CreateWebhooks < ActiveRecord::Migration
   def self.up
     create_table :webhooks do |t|
-      t.belongs_to :task,     :null=>false
-      t.string     :event,    :null=>false
-      t.string     :url,      :null=>false
-      t.string     :method,   :null=>false
-      t.string     :enctype,  :null=>false
+      t.belongs_to :task,         :null=>false
+      t.string     :event,        :null=>false
+      t.string     :url,          :null=>false
+      t.string     :http_method,  :null=>false
+      t.string     :enctype,      :null=>false
       t.string     :hmac_key
     end
 

@@ -68,11 +68,11 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
   end
 
   create_table "webhooks", :force => true do |t|
-    t.integer "task_id",  :null => false
-    t.string  "event",    :null => false
-    t.string  "url",      :null => false
-    t.string  "method",   :null => false
-    t.string  "enctype",  :null => false
+    t.integer "task_id",     :null => false
+    t.string  "event",       :null => false
+    t.string  "url",         :null => false
+    t.string  "http_method", :null => false
+    t.string  "enctype",     :null => false
     t.string  "hmac_key"
   end
 

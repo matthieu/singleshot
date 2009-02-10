@@ -1,3 +1,4 @@
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -22,15 +23,13 @@ require File.dirname(__FILE__) + '/helpers'
 #
 # Table name: webhooks
 #
-#  id         :integer         not null, primary key
-#  task_id    :integer         not null
-#  event      :string(255)     not null
-#  url        :string(255)     not null
-#  method     :string(255)     default("post"), not null
-#  enctype    :string(255)
-#  secret     :string(255)
-#  created_at :datetime
-#  updated_at :datetime
+#  id          :integer         not null, primary key
+#  task_id     :integer         not null
+#  event       :string(255)     not null
+#  url         :string(255)     not null
+#  http_method :string(255)     not null
+#  enctype     :string(255)     not null
+#  hmac_key    :string(255)
 #
 
 
@@ -45,9 +44,10 @@ describe Webhook do
   it { should have_attribute(:url, :string, :null=>false) }
   it { should validate_presence_of(:url) }
 
-  it { should have_attribute(:method, :string, :null=>false) }
-  it { should validate_presence_of(:method) }
-  it('should have method=post by default') { subject.method.should == 'post' }
+  it { should have_attribute(:http_method, :string, :null=>false) }
+  it { should validate_presence_of(:http_method) }
+  it('should have http_method=post by default') { subject.http_method.should == 'post' }
+  it { should allow_mass_assigning_of(:method) }
 
   it { should have_attribute(:enctype, :string, :null=>false) }
   it { should validate_presence_of(:enctype) }
