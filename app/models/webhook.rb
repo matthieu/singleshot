@@ -32,14 +32,15 @@ class Webhook < ActiveRecord::Base
 
   def initialize(*args)
     super
-    self[:method] ||= 'post'
+    self[:http_method] ||= 'post'
     self.enctype ||= Mime::URL_ENCODED_FORM.to_s
   end
 
   belongs_to :task
 
+  attr_accessible :event, :url, :method, :enctype
   validates_presence_of :event
   validates_presence_of :url
-  validates_presence_of :method
+  validates_presence_of :http_method
   validates_presence_of :enctype
 end

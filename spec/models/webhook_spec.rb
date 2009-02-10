@@ -47,6 +47,7 @@ describe Webhook do
   it { should have_attribute(:http_method, :string, :null=>false) }
   it { should validate_presence_of(:http_method) }
   it('should have http_method=post by default') { subject.http_method.should == 'post' }
+  it { should allow_mass_assigning_of(:method) }
 
   it { should have_attribute(:enctype, :string, :null=>false) }
   it { should validate_presence_of(:enctype) }
