@@ -101,13 +101,9 @@ module Spec::Helpers #:nodoc:
     #   it { should validate_presence_of(:email) }
     def validate_presence_of(attr)
       simple_matcher "validate presence of #{attr}" do |given|
-        begin
-          original = given.attributes[attr]
-          given.attributes = { attr=>nil }
-          !given.valid? && given.errors.on(attr)
-        ensure
-          given.attributes = { attr => original }
-        end
+        clone = given.clone
+        clone.send("#{attr}=", nil)
+        !clone.valid? && clone.errors.on(attr)
       end
     end
 
