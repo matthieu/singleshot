@@ -38,8 +38,6 @@ describe Stakeholder do
     it { should validate_presence_of(:person) }
 
     it { should belong_to(:task, Task) }
-    it('should require task association') { lambda { subject.update_attributes!(:task=>nil) }.
-                                              should raise_error(ActiveRecord::StatementInvalid) }
 
     it { should have_attribute(:role, :string, :null=>false) }
     it { should validate_presence_of(:role) }

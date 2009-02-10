@@ -38,7 +38,6 @@ class Webhook < ActiveRecord::Base
     self.enctype ||= Mime::URL_ENCODED_FORM.to_s
   end
 
-  # Stakeholder associated with a task.
   belongs_to :task
 
   validates_presence_of :event
