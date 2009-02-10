@@ -1,3 +1,17 @@
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: webhooks
+#
+#  id          :integer         not null, primary key
+#  task_id     :integer         not null
+#  event       :string(255)     not null
+#  url         :string(255)     not null
+#  http_method :string(255)     not null
+#  enctype     :string(255)     not null
+#  hmac_key    :string(255)
+#
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -13,22 +27,6 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-
-# == Schema Information
-# Schema version: 20090206215123
-#
-# Table name: webhooks
-#
-#  id         :integer         not null, primary key
-#  task_id    :integer         not null
-#  event      :string(255)     not null
-#  url        :string(255)     not null
-#  method     :string(255)     default("post"), not null
-#  enctype    :string(255)
-#  secret     :string(255)
-#  created_at :datetime
-#  updated_at :datetime
-#
 
 class Webhook < ActiveRecord::Base
 
