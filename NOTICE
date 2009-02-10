@@ -1,4 +1,4 @@
-Apache Singleshot
+ Apache Singleshot
 Copyright 2008 The Apache Software Foundation
 
 This product includes software developed at
@@ -60,6 +60,13 @@ Thin, copyright of Marc-Andre Cournoyer, with MIT license but supposedly
 under Ruby license with some GPL code thrown in.  Not a runtime dependency.
 http://code.macournoyer.com/thin/
 http://github.com/macournoyer/thin/
+
+ActiveRecord Symbolize, copyright Andreas Neuhaus, license under the MIT
+license.  http://github.com/zargony/activerecord_symbolize/
+
+Presenter, copyright Assaf Arkin, licensed under the MIT license.
+http://github.com/assaf/presenter/
+
 
 Silk icon set, copyright of Mark James, licensed under the Creative Commons
 Attribution 2.5 License.
