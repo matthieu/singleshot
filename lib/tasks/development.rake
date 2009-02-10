@@ -29,3 +29,10 @@ task 'stop' do
   puts 'Stopping Thin ...'
   system 'thin stop -s2'
 end
+
+namespace :routes do
+  task 'annotate' do
+    require 'annotate/annotate_routes'
+    AnnotateRoutes.do_annotate
+  end
+end
