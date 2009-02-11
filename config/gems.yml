@@ -1,4 +1,4 @@
-# These gems are part of the application in all environments.
+# These gems are part of the application and used in all environments.
 all:
   'friendly_id':
     version:  ~> 2.0
@@ -9,17 +9,9 @@ all:
     lib:      'will_paginate'
 
 # These Gems are used exclusively during development/testing, they're listed here
-# to be included when running initial setup. Some of these are only used from rake
-# tasks or command line (e.g. rspec, thin), so don't load them as part of Rails.
+# to be included when running initial setup (rake setup). Some of these are only
+# used from rake tasks or the command line (e.g. rspec), so not loaded with the app.
 development: &development
-  'rspec-rails':
-    version:  1.1.12
-    source:   'http://gems.rubyforge.org'
-    lib:      false
-  'notahat-machinist':
-    version:  ~>0.2
-    source:   'http://gems.github.com'
-    lib:      'machinist'
   'annotate':
     version:  ~>2.0.1  # Used for annotating models with database schema (rake db:annotate)
     source:   'http://gems.rubyforge.org'
@@ -28,8 +20,12 @@ development: &development
     version:  ~>0.3    # Used to populate development database with fake data (rake db:populate)
     source:   'http://gems.rubyforge.org'
     lib:      false
-  'thin':
-    version:  ~>1.0    # Not essential, but development scripts (e.g. rake run) are hard wired to use Thin.
+  'notahat-machinist':
+    version:  ~>0.2
+    source:   'http://gems.github.com'
+    lib:      'machinist'
+  'rspec-rails':
+    version:  1.1.12
     source:   'http://gems.rubyforge.org'
     lib:      false
   'sqlite3-ruby':
@@ -37,4 +33,5 @@ development: &development
     source:   'http://gems.rubyforge.org'
     lib:      'sqlite3'
 
+# Same as development above.
 test: *development

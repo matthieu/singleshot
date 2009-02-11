@@ -24,6 +24,9 @@ Person.blueprint do
 end
 
 
+# This is a special migration that populates the database with one usable
+# account and a lot of fake tasks. Gets you going when you first install
+# Singleshot and wondering how to use it. Run using +rake db:populate+.
 class Populate < ActiveRecord::Migration
   def self.up
     puts "Creating an account for:"

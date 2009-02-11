@@ -14,7 +14,7 @@
 # the License.
 
 
-require 'rest-open-uri'
+#require 'rest-open-uri'
 #require 'acts_as_ferret'
 require File.join(Rails.root, 'lib/validators')
 require File.join(Rails.root, 'lib/templates')
