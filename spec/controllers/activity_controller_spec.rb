@@ -14,9 +14,9 @@
 # the License.
 
 
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/helpers'
 
-
+=begin
 describe ActivityController, 'index' do
 
   it 'should map to /activity' do
@@ -92,3 +92,4 @@ describe ActivityController, 'index' do
     assigns[:root_url].should == activity_url
   end
 end
+=end

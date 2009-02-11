@@ -28,6 +28,7 @@ class AuthenticationController < ApplicationController
   end
 end
 
+
 describe AuthenticationController do
   controller_name :authentication
   before { controller.use_rails_error_handling! }
