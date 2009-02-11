@@ -17,8 +17,8 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 
 
-# These helper methods and matchers are available only when speccing AR models.
 module Spec::Helpers #:nodoc:
+  # These helper methods and matchers are available only when speccing AR models.
   module Models
 
     # Expecting the named attribute to have the specified type and characteristics.
