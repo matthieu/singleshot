@@ -1,81 +1,74 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
+
+
+require File.dirname(__FILE__) + '/helpers'
 
 
 describe SessionsController do
   controller_name :sessions
 
-  it 'should route show/create/destroy actions to same URL' do
-    route_for(:controller =>'sessions', :action=>'show').should eql('/session')
+  it { should route('/session', :controller =>'sessions', :action=>'show') }
+
+  describe 'get /' do
+    before { get :show }
+
+    it { should render(:template=>'sessions/show') }
   end
 
 
-  describe 'GET' do
+  describe 'post /' do
+    before { @person = Person.named('me') }
 
-    it 'should render login page' do
-      get :show
-      response.should be_ok
-      response.should render_template('sessions/show')
+    describe 'authenticated' do
+      before { post :create, :login=>@person.identity, :password=>'secret' }
+
+      it { should redirect_to(root_url) }
+      it('should store authenticated user in session')  { session[:person_id].should == @person.id }
+      it('should clear flash')                          { flash.should be_empty }
     end
 
+    describe 'authenticated with return_url' do
+      before { post :create, { :login=>@person.identity, :password=>'secret' }, { :return_url=>'http://return_url' } }
+
+      it { should redirect_to('http://return_url') }
+      it('should clear return_url from session')         { session[:return_url].should be_nil }
+    end
+
+    describe 'no credentials' do
+      before { post :create }
+
+      it { should redirect_to(session_url) }
+      it('should have no authencited user in session')  { session[:person_id].should be_nil }
+    end
+
+    describe 'wrong credentials' do
+      before { post :create, :login=>@person.identity, :password=>'wrong' }
+
+      it { should redirect_to(session_url) }
+      it('should have no authencited user in session')  { session[:person_id].should be_nil }
+      it('should have error message in flash')          { flash[:error].should match(/no account/i) }
+    end
   end
 
+  describe 'delete /' do
+    before { authenticate }
+    before { delete :destroy }
 
-  describe 'POST' do
-
-    before :all do
-      @credentials = { :login=>'assaf', :password=>'secret' }
-      @person = person(@credentials[:login])
-    end
-
-    it 'should redirect to login page with no error if login is empty' do
-      post :create
-      response.should redirect_to(session_url)
-      flash[:error].should be_blank
-      session[:person_id].should be_nil
-    end
-
-    it 'should redirect to login page with error, if login/password do not match' do
-      post :create, @credentials.merge(:password=>'wrong')
-      response.should redirect_to(session_url)
-      flash[:error].should match(/no account/i)
-      session[:person_id].should be_nil
-    end
-
-    it 'should establish new session if authenticated' do
-      post :create, @credentials
-      flash[:error].should be_nil
-      session[:person_id].should eql(@person.id)
-    end
-
-    it 'should redirect to root_url if authenticated' do
-      post :create, @credentials
-      response.should redirect_to(root_url)
-    end
-
-    it 'should redirect to flash[:return_to] if specified' do
-      post :create, @credentials, nil, { :return_to=>'http://foo' }
-      response.should redirect_to('http://foo')
-    end
-
-  end
-
-
-  describe 'DELETE' do
-
-    before :each do
-      session[:person_id] = 1
-    end
-
-    it 'should destroy session' do
-      delete :destroy
-      session[:person_id].should be_nil
-    end
-
-    it 'should redirect to root URL' do
-      delete :destroy
-      response.should redirect_to(root_url)
-    end
-
+    it('should clear session') { session.should be_empty }
+    it { should redirect_to(root_url) }
   end
 
 end
