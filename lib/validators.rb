@@ -13,14 +13,12 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+module Validators
+end
 
-require 'rest-open-uri'
-#require 'acts_as_ferret'
-require File.join(Rails.root, 'lib/validators')
-require File.join(Rails.root, 'lib/templates')
-require File.join(Rails.root, 'lib/singleshot')
+require File.join(File.dirname(__FILE__), 'validators/url')
+require File.join(File.dirname(__FILE__), 'validators/email')
 
-#require 'sparklines'
-#module ApplicationHelper
-#  include SparklinesHelper
-#end
+ActiveRecord::Base.class_eval do
+  include Validators::Url, Validators::Email
+end

@@ -13,14 +13,8 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
+module Templates
+end
 
-require 'rest-open-uri'
-#require 'acts_as_ferret'
-require File.join(Rails.root, 'lib/validators')
-require File.join(Rails.root, 'lib/templates')
-require File.join(Rails.root, 'lib/singleshot')
-
-#require 'sparklines'
-#module ApplicationHelper
-#  include SparklinesHelper
-#end
+require File.join(File.dirname(__FILE__), 'templates/ical')
+ActionView::Template.register_template_handler(:ical, Templates::Ical)
