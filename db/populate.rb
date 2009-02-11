@@ -14,88 +14,62 @@
 # the License.
 
 
-class PopulateDatabase
-    
-  def populate
-    Activity.delete_all
-    Stakeholder.delete_all
-    Task.delete_all
-    Person.delete_all
-    
-    puts "Populating database for #{you.identity}"
+Task.blueprint do
+  title           { Faker::Lorem.sentence }
+  description     { Faker::Lorem.paragraphs(3).join("\n\n") }
+  object.associate :potential_owner=>[Person.identify(ENV['USER']), Person.identify('other')]
+end
 
-    # Tasks you should not see.
-    new_task 
+Person.blueprint do
+end
+
+
+class Populate < ActiveRecord::Migration
+  def self.up
+    puts "Creating an account for:"
+    puts "  Username: #{ENV['USER']}"
+    puts "  Password: secret"
+    me = Person.make(:email=>"#{ENV['USER']}@example.com", :password=>'secret')
+
+    puts "Populating database for #{me.to_param}"
+    other = Person.make(:email=>"other@example.com")
+
+    # Tasks I should not see.
+    Task.make 
     # Tasks in which we are:
     # - creator
     # - owner
     # - observer
     # - admin
-    new_task.associate! :creator=>you
-    new_task.associate! :creator=>you
-    you.update_task! Task.last, :owner=>you
-    new_task.associate! :observer=>you
-    new_task.associate! :supervisor=>you
+    Task.make.associate! :creator=>me
+    Task.make.associate! :creator=>me
+    me.update_task! Task.last, :owner=>me
+    Task.make.associate! :observer=>me
+    Task.make.associate! :supervisor=>me
     # Tasks in which we are only or one of many potential owners.
-    new_task.associate! :potential_owner=>you
-    new_task.associate! :potential_owner=>[you, other]
+    Task.make.associate! :potential_owner=>me
+    Task.make.associate! :potential_owner=>[me, other]
     Task.last.update_attributes! :owner=>other
     # High priority should show first.
-    new_task(:priority=>Task::PRIORITY.first).associate! :owner=>you
+    Task.make(:priority=>Task::PRIORITY.first).associate! :owner=>me
     # Over-due before due today before anything else.
-    new_task(:due_on=>Date.current - 1.day).associate! :owner=>you
-    new_task(:due_on=>Date.current).associate! :owner=>you
-    new_task(:due_on=>Date.current + 1.day).associate! :owner=>you
+    Task.make(:due_on=>Date.current - 1.day).associate! :owner=>me
+    Task.make(:due_on=>Date.current).associate! :owner=>me
+    Task.make(:due_on=>Date.current + 1.day).associate! :owner=>me
     # Completed, cancelled, suspended
-    new_task.associate! :potential_owner=>[you, other], :supervisor=>other
+    Task.make.associate! :potential_owner=>[me, other], :supervisor=>other
     other.update_task! Task.last, :status=>'suspended'
-    new_task.associate! :owner=>you
-    you.update_task! Task.last, :status=>'completed'
-    new_task.associate! :supervisor=>you
-    you.update_task! Task.last, :status=>'cancelled'
+    Task.make.associate! :owner=>me
+    me.update_task! Task.last, :status=>'completed'
+    Task.make.associate! :supervisor=>me
+    me.update_task! Task.last, :status=>'cancelled'
+  end
+
+  def self.down
+    Activity.delete_all
+    Stakeholder.delete_all
+    Task.delete_all
+    Person.delete_all
   end
     
-protected
-  
-  def you
-    @you ||= begin
-      Person.identify(ENV['USER'])
-    rescue
-      puts "Creating an account for you:"
-      puts "  Username: #{ENV['USER']}"
-      puts "  Password: secret"
-      Person.create! :email=>"#{ENV['USER']}@example.com", :password=>'secret'
-    end
-  end
-  
-  def other
-    @other ||= begin
-      Person.identify('anon')
-    rescue
-      Person.create! :email=>'anon@example.com'
-    end
-  end
-
-  def new_task(attributes = nil)
-    #delay
-    Task.create! attributes do |task|
-      task.title ||= Faker::Lorem.sentence
-      task.description ||= Faker::Lorem.paragraphs(3).join("\n\n")
-      task.associate :potential_owner=>[you, other]
-    end
-  end
-
-  def self.delay(duration = 2.hours)
-    [Task, Stakeholder, Activity].each do |model|
-      model.all.each do |record|
-        change = ['created_at = :time', {:time=>record.created_at - duration}]
-        if record.respond_to?(:updated_at)
-          change.first << ', updated_at = :time'
-          #change << record.updated_at - duration
-        end
-        model.update_all change, :id=>record.id
-      end
-    end
-  end
-
 end

@@ -20,13 +20,14 @@ namespace 'db' do
 
   desc 'Populate the database with mock values'
   task 'populate'=>['environment', 'create', 'migrate'] do
-    require File.join(Rails.root, 'db/populate')
-    PopulateDatabase.new.populate
+    require Rails.root + 'db/populate'
+    Populate.down
+    Populate.up
   end
 
   task 'annotate'=>['environment'] do
     require 'annotate/annotate_models'
-    AnnotateModels.do_annotations(:position=>:before)
+    AnnotateModels.do_annotations :position=>:before
   end
 
 end
