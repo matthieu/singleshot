@@ -30,7 +30,7 @@ task 'stop' do
   system 'thin stop -s2'
 end
 
-namespace :routes do
+namespace 'routes' do
   task 'annotate' do
     require 'annotate/annotate_routes'
     AnnotateRoutes.do_annotate

@@ -16,7 +16,7 @@
 
 require 'rails_generator/secret_key_generator'
 
-task 'secret.key' do |task|
+file 'secret.key' do |task|
   secret = ActiveSupport::SecureRandom.hex(64)
   File.open task.name, 'w' do |file|
     file.write secret
@@ -34,17 +34,20 @@ namespace 'plugins' do
   desc "Install all the plugins this app depends on"
   task 'install' do
     rb_bin = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
-#    system 'rb_bin', 'script/plugin', 'git://github.com/dchelimsky/rspec-rails.git'  
+    system 'rb_bin', 'script/plugin', 'git://github.com/zargony/activerecord_symbolize.git'
+    system 'rb_bin', 'script/plugin', 'git://github.com/assaf/presenter.git'
   end
   
   desc "List installed plugins"
-  task 'list' do
-    plugins = Dir["#{Rails.root}/vendor/plugins/*"].map { |path| Rails::Plugin.new(path) }
+  task 'list'=>['environment'] do
+    plugins = Rails::Initializer.run.loaded_plugins
     plugins.each do |plugin|
-      puts "Plugin: #{plugin.name}\n(#{plugin.directory})"
+      about = plugin.about
+      about['path'] = plugin.directory
+      puts "#{plugin.name}:"
       width = plugin.about.keys.map(&:size).max
-      plugin.about.each do |key, value|
-        puts "  %#{width}s: %s" % [key, value]
+      plugin.about.keys.sort.each do |name|
+        puts "  %#{width}s: %s" % [name, plugin.about[name]]
       end
       puts
     end
