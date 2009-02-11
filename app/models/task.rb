@@ -42,8 +42,6 @@ require 'openssl'
 #  created_at         :datetime
 #  updated_at         :datetime
 #
-
-
 class Task < ActiveRecord::Base
 
   def initialize(*args, &block)

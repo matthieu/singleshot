@@ -14,6 +14,11 @@
 # the License.
 
 
+# Represents a stakeholder in the task.  Identifies the person and their role.
+# Some roles allow multiple people, others do not.  This distinction is handled by
+# the Task itself.
+#
+#
 # == Schema Information
 # Schema version: 20090206215123
 #
@@ -25,11 +30,6 @@
 #  role       :string(255)     not null
 #  created_at :datetime        not null
 #
-
-
-# Represents a stakeholder in the task.  Identifies the person and their role.
-# Some roles allow multiple people, others do not.  This distinction is handled by
-# the Task itself.
 class Stakeholder < ActiveRecord::Base
 
   # A task will only have one stakeholder in this role:

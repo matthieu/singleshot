@@ -14,7 +14,8 @@
 # the License.
 
 
-class SessionsController < ApplicationController
+class SessionsController < ApplicationController #:nodoc:
+
   skip_before_filter :authenticate
 
   def show

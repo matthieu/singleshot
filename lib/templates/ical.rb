@@ -15,6 +15,7 @@
 
 
 module Templates #:nodoc:
+  # iCal VCALENDAR object buildr.
   class IcalBuilder < BlankSlate
     def initialize(request, output = nil)
       @request = request
@@ -90,7 +91,7 @@ module Templates #:nodoc:
 
   end
 
-  class Ical < ActionView::TemplateHandler
+  class Ical < ActionView::TemplateHandler #:nodoc:
     include ActionView::TemplateHandlers::Compilable
 
     def self.line_offset

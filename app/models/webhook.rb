@@ -1,17 +1,3 @@
-# == Schema Information
-# Schema version: 20090206215123
-#
-# Table name: webhooks
-#
-#  id          :integer         not null, primary key
-#  task_id     :integer         not null
-#  event       :string(255)     not null
-#  url         :string(255)     not null
-#  http_method :string(255)     not null
-#  enctype     :string(255)     not null
-#  hmac_key    :string(255)
-#
-
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF
@@ -28,8 +14,31 @@
 # the License.
 
 
+# Applications can use webhooks to be notified when the task completes, gets cancelled,
+# or other interesting events.
+#
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: webhooks
+#
+#  id          :integer         not null, primary key
+#  task_id     :integer         not null
+#  event       :string(255)     not null
+#  url         :string(255)     not null
+#  http_method :string(255)     not null
+#  enctype     :string(255)     not null
+#  hmac_key    :string(255)
+#
+#
 class Webhook < ActiveRecord::Base
 
+  # Creates new webhook with the following attributes (and defaults):
+  # - event     -- Event name (e.g. completed, cancelled)
+  # - url       -- Webhook URL
+  # - method    -- HTTP method to use (default is POST)
+  # - enctype   -- Encoding type (default is application/x-www-form-urlencoded)
+  # - hmac_key  -- Optional key for generating x-hmac header
   def initialize(*args)
     super
     self[:http_method] ||= 'post'

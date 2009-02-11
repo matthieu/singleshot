@@ -21,9 +21,10 @@ module Validators #:nodoc:
   # For example:
   #   validates_email :email
   module Email
-    
+   
+    # Included in ActiveRecord::Base.
     def self.included(mod)
-      I18n.backend.store_translations :'en-US',
+      I18n.backend.store_translations 'en-US',
         { :active_record => { :error_messages => { :invalid_email => "is not a valid email address" } } }
   
       mod.class_eval do

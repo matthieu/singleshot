@@ -1,4 +1,4 @@
-class TasksController < ApplicationController
+class TasksController < ApplicationController #:nodoc:
 
   verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :set_task, :only=>[:show, :update, :complete, :destroy]

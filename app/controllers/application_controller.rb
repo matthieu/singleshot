@@ -1,7 +1,4 @@
-# Filters added to this controller apply to all controllers in the application.
-# Likewise, all the methods added will be available for all controllers.
-
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::Base #:nodoc:
 
   helper :all # include all helpers, all the time
 
@@ -19,11 +16,14 @@ protected
   filter_parameter_logging :password
 
   # See ActionController::RequestForgeryProtection for details
-  # Uncomment the :secret if you're not using the cookie session store
-  protect_from_forgery # :secret => '{secret}}'
+  protect_from_forgery
 
+  # All requests authenticated unless said otherwise.
   before_filter :authenticate
 
+  # Returns currently authenticated user.
+  attr_reader :authenticated
+  
   # Authentication filter enabled by default since most resources are guarded.
   def authenticate
     # Good luck using HTTP Basic/sessions with feed readers and calendar apps.
@@ -55,22 +55,10 @@ protected
         end
       end
     end
-  end
-  
-
-  # --- Authenticated user ---
-
-  # Returns Person object for currently authenticated user.
-  attr_reader :authenticated
-
-  # Returns language code for currently authenticated user (may be nil).
-  def language
-    authenticated.language if authenticated
+    if @authenticated
+      I18n.locale = @authenticated.language
+      Time.zone = @authenticated.timezone
+    end
   end
 
-  # Set time zone for currently authenticated user.
-  before_filter do |controller|
-    Time.zone = controller.authenticated.timezone rescue nil
-  end
-  
 end

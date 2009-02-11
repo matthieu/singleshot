@@ -1,7 +1,7 @@
 # Deadline sparkline adapted from Sparklines, 
 # Copyright (c) 2005 Geoffrey Grosenbach boss@topfunky.com
 
-class Sparklines
+class Sparklines #:nodoc:
   
   ## Creates a deadline sparkline.
   #
@@ -86,7 +86,7 @@ class Sparklines
   end
 end
 
-class SparklinesController < ApplicationController
+class SparklinesController < ApplicationController #:nodoc:
 
   skip_before_filter :authenticate
 

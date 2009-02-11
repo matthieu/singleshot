@@ -27,9 +27,11 @@ module Validators #:nodoc:
   #   validates_url :secure_url, :schemes=>['https']
   module Url
 
+    # Included in ActiveRecord::Base.
     def self.included(mod)
-      I18n.backend.store_translations :'en-US',
+      I18n.backend.store_translations 'en-US',
         { :active_record => { :error_messages => { :invalid_url => "is not a valid URL" } } }
+
       mod.class_eval do
 
         # Validates that each attribute is a URL and also normalizes the URL before saving it.
@@ -42,7 +44,7 @@ module Validators #:nodoc:
         # For example:
         #   # Only allow HTPS
         #   validates_url :secure_url, :schemes=>['https']
-        def validates_url(*attr_names)
+        def self.validates_url(*attr_names)
           configuration = { :on=>:save, :schemes=>['http', 'https'] }
           configuration.update(attr_names.extract_options!)
 

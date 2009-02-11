@@ -14,7 +14,7 @@
 # the License.
 
 
-class ActivityController < ApplicationController
+class ActivityController < ApplicationController #:nodoc:
 
   def index
     @title = I18n.t('activity.index.title')

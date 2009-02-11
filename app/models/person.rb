@@ -17,6 +17,21 @@
 require 'openssl'
 
 
+# Internally we keep a primary key association between the person and various other records.
+# Externally, we use a public identifier returned from #to_param and resolved with Person.identify.
+# The base implementation uses the person's nickname (derived from e-mail address) as the public identifier.
+#
+# In addition, we need to know the person's full name for presentation and e-mail address for
+# sending notifications.  Language and timezone (in minutes relative to UTC) are optional,
+# although it is highly recommended to set the timezone.
+#
+# Passwords are optional, since not every one requires password authentication (may use OpenID,
+# or some other authentication mechanism).  We use BCrype to store passwords securely.
+#
+# The access_key field is used for authentication when sessions and HTTP Basic are not possible,
+# for example, to access feeds and iCal.
+#
+#
 # == Schema Information
 # Schema version: 20090121220044
 #
@@ -34,20 +49,6 @@ require 'openssl'
 #  updated_at :datetime
 #
 
-
-# Internally we keep a primary key association between the person and various other records.
-# Externally, we use a public identifier returned from #to_param and resolved with Person.identify.
-# The base implementation uses the person's nickname (derived from e-mail address) as the public identifier.
-#
-# In addition, we need to know the person's full name for presentation and e-mail address for
-# sending notifications.  Language and timezone (in minutes relative to UTC) are optional,
-# although it is highly recommended to set the timezone.
-#
-# Passwords are optional, since not every one requires password authentication (may use OpenID,
-# or some other authentication mechanism).  We use BCrype to store passwords securely.
-#
-# The access_key field is used for authentication when sessions and HTTP Basic are not possible,
-# for example, to access feeds and iCal.
 class Person < ActiveRecord::Base
 
   class << self

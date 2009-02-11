@@ -1,4 +1,4 @@
-class TaskForController < ApplicationController
+class TaskForController < ApplicationController #:nodoc:
 
   before_filter :authenticate
   verify :params=>'task', :only=>:update
