@@ -30,6 +30,7 @@ end
 
 describe AuthenticationController do
   controller_name :authentication
+  before { controller.use_rails_error_handling! }
   before { @person = Person.named('me') }
 
   describe 'unauthenticated' do
@@ -97,6 +98,7 @@ describe AuthenticationController do
       before { post :feed, :access_key=>'wrong', :format=>:atom }
       it { should respond_with(405) }
     end
+
   end
 
   describe 'with wrong access key' do
