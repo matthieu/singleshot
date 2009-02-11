@@ -46,7 +46,7 @@ protected
           # and redirect the use to a login page.  Otherwise we assume dumb machine and
           # insist on HTTP Basic.
           if request.format.html?
-            flash[:return_to] = request.url
+            session[:return_url] = request.url
             redirect_to session_url
           else
             reset_session

@@ -1,6 +1,23 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with this
+# work for additional information regarding copyright ownership.  The ASF
+# licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations under
+# the License.
 
-class AuthenticationTestController < ApplicationController
+
+require File.dirname(__FILE__) + '/helpers'
+
+
+class AuthenticationController < ApplicationController
 
   def index
     render :nothing=>true
@@ -11,117 +28,86 @@ class AuthenticationTestController < ApplicationController
   end
 end
 
+describe AuthenticationController do
+  controller_name :authentication
+  before { @person = Person.named('me') }
 
-describe 'Authentication' do
-  controller_name :authentication_test
-  
-  before :all do
-    @person = Person.create(:email=>'lucy@test.host', :password=>'secret')
+  describe 'unauthenticated' do
+    before { get :index }
+
+    it { should redirect_to(session_url) }
+    it('should store request URL in session')  { session[:return_url].should == request.url }
+  end
+
+  describe 'unauthenticated XML' do
+    before { get :index, :format=>:xml }
+    it { should respond_with(401) }
+  end
+
+  describe 'unauthenticated JSON' do
+    before { get :index, :format=>:json }
+    it { should respond_with(401) }
+  end
+
+  describe 'with invalid session' do
+    before { get :index, nil, :person_id=>0 }
+    it { should redirect_to session_url }
+  end
+
+  describe 'with authenticated session' do
+    before { get :index, nil, :person_id=>@person.id }
+    it { should respond_with(200) }
+    it { should accept_authenticated_user }
+  end
+
+  describe 'with HTTP Basic' do
+    before { request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('me', 'secret') }
+    before { get :index }
+
+    it { should respond_with(200) }
+    it { should accept_authenticated_user }
+  end
+
+  describe 'with HTTP Basic but wrong credentials' do
+    before { request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('me', 'wrong') }
+    before { get :index }
+
+    it { should respond_with(401) }
+  end
+
+  describe 'with access key' do
+    describe 'Atom' do
+      before { get :feed, :access_key=>@person.access_key, :format=>:atom }
+      it { should respond_with(200) }
+      it { should accept_authenticated_user }
+    end
+
+    describe 'iCal' do
+      before { get :feed, :access_key=>@person.access_key, :format=>:ics }
+      it { should respond_with(200) }
+      it { should accept_authenticated_user }
+    end
+
+    describe 'HTML' do
+      before { get :feed, :access_key=>@person.access_key, :format=>:html }
+      it { should redirect_to(session_url) }
+    end
+
+    describe 'POST method' do
+      before { post :feed, :access_key=>'wrong', :format=>:atom }
+      it { should respond_with(405) }
+    end
+  end
+
+  describe 'with wrong access key' do
+    before { get :feed, :access_key=>'wrong', :format=>:atom }
+    it { should respond_with(403) }
+  end
+
+  def accept_authenticated_user
+    simple_matcher "accept authenticated user" do |given|
+      controller.send(:authenticated) == @person
+    end
   end
   
-  describe 'Unauthenticated request' do
-    it 'should redirect to login page when requesting HTML' do
-      get 'index'
-      response.should redirect_to('/session')
-    end
-    
-    it 'should redirect to login page with request URL in return_to session value' do
-      get 'index'
-      flash[:return_to].should eql(controller.url_for(:controller=>'authentication_test', :action=>'index'))
-    end
-    
-    it 'should return 401 when requesting XML document' do
-      get 'index', :format=>'xml'
-      response.should be(:unauthorized)
-    end
-
-    it 'should return 401 when requesting JSON document' do
-      get 'index', :format=>'json'
-      response.should be(:unauthorized)
-    end
-  end
-
-
-  describe 'Session' do
-    it 'should redirect to login page if person does not exist' do
-      get 'index', nil, :person_id=>0
-      response.should redirect_to('/session')
-    end
-
-    it 'should return response if user account exists' do
-      get 'index', nil, :person_id=>@person.id
-      response.should be(:ok)
-    end
-
-    it 'should assign authenticated user to controller' do
-      get 'index', nil, :person_id=>@person.id
-      assigns[:authenticated].should == @person
-    end
-  end
-
-
-  describe 'HTTP Basic' do
-    it 'should return response if authenticated' do
-      request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('lucy', 'secret')
-      get 'index'
-      response.should be(:ok)
-    end
-
-    it 'should assign authenticated user in controller' do
-      request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('lucy', 'secret')
-      get 'index'
-      assigns[:authenticated].should == @person
-    end
-
-    it 'should return 401 if not authenticated' do
-      request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('lucy', 'wrong')
-      get 'index'
-      response.should be(:unauthorized)
-    end
-
-    it 'should not fail on password-less account' do
-      Person.create(:email=>'mary@test.host')
-      request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials('mary', 'wrong')
-      get 'index'
-      response.should be(:unauthorized)
-    end
-  end
-
-
-  describe 'Access key' do
-    it 'should work when requesting Atom representation' do
-      get 'feed', :access_key=>@person.access_key, :format=>Mime::ATOM
-      response.should be(:ok)
-    end
-    
-    it 'should work when requesting iCal representation' do
-      get 'feed', :access_key=>@person.access_key, :format=>Mime::ICS
-      response.should be(:ok)
-    end
-    
-    it 'should not apply to content types other than Atom/iCal' do
-      get 'feed', :access_key=>@person.access_key, :format=>Mime::HTML
-      response.should redirect_to('/session')
-    end
-    
-    it 'should return 403 if not matching user\'s access key' do
-      get 'feed', 'access_key'=>'wrong', :format=>Mime::ATOM
-      response.should be(:forbidden)
-    end
-
-    it 'should return 405 if POST request' do
-      lambda { post 'feed', 'access_key'=>@person.access_key, :format=>Mime::ATOM }.
-        should raise_error(ActionController::MethodNotAllowed, /Only GET/)
-    end
-
-    it 'should assign authenticated user in controller' do
-      get 'feed', :access_key=>@person.access_key, :format=>Mime::ATOM
-      assigns[:authenticated].should == @person
-    end
-  end
-
-
-  after :all do
-    Person.delete_all
-  end
 end
