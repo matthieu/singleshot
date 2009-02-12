@@ -9,7 +9,6 @@ installed:
 To get the latest copy use one of the following:
 
   svn checkout http://svn.apache.org/repos/asf/ode/sandbox/singleshot
-  git svn clone http://svn.apache.org/repos/asf/ode/sandbox/singleshot
   git clone git://github.com/assaf/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
@@ -22,7 +21,7 @@ This will also create a default account using your user name and the password
 
 To get started:
 
-  rake run
+  ./script server
 
 Point your browser to http://localhost:3000 and login with your user name and
 password.
@@ -49,31 +48,20 @@ recreate the entire database.
 
 Those changes are recorded in the form of migration, but to update run:
 
-  rake db:migrate:reset
+  rake db:migrate:reset db:test:clone
 
 This task will recreate the entire development and test database.  In addition,
-we uses the annotate-models Gems to, well, annotate the Rails models with the
+we uses the Annotates Models gem to, well, annotate the Rails models with the
 most recent database schema.  So when changing the database schema, follow
 with:
 
-  rake annotate_models
+  rake db:annotate
+
+Watch the source files for changes, move the schema annotations to their
+rightful place.
 
 To recreate the dummy data used for development:
 
   rake db:populate
-
-
-== Getting Involved
-
-The official specification for Singleshot is written using RSpec.  Please use
-RSpec to specify the expected behavior and fill it up with test cases, from
-which we can build/fix/refactor the implementation.
-
-Documentation goes in the doc/pages directory, uses the Textile markup syntax,
-and is considered part of the source code and each official release.  We use
-these files to generate the Web site and PDF documentation.
-
-A reference for Textile is available here:
-http://hobix.com/textile/
 
 
