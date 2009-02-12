@@ -8,7 +8,7 @@ installed:
 
 To get the latest copy use one of the following:
 
-  git clone git://github.com/assaf/singleshot.git
+  git clone git://github.com/intalio/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
 Gems and setting up the development and test databases, run the setup task:
