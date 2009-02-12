@@ -5,4 +5,5 @@ tmp/**/*
 secret.key
 vendor
 doc/app
-index
+failed
+db/development_structure.sql
