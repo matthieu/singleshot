@@ -30,7 +30,7 @@
 #  enctype     :string(255)     not null
 #  hmac_key    :string(255)
 #
-#
+
 class Webhook < ActiveRecord::Base
 
   # Creates new webhook with the following attributes (and defaults):

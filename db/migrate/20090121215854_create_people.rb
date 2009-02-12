@@ -20,7 +20,7 @@ class CreatePeople < ActiveRecord::Migration
       t.string   :identity,                 :null => false
       t.string   :fullname,                 :null => false
       t.string   :email,                    :null => false
-      t.string   :language,   :limit => 5
+      t.string   :locale,     :limit => 5
       t.integer  :timezone,   :limit => 4
       t.string   :password,   :limit => 64
       t.string   :access_key, :limit => 32, :null => false

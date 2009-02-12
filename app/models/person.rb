@@ -33,7 +33,7 @@ require 'openssl'
 #
 #
 # == Schema Information
-# Schema version: 20090121220044
+# Schema version: 20090206215123
 #
 # Table name: people
 #
@@ -41,14 +41,13 @@ require 'openssl'
 #  identity   :string(255)     not null
 #  fullname   :string(255)     not null
 #  email      :string(255)     not null
-#  language   :string(5)
+#  locale     :string(5)
 #  timezone   :integer(4)
 #  password   :string(64)
 #  access_key :string(32)      not null
 #  created_at :datetime
 #  updated_at :datetime
 #
-
 class Person < ActiveRecord::Base
 
   class << self
@@ -73,14 +72,15 @@ class Person < ActiveRecord::Base
   end
 
 
-  has_many :activities, :dependent=>:delete_all
-  has_many :stakeholders, :dependent=>:delete_all
-
-  attr_accessible :identity, :fullname, :email, :language, :timezone, :password
-
   def initialize(*args)
     super
   end
+
+  has_many :activities, :dependent=>:delete_all
+  has_many :stakeholders, :dependent=>:delete_all
+
+  attr_accessible :identity, :fullname, :email, :locale, :timezone, :password
+  symbolize :locale
 
   # Returns an identifier suitable for use with Person.resolve.
   def to_param

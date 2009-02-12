@@ -1,3 +1,15 @@
+# == Schema Information
+# Schema version: 20090206215123
+#
+# Table name: stakeholders
+#
+#  id         :integer         not null, primary key
+#  person_id  :integer         not null
+#  task_id    :integer         not null
+#  role       :string(255)     not null
+#  created_at :datetime        not null
+#
+
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with this
 # work for additional information regarding copyright ownership.  The ASF

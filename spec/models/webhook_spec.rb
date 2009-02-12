@@ -31,8 +31,6 @@ require File.dirname(__FILE__) + '/helpers'
 #  enctype     :string(255)     not null
 #  hmac_key    :string(255)
 #
-
-
 describe Webhook do
   subject { Webhook.make }
 

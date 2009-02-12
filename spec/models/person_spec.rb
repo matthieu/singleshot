@@ -26,15 +26,13 @@ require File.dirname(__FILE__) + '/helpers'
 #  identity   :string(255)     not null
 #  fullname   :string(255)     not null
 #  email      :string(255)     not null
-#  language   :string(5)
+#  locale     :string(5)
 #  timezone   :integer(4)
 #  password   :string(64)
 #  access_key :string(32)      not null
 #  created_at :datetime
 #  updated_at :datetime
 #
-
-
 describe Person do
 
   subject { Person.make }
@@ -57,9 +55,9 @@ describe Person do
   it { should allow_mass_assigning_of(:timezone) }
   it { should_not validate_presence_of(:timezone) }
 
-  it { should have_attribute(:language, :string, :null=>true, :limit=>5) }
-  it { should allow_mass_assigning_of(:language) }
-  it { should_not validate_presence_of(:language) }
+  it { should have_attribute(:locale, :string, :null=>true, :limit=>5) }
+  it { should allow_mass_assigning_of(:locale) }
+  it { should_not validate_presence_of(:locale) }
 
   def salt # return the password's salt
     subject.password.split('::').first

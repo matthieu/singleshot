@@ -28,8 +28,6 @@ require File.dirname(__FILE__) + '/helpers'
 #  role       :string(255)     not null
 #  created_at :datetime        not null
 #
-
-
 describe Stakeholder do
   describe 'new' do
     subject { Stakeholder.make_unsaved }

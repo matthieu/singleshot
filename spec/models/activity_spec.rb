@@ -28,7 +28,5 @@ require File.dirname(__FILE__) + '/helpers'
 #  name       :string(255)     not null
 #  created_at :datetime        not null
 #
-
-
 describe Activity do
 end

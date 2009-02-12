@@ -32,13 +32,15 @@ end
 describe AuthenticationController do
   controller_name :authentication
   before { controller.use_rails_error_handling! }
-  before { @person = Person.named('me') }
+  before { @person = Person.make(:email=>'me@example.com', :locale=>:tlh, :timezone=>-11) }
 
   describe 'unauthenticated' do
     before { get :index }
 
     it { should redirect_to(session_url) }
     it('should store request URL in session')  { session[:return_url].should == request.url }
+    it('should reset I18n locale')             { I18n.locale.should == :en }
+    it('should reset TimeZone')                { Time.zone.utc_offset == 0 }
   end
 
   describe 'unauthenticated XML' do
@@ -53,13 +55,15 @@ describe AuthenticationController do
 
   describe 'with invalid session' do
     before { get :index, nil, :person_id=>0 }
-    it { should redirect_to session_url }
+    it { should redirect_to(session_url) }
   end
 
   describe 'with authenticated session' do
     before { get :index, nil, :person_id=>@person.id }
     it { should respond_with(200) }
     it { should accept_authenticated_user }
+    it('should set I18n locale')               { I18n.locale.should == :tlh }
+    it('should set TimeZone')                  { Time.zone.should == ActiveSupport::TimeZone[-11] }
   end
 
   describe 'with HTTP Basic' do

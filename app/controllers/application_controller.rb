@@ -37,7 +37,9 @@ protected
     else
       # Favoring HTTP Basic over sessions makes my debugging life easier.
       if ActionController::HttpAuthentication::Basic.authorization(request)
-        @authenticated = authenticate_or_request_with_http_basic(request.host) { |login, password| Person.authenticate(login, password) }
+        authenticate_or_request_with_http_basic(request.host) do |login, password|
+          @authenticated = Person.authenticate(login, password)
+        end
         reset_session
       else
         @authenticated = Person.find(session[:person_id]) rescue nil
@@ -55,10 +57,8 @@ protected
         end
       end
     end
-    if @authenticated
-      I18n.locale = @authenticated.language
-      Time.zone = @authenticated.timezone
-    end
+    I18n.locale = @authenticated && @authenticated.locale
+    Time.zone = @authenticated && @authenticated.timezone
   end
 
 end

@@ -94,6 +94,8 @@ module Spec::Helpers #:nodoc:
 
     def respond_with(status, headers = {})
       simple_matcher "respond with #{status}" do |given, matcher|
+        matcher.failure_message = "expected status #{status} but got #{response.code}"
+        matcher.negative_failure_message = "expected status other than #{status} but got #{status}"
         response.code == status.to_s
       end
     end

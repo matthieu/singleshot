@@ -42,8 +42,6 @@ require File.dirname(__FILE__) + '/helpers'
 #  created_at         :datetime
 #  updated_at         :datetime
 #
-
-
 describe Task do
 
   subject { Task.make }
