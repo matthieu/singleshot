@@ -1,3 +1,9 @@
+= Singleshot
+
+Singleshot is a task manager. You use it to track and complete your tasks,
+processes use it to involve you.
+
+
 == Setting up the environment
 
 Singleshot is developed against Rails 2.3.  Make sure to have Rails 2.3
