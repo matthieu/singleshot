@@ -184,11 +184,11 @@ class Person < ActiveRecord::Base
       end
 
       case task.status
-      when 'suspended'
+      when :suspended
         task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, self)
-      when 'completed'
+      when :completed
         task.errors.add :status, "Only owner can complete task" unless task.owner == self
-      when 'cancelled'
+      when :cancelled
         task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
       end
     end

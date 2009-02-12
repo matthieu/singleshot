@@ -231,11 +231,11 @@ describe Task do
     describe 'available' do
       subject { Task.make }
 
-      it('should be the initial status for new tasks')            { Task.new(:status=>'active').status.should == 'available' }
-      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>Person.owner } }
+      it('should be the initial status for new tasks')            { Task.new(:status=>:active).status.should == :available }
+      it { should change_status_to(:active, "with new owner")     { subject.update_attributes! :owner=>Person.owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to('completed')               { Person.supervisor.update_task subject, :owner=>Person.owner, :status=>'completed' } }
+      it { should_not change_status_to(:completed)                { Person.supervisor.update_task subject, :owner=>Person.owner, :status=>:completed } }
       it { should offer_potential_owner_to_claim }
       it { should offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -246,14 +246,14 @@ describe Task do
     describe 'active' do
       subject { Task.make_active }
 
-      it('should be status for owned tasks')                  { subject.status.should == 'active' }
-      it { should change_status_to('available', "if no owner") { Person.owner.update_task subject, :owner=>nil } }
+      it('should be status for owned tasks')                  { subject.status.should == :active }
+      it { should change_status_to(:available, "if no owner") { Person.owner.update_task subject, :owner=>nil } }
       it { should_not change_status("with owner change")      { Person.owner.update_task subject, :owner=>Person.potential } }
-      it { should change_status_to('suspended', "if suspended by supervisor")  { Person.supervisor.update_task subject, :status=>'suspended' } }
-      it { should_not change_status("unless suspended by supervisor")         { Person.owner.update_task subject, :status=>'suspended' } }
+      it { should change_status_to(:suspended, "if suspended by supervisor")  { Person.supervisor.update_task subject, :status=>:suspended } }
+      it { should_not change_status("unless suspended by supervisor")         { Person.owner.update_task subject, :status=>:suspended } }
       it { should honor_cancellation_policy }
-      it { should change_status_to('completed', "when completed by owner")     { Person.owner.update_task subject, :status=>'completed' } }
-      it { should_not change_status_to('completed', "unless by owner")         { Person.supervisor.update_task subject, :status=>'completed' } }
+      it { should change_status_to(:completed, "when completed by owner")     { Person.owner.update_task subject, :status=>:completed } }
+      it { should_not change_status_to(:completed, "unless by owner")         { Person.supervisor.update_task subject, :status=>:completed } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -264,11 +264,11 @@ describe Task do
     describe 'suspended' do
       subject { Task.make_suspended }
 
-      it { should change_status_to('available', "if resumed and no owner")  { Person.supervisor.update_task! subject, :status=>'active' } }
-      it { should change_status_to('active', "if resumed with owner")       { subject.owner = Person.owner ; Person.supervisor.update_task! subject, :status=>'available' } }
-      it { should_not change_status("unless resumed by supervisor")         { Person.owner.update_task subject, :status=>'active' } }
+      it { should change_status_to(:available, "if resumed and no owner")  { Person.supervisor.update_task! subject, :status=>:active } }
+      it { should change_status_to(:active, "if resumed with owner")       { subject.owner = Person.owner ; Person.supervisor.update_task! subject, :status=>'available' } }
+      it { should_not change_status("unless resumed by supervisor")        { Person.owner.update_task subject, :status=>:active } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to('completed')                         { Person.owner.update_task subject, :owner=>Person.owner, :status=>'completed' } }
+      it { should_not change_status_to(:completed)                         { Person.owner.update_task subject, :owner=>Person.owner, :status=>:completed } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should offer_supervisor_to_resume }
@@ -379,7 +379,7 @@ describe Task do
   def honor_cancellation_policy
     simple_matcher "honor cancellation policy" do |given, matcher|
       matcher.failure_message = "expected status to change to cancelled, but did not change"
-      Person.supervisor.update_task given, :status=>'cancelled'
+      Person.supervisor.update_task given, :status=>:cancelled
     end
   end
 
@@ -415,8 +415,8 @@ describe Task do
   def able_to_suspend_task
     simple_matcher "be offered/able to suspend task" do |given|
       task = Task.make
-      fail unless subject.can_suspend?(task) == subject.update_task(task, :status=>'suspended')
-      task.reload.status == 'suspended'
+      fail unless subject.can_suspend?(task) == subject.update_task(task, :status=>:suspended)
+      task.reload.status == :suspended
     end
   end
 
@@ -429,8 +429,8 @@ describe Task do
   def able_to_resume_task
     simple_matcher "be offered/able to resume task" do |given|
       task = Task.make_suspended
-      fail unless subject.can_resume?(task) == subject.update_task(task, :status=>'available')
-      task.reload.status == 'available'
+      fail unless subject.can_resume?(task) == subject.update_task(task, :status=>:available)
+      task.reload.status == :available
     end
   end
 
@@ -443,8 +443,8 @@ describe Task do
   def able_to_cancel_task
     simple_matcher "be offered/able to cancel task" do |given, matcher|
       task = Task.make
-      fail unless subject.can_cancel?(task) == subject.update_task(task, :status=>'cancelled')
-      task.reload.status == 'cancelled'
+      fail unless subject.can_cancel?(task) == subject.update_task(task, :status=>:cancelled)
+      task.reload.status == :cancelled
     end
   end
 
@@ -457,8 +457,8 @@ describe Task do
   def able_to_complete_task
     simple_matcher "be offered/able to complete task" do |given, matcher|
       task = Task.make_active
-      fail unless subject.can_complete?(task) == subject.update_task(task, :status=>'completed')
-      task.reload.status == 'completed'
+      fail unless subject.can_complete?(task) == subject.update_task(task, :status=>:completed)
+      task.reload.status == :completed
     end
   end
 

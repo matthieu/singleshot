@@ -40,20 +40,20 @@ end
 
 Task.blueprint do
   title        { 'Spec me' }
-  status       { 'available' }
+  status       { :available }
   object.stakeholders.build :role=>:supervisor, :person=>Person.supervisor
   object.stakeholders.build :role=>:creator, :person=>Person.creator
   object.stakeholders.build :role=>:potential_owner, :person=>Person.owner     # so owner can claim task
   object.stakeholders.build :role=>:potential_owner, :person=>Person.potential # so owner is not selected by default
   object.stakeholders.build :role=>:observer, :person=>Person.observer
   object.stakeholders.build :role=>:excluded_owner, :person=>Person.excluded
-  object.owner ||= Person.owner if object.status == 'active' || object.status == 'completed'
+  object.owner ||= Person.owner if object.status == :active || object.status == :completed
 end
 
 class Task
   class << self
     [:active, :suspended, :cancelled, :completed].each do |status|
-      define_method("make_#{status}") { Task.make :status=>status.to_s }
+      define_method("make_#{status}") { Task.make :status=>status }
     end
   end
 end

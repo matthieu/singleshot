@@ -46,7 +46,7 @@ class Task < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
-    self[:status] = 'available'
+    self[:status] = :available
     self[:priority] ||= DEFAULT_PRIORITY
     self[:data] ||= {}
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
@@ -298,9 +298,9 @@ class Task < ActiveRecord::Base
   # * suspended -- Task is suspended.
   # * completed -- Task has completed.
   # * cancelled -- Task was cancelled.
-  STATUSES = ['available', 'active', 'suspended', 'completed', 'cancelled']
+  STATUSES = [:available, :active, :suspended, :completed, :cancelled]
 
-  validates_inclusion_of :status, :in=>STATUSES
+  symbolize :status, :in=>STATUSES
   attr_accessible :status
 
   # Check method for each status (active?, completed?, etc).
@@ -308,21 +308,21 @@ class Task < ActiveRecord::Base
 
   before_validation do |task|
     case task.status
-    when 'available'
+    when :available
       # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
       if !task.owner && (potential = task.in_role(:potential_owner)) && potential.size == 1
         task.owner = potential.first
       end
       # Assigned task becomes active.
-      task.status = 'active' if task.owner
-    when 'active'
+      task.status = :active if task.owner
+    when :active
       # Unassigned task becomes available.
-      task.status = 'available' unless task.owner
+      task.status = :available unless task.owner
     end
   end
 
   def readonly? # :nodoc:
-    ['completed', 'cancelled'].include?(status_was)
+    [:completed, :cancelled].include?(status_was)
   end
 
 
@@ -491,7 +491,7 @@ class Task < ActiveRecord::Base
   end
 
   def complete!(data = nil)
-    self.status = 'completed'
+    self.status = :completed
     self.data = data if data
     # TODO: Update outcome, observers
     save!
