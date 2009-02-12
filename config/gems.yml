@@ -8,6 +8,7 @@ all:
     source:   'http://gems.github.com'
     lib:      'will_paginate'
 
+
 # These Gems are used exclusively during development/testing, they're listed here
 # to be included when running initial setup (rake setup). Some of these are only
 # used from rake tasks or the command line (e.g. rspec), so not loaded with the app.
@@ -32,6 +33,7 @@ development: &development
     version:  ~>1.2    # Development and test databases use SQLite3 by default. 
     source:   'http://gems.rubyforge.org'
     lib:      'sqlite3'
+
 
 # Same as development above.
 test: *development
