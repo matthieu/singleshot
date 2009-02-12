@@ -4,13 +4,7 @@ title: Singleshot
 ---
 
 Singleshot is a task manager. You use it to track and complete your tasks,
-processes use it to involve you.  We're building Singleshot because
-"Ode":http://ode.apache.org deserves an excellent task manager, but we'll make
-it possible to use Singleshot anywhere. That's why we're spending a lot of time
-getting the API right (REST, if you have to ask).
+processes use it to involve you.
 
-The refactoring, with cleaner API, much improved specs, and new UI is happening
-"on Github":http://github.com/assaf/singleshot. You can clone it from
-git://github.com/assaf/singleshot.git. Once it becomes good enough, will merge
-it back into trunk and start working towards a 1.0 release.
+More, soon.
 
