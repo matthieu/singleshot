@@ -8,3 +8,5 @@ processes use it to involve you.
 
 More, soon.
 
+Source code: <a href="http://github.com/intalio/singleshot">http://github.com/intalio/singleshot</a>
+
