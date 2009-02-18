@@ -40,9 +40,10 @@ class Stakeholder < ActiveRecord::Base
   # A task will have multiple stakeholders in this role:
   # * potential_owner -- Person who is allowed to claim (become owner of) the task.
   # * excluded_owner  -- Person who is not allowed to claim the task.
+  # * past_owner      -- Previous but no longer owner of the task.
   # * supervisor      -- Supervisors are allowed to modify the task, change its status, etc.
   # * observer        -- Watches and receives notifications about the task.
-  PLURAL_ROLES = [:potential_owner, :excluded_owner, :observer, :supervisor]
+  PLURAL_ROLES = [:potential_owner, :excluded_owner, :past_owner, :observer, :supervisor]
 
   ALL_ROLES = SINGULAR_ROLES + PLURAL_ROLES
 

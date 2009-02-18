@@ -29,4 +29,24 @@ require File.dirname(__FILE__) + '/helpers'
 #  created_at :datetime        not null
 #
 describe Activity do
+
+  describe 'new' do
+    subject { Activity.make_unsaved }
+
+    it { should belong_to(:person, Person) }
+    it { should validate_presence_of(:person) }
+
+    it { should belong_to(:task, Task) }
+
+    it { should have_attribute(:name, :string, :null=>false) }
+    it { should validate_presence_of(:name) }
+    it { should have_attribute(:created_at, :datetime, :null=>false) }
+  end
+
+  describe 'existing' do
+    subject { Activity.make }
+
+    it { should be_readonly }
+  end
+
 end

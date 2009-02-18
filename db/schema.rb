@@ -18,8 +18,6 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
     t.datetime "created_at", :null => false
   end
 
-  add_index "activities", ["person_id", "task_id", "name"], :name => "index_activities_on_person_id_and_task_id_and_name", :unique => true
-
   create_table "people", :force => true do |t|
     t.string   "identity",                 :null => false
     t.string   "fullname",                 :null => false

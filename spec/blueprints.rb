@@ -30,8 +30,9 @@ class Person #:nodoc:
       Person.identify(args.first) rescue Person.make(:email=>"#{args.first}@example.com")
     end
 
+
     # Convenient methods for roles, so owner() returns owner, and so forth.
-    [:creator, :owner, :supervisor, :potential, :excluded, :observer, :other].each do |role|
+    [:creator, :owner, :supervisor, :potential, :excluded, :past_owner, :observer, :other].each do |role|
       define_method(role) { Person.named(role.to_s) }
     end
   end
@@ -41,12 +42,9 @@ end
 Task.blueprint do
   title        { 'Spec me' }
   status       { :available }
-  object.stakeholders.build :role=>:supervisor, :person=>Person.supervisor
-  object.stakeholders.build :role=>:creator, :person=>Person.creator
-  object.stakeholders.build :role=>:potential_owner, :person=>Person.owner     # so owner can claim task
-  object.stakeholders.build :role=>:potential_owner, :person=>Person.potential # so owner is not selected by default
-  object.stakeholders.build :role=>:observer, :person=>Person.observer
-  object.stakeholders.build :role=>:excluded_owner, :person=>Person.excluded
+  object.associate :creator=>Person.creator, :supervisor=>Person.supervisor,
+    :potential_owner=>[Person.owner, Person.potential, Person.past_owner],
+    :past_owner=>Person.past_owner, :excluded_owner=>Person.excluded, :observer=>Person.observer
   object.owner ||= Person.owner if object.status == :active || object.status == :completed
 end
 
@@ -55,6 +53,26 @@ class Task
     [:active, :suspended, :cancelled, :completed].each do |status|
       define_method("make_#{status}") { Task.make :status=>status }
     end
+  end
+
+  # Associate peoples with roles. Returns self. For example:
+  #   task.associate :owner=>"john.smith"
+  #   task.associate :observer=>observers
+  # Note: all previous associations with the given role are replaced.
+  def associate(map)
+    map.each do |role, identities|
+      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+      keeping = stakeholders.select { |sh| sh.role == role }
+      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+    end
+    self
+  end
+
+  # Similar to #associate but calls save! and return true if saved.
+  def associate!(map)
+    associate map
+    save!
   end
 end
 
@@ -65,6 +83,11 @@ Stakeholder.blueprint do
   task   { Task.make }
 end
 
+Activity.blueprint do
+  person { Person.make }
+  name   { :created }
+  task   { Task.make }
+end
 
 Webhook.blueprint do
   task   { Task.make }

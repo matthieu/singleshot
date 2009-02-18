@@ -20,6 +20,27 @@ Task.blueprint do
   object.associate :potential_owner=>[Person.identify(ENV['USER']), Person.identify('other')]
 end
 
+class Task
+  # Associate peoples with roles. Returns self. For example:
+  #   task.associate :owner=>"john.smith"
+  #   task.associate :observer=>observers
+  # Note: all previous associations with the given role are replaced.
+  def associate(map)
+    map.each do |role, identities|
+      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
+      keeping = stakeholders.select { |sh| sh.role == role }
+      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
+      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
+    end
+    self
+  end
+
+  def associate!(map)
+    associate map
+    save!
+  end
+end
+
 Person.blueprint do
 end
 
@@ -46,7 +67,7 @@ class Populate < ActiveRecord::Migration
     # - admin
     Task.make.associate! :creator=>me
     Task.make.associate! :creator=>me
-    me.update_task! Task.last, :owner=>me
+    me.tasks.last.update_attributes! :owner=>me
     Task.make.associate! :observer=>me
     Task.make.associate! :supervisor=>me
     # Tasks in which we are only or one of many potential owners.
@@ -61,11 +82,11 @@ class Populate < ActiveRecord::Migration
     Task.make(:due_on=>Date.current + 1.day).associate! :owner=>me
     # Completed, cancelled, suspended
     Task.make.associate! :potential_owner=>[me, other], :supervisor=>other
-    other.update_task! Task.last, :status=>'suspended'
+    other.tasks.last.update_attributes! :status=>:suspended
     Task.make.associate! :owner=>me
-    me.update_task! Task.last, :status=>'completed'
+    me.tasks.last.update_attributes! :status=>:completed
     Task.make.associate! :supervisor=>me
-    me.update_task! Task.last, :status=>'cancelled'
+    me.tasks.last.update_attributes! :status=>:cancelled
   end
 
   def self.down

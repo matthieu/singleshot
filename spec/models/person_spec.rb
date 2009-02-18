@@ -117,27 +117,4 @@ describe Person do
     it('should fail if no person identified')     { should_not identify('missing') }
   end
 
-
-  describe '#update_task' do
-    subject { Task.make }
-
-    it('should return true if no errors')   { Person.supervisor.update_task(subject, {}).should be_true }
-    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true)
-                                              Person.supervisor.update_task(subject, {}) }
-    it('should return false if errors')     { Person.owner.update_task(subject, :status=>'suspended').should be_false } 
-    it('should not save updates if errors') { subject.should_not_receive(:save)
-                                              Person.owner.update_task(subject, :status=>'suspended') }
-  end
-
-  describe '#update_task!' do
-    subject { Task.make }
-
-    it('should return true if no errors')   { Person.supervisor.update_task!(subject, {}).should be_true }
-    it('should save updated if no errors')  { subject.should_receive(:save).and_return(true)
-                                              Person.supervisor.update_task!(subject, {}) }
-    it('should raise exception if errors')  { lambda { Person.owner.update_task!(subject, :status=>'suspended').should be_false }.should raise_error }
-    it('should not save updates if errors') { subject.should_not_receive(:save)
-                                              Person.owner.update_task!(subject, :status=>'suspended') rescue nil }
-  end
-
 end

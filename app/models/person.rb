@@ -76,8 +76,6 @@ class Person < ActiveRecord::Base
     super
   end
 
-  has_many :activities, :dependent=>:delete_all
-  has_many :stakeholders, :dependent=>:delete_all
 
   attr_accessible :identity, :fullname, :email, :locale, :timezone, :password
   symbolize :locale
@@ -142,86 +140,51 @@ class Person < ActiveRecord::Base
   end
 
 
-  # -- Guarded task update --
+  # -- Tasks --
 
-  # Use this instead of update_attributes to update a task, subject to this person's
-  # role in the task. It will check that this person is associated with the task, and
-  # based on their role, which changes are allowed, and finally record an activity for
-  # that person.
-  #
-  # Saves the record and returns true if successful. You can query task#errors for
-  # a list of validation and authorization errors.
-  #
-  # For example:
-  #   supervisor.udpate_task task, :status=>:cancel
-  def update_task(task, attributes)
-    update_task!(task, attributes)
-  rescue ActiveRecord::RecordInvalid
-    return false
+  has_many :activities, :dependent=>:delete_all
+  has_many :stakeholders, :dependent=>:delete_all
+  has_many :tasks, :through=>:stakeholders, :uniq=>true do
+
+    # Create the task on behalf of its creator. For example:
+    #   creator = Person.find(authenticated)
+    #   creator.tasks.create(attributes)
+    def create(attributes = {})
+      Task.create attributes do |task|
+        task.modified_by = proxy_owner
+        task.associate :creator=>proxy_owner if task.in_role(:creator).empty?
+      end
+    end
+
+    # Similar to #create but throws RecordNotSaved if it fails to create a new record.
+    def create!(attributes = {})
+      task = create(attributes)
+      raise ActiveRecord::RecordNotSaved if task.new_record?
+      task
+    end
+    
+    # Use this to find a task and update it on behalf of this person. For example:
+    #   task = owner.tasks.find(task_id)
+    #   task.update_attributes :status=>:completed
+    def find(*args)
+      super.tap do |found|
+        found.modified_by = proxy_owner
+      end
+    end
+
   end
-
-  # Similar to #update_task, but raises ActiveRecord::InvalidRecord in case of validation error.
-  def update_task!(task, attributes)
-    task.errors.clear
-
-    new_owner = attributes[:owner] && Person.identify(attributes[:owner])
-    if new_owner != task.owner
-      if task.owner # owned, so delegating to someone else
-        task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.in_role?(:owner, self) || task.in_role?(:supervisor, self)
-      else # not owned, so claiming task
-        task.errors.add :owner, "#{new_owner.to_param} is not allowed to claim task" unless new_owner.can_claim?(task)
-      end
-    end
-    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
-
-    task.attributes = attributes
-
-    # Check authorization to state changes.
-    if task.status_changed?
-      case task.status_was
-      when 'suspended'
-        task.errors.add :status, "Only supervisor is allowed to resume this task" unless task.cancelled? || task.in_role?(:supervisor, self)
-      end
-
-      case task.status
-      when :suspended
-        task.errors.add :status, "Only supervisor is allowed to suspend this task" unless task.in_role?(:supervisor, self)
-      when :completed
-        task.errors.add :status, "Only owner can complete task" unless task.owner == self
-      when :cancelled
-        task.errors.add :status, "Only supervisor allowed to cancel this task" unless task.in_role?(:supervisor, self)
-      end
-    end
-
-    unless task.in_role?(:supervisor, self)
-      # Supervisors can change anything, owners only data, status is looked at separately. 
-      changed = task.changed - ['status']
-      changed -= ['data'] if task.in_role?(:owner, self)
-      unless changed.empty?
-        task.errors.add_to_base "You are not allowed to change the attributes #{changed.to_sentence}"
-      end
-    end
-
-    raise ActiveRecord::RecordInvalid, task unless task.errors.empty?
-    task.save or raise ActiveRecord::RecordNotSaved
-  end
-
 
   # -- Access control to task --
 
-  # Returns true if this person can claim the task.
+  # Returns true if this person can claim the task. Offered to potential owners and supervisors.
   def can_claim?(task)
-    task.available? && can_own?(task, self)
+    task.available? && task.can_own?(self)
   end
 
+  # Returns true if this person can delegate the task. Offered to current owner and supervisor.
   def can_delegate?(task, person)
-    (task.owner == self || task.in_role?(:supervisor, self)) && can_own?(task, person)
+    (task.owner == self || task.in_role?(:supervisor, self)) && task.can_own?(person)
   end
-
-  def can_own?(task, person)
-    (task.in_role?(:potential_owner, person) || task.in_role?(:supervisor, person)) && !task.in_role?(:excluded_owner, person)
-  end
-  private :can_own?
 
   # Returns true if this person can suspend the task.
   def can_suspend?(task)
@@ -238,7 +201,7 @@ class Person < ActiveRecord::Base
     !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
   end
 
-  # Returns true if this person can complete the task.
+  # Returns true if this person can complete the task. Must be owner of an active task.
   def can_complete?(task)
     task.active? && task.in_role?(:owner, self)
   end
