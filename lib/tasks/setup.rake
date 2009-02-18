@@ -34,8 +34,13 @@ namespace 'plugins' do
   desc "Install all the plugins this app depends on"
   task 'install' do
     rb_bin = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
-    system rb_bin, 'script/plugin', 'install', 'git://github.com/zargony/activerecord_symbolize.git'
-    system rb_bin, 'script/plugin', 'install', 'git://github.com/assaf/presenter.git'
+    install = lambda do |url|
+      sh rb_bin, 'script/plugin', 'install', url
+      path = url.pathmap("vendor/plugins/%n")
+      fail "Plugin #{path} not installed!" unless File.directory?(path)
+    end
+    install.call 'git://github.com/zargony/activerecord_symbolize.git'
+    install.call 'git://github.com/assaf/presenter.git'
   end
   
   desc "List installed plugins"

@@ -131,9 +131,16 @@ class Task < ActiveRecord::Base
   # -- Stakeholders --
 
   # Stakeholders and people (as stakeholders) associated with this task.
-  has_many :stakeholders, :include=>:person, :dependent=>:delete_all, :before_add=>:stakeholders_before_add
+  has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
+    :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
   attr_accessible :stakeholders, :owner
   attr_readable   :stakeholders
+
+  def stakeholders_with_supervisor_access=(stakeholders)
+    raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?(:supervisor, modified_by)
+    stakeholders_without_supervisor_access = stakeholders
+  end
+  alias_method_chain :stakeholders=, :supervisor_access
 
   # Return all people associate with the specified role. For example:
   #   task.in_role(:observer)
@@ -156,32 +163,16 @@ class Task < ActiveRecord::Base
     stakeholders.any? { |sh| sh.role == role && sh.person == person }
   end
 
-  # Associate peoples with roles. Returns self. For example:
-  #   task.associate :owner=>"john.smith"
-  #   task.associate :observer=>observers
-  # Note: all previous associations with the given role are replaced.
-  def associate(map)
-    map.each do |role, identities|
-      new_set = [identities].flatten.compact.map { |id| Person.identify(id) }
-      keeping = stakeholders.select { |sh| sh.role == role }
-      stakeholders.delete keeping.reject { |sh| new_set.include?(sh.person) }
-      (new_set - keeping.map(&:person)).each { |person| stakeholders.build :person=>person, :role=>role }
-    end
-    self
-  end
-
-  # Similar to #associate but calls save! and return true if saved.
-  def associate!(map)
-    associate map
-    save!
-  end
-
   def owner
     in_role(:owner).first
   end
 
-  def owner=(owner)
-    associate :owner=>owner
+  def owner=(person)
+    person = Person.identify(person) if person
+    unless person == owner
+      stakeholders.delete stakeholders.select { |sh| sh.role == :owner }
+      stakeholders.build :person=>person, :role=>:owner if person
+    end
   end
 
   def stakeholders_before_add(sh)
@@ -189,6 +180,7 @@ class Task < ActiveRecord::Base
     when :creator
       errors.add :stakeholders, "Task cannot have two creators" unless in_role(:creator).empty?
     when :owner
+      changed_attributes['owner'] ||= nil
       errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if in_role?(:excluded_owner, sh.person)
       errors.add :stakeholders, "Task cannot have two owners" unless in_role(:owner).empty?
     when :potential_owner
@@ -197,8 +189,18 @@ class Task < ActiveRecord::Base
     raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
 
-  private :stakeholders_before_add
+  def stakeholders_before_remove(sh)
+    changed_attributes['owner'] = sh.person if sh.role == :owner
+    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
+  end
 
+  private :stakeholders_before_add, :stakeholders_before_remove
+
+  before_save do |task|
+    past_owner, owner = task.changes['owner']
+    task.stakeholders.build :role=>:potential_owner, :person=>owner if owner && !task.in_role?(:potential_owner, owner)
+    task.stakeholders.build :role=>:past_owner, :person=>past_owner if past_owner && !task.in_role?(:past_owner, past_owner)
+  end
 
 =begin
   def stakeholders=(list) #:nodoc: prevents delete/insert with no material update.
@@ -290,7 +292,7 @@ class Task < ActiveRecord::Base
   attr_readable   :data
   serialize :data, Hash
   before_validation(:unless=>:data) { |record| record.data = {} }
-  validate { |record| record.errors.add :data, "Must be a hash" unless Hash === record.data }
+  validate { |task| task.errors.add :data, "Must be a hash" unless Hash === task.data }
 
 
   # -- Status --
@@ -330,6 +332,98 @@ class Task < ActiveRecord::Base
   end
 
 
+  # -- Activities --
+
+  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at desc', :dependent=>:delete_all
+
+  before_create do |task|
+    creator = task.in_role(:creator).first
+    task.modified_by ||= creator
+    task.activities.build :person=>creator, :name=>:created if creator
+    task.activities.build :person=>task.owner, :name=>:owns if task.owner
+  end
+
+  before_update do |task|
+    past_owner, owner = task.changes['owner']
+    if owner
+      task.activities.build :person=>owner, :name=>:owns
+      task.activities.build :person=>task.modified_by, :name=>:delegated if task.modified_by != owner
+    else
+      task.activities.build :person=>past_owner, :name=>:released
+    end
+
+    if task.status_changed?
+      case task.status
+      when :active, :available
+        task.activities.build :person=>task.modified_by, :name=>:resumed if task.status_was == 'suspended' && task.modified_by
+      when :suspended
+        task.activities.build :person=>task.modified_by, :name=>:suspended if task.modified_by
+      when :completed
+        task.activities.build :person=>task.owner, :name=>:completed
+      when :cancelled
+        task.activities.build :person=>task.modified_by, :name=>:cancelled if task.modified_by
+      end
+    end
+  
+    changed = task.changed - ['status', 'owner']
+    task.activities.build :person=>task.modified_by, :name=>:modified unless changed.empty?
+  end
+
+
+  # -- Access Control --
+
+  # The person creating/updating this task.
+  attr_accessor :modified_by
+  
+  # Returns true if this person can own the task. Potential owners and supervisors can own the task,
+  # excluded owners cannot (even if they appear in the other list).
+  def can_own?(person)
+    (in_role?(:potential_owner, person) || in_role?(:supervisor, person)) && !in_role?(:excluded_owner, person)
+  end
+
+  validate_on_update do |task|
+    by_supervisor = task.in_role?(:supervisor, task.modified_by)
+    past_owner, owner = task.changes['owner']
+    if past_owner != owner
+      if owner
+        task.errors.add :owner, "#{owner.to_param} is not allowed to claim task" unless task.can_own?(owner)
+      end
+      if past_owner # owned, so delegating to someone else
+        task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.modified_by == past_owner || by_supervisor
+      end
+    end
+
+    if task.status_changed?
+      case task.status_was
+      when 'suspended'
+        task.errors.add :status, "Only supervisor is allowed to resume this task" unless task.cancelled? || by_supervisor
+      end
+
+      case task.status
+      when :available, :active
+        task.errors.add :status, "Only supervisor is allowed to resume this task" if task.status_was == 'suspended' && !by_supervisor
+      when :suspended
+        task.errors.add :status, "Only supervisor is allowed to suspend this task" unless by_supervisor
+      when :completed
+        task.errors.add :status, "Only owner can complete task" unless task.owner == task.modified_by
+      when :cancelled
+        task.errors.add :status, "Only supervisor allowed to cancel this task" unless by_supervisor
+      end
+    end
+
+    unless by_supervisor
+      # Supervisors can change anything, owners only data, status is looked at separately. 
+      changed = task.changed - ['status', 'owner']
+      changed -= ['data'] if task.owner == task.modified_by
+      unless changed.empty?
+        task.errors.add_to_base "You are not allowed to change the attributes #{changed.to_sentence}"
+      end
+    end
+  end
+
+
+
+
 
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
@@ -337,7 +431,9 @@ class Task < ActiveRecord::Base
 
   def clone
     returning super do |clone|
-      clone.stakeholders = stakeholders.map(&:clone)
+      stakeholders.each do |sh|
+        clone.stakeholders.build :role=>sh.role, :person=>sh.person
+      end
     end
   end
 
@@ -433,41 +529,6 @@ class Task < ActiveRecord::Base
   belongs_to :context
 
 
-  # --- Activities ---
-
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at DESC', :dependent=>:delete_all
-
-  def log_activity(person, name)
-    person ||= modified_by
-    activities.build :person=>person, :name=>name if person
-  end
-
-  LOG_CHANGE_ATTRIBUTES = [:title, :description, :priority, :due_on]
-
-  before_save do |task|
-    if task.status_changed?
-      from, to = task.status_change
-      task.log_activity task.creator, 'created' if from.nil? || from == 'reserved'
-      case to
-      when 'ready'
-        task.log_activity nil, 'resumed' if from == 'suspended'
-        task.log_activity nil, 'released' if from == 'active'
-      when 'active'
-        task.log_activity nil, 'resumed' if from == 'suspended'
-        task.log_activity task.owner, 'owner' if task.changed.include?('owner')
-      when 'suspended' then task.log_activity nil, 'suspended'
-      when 'completed' then task.log_activity task.owner, 'completed'
-      when 'cancelled' then task.log_activity nil, 'cancelled'
-      end
-    elsif task.changed.include?('owner')
-      # TODO: get this working!
-      task.log_activity task.owner, 'owner'
-    elsif task.changed.any? { |attr| LOG_CHANGE_ATTRIBUTES.include?(attr) }
-      task.log_activity nil, 'updated'
-    end
-  end
-
-
   # --- Completion and cancellation ---
 
   validates_url :outcome_url, :if=>:outcome_url
@@ -515,39 +576,6 @@ class Task < ActiveRecord::Base
 
 
   # --- Access control ---
-
-
-
-#  enumerable :cancellation, [:admin, :owner], :default=>:admin
-
-  def can_delegate?(person)
-    (owner?(person) && active? && !(potential_owners - [owner]).empty?) || (admin?(person) && (active? || ready?))
-  end
-
-  def filter_update_for(person)
-    if admin?(person) || person.admin?
-      # Administrator can change anything, but make sure to retain as administrator,
-      # and limit status change to active/suspended.
-      lambda { |attrs|
-        status = attrs[:status].to_s
-        attrs.update('suspended'=> status == 'suspended') if ['active', 'suspended'].include?(status)
-        attrs.update(:admins=>Array(attrs[:admins]) << person) }
-    elsif active?
-      if owner?(person)
-        # Owner is allowed to change ownership and task data, but only release if there
-        # are other potential owners.  Owner also allowed to change task data.
-        lambda { |attrs|
-          released = attrs.has_key?(:owner) && attrs[:owner].blank?
-          attrs.slice!(:owner, :data) unless released && (potential_owners - [owner]).empty? }
-      elsif potential_owner?(person)
-        # Potential owner allowed to claim unclaimed task.
-        lambda { |attrs|
-          attrs.slice!(:owner) if person.same_as?(attrs[:owner]) && owner.nil? }
-      end
-    end
-  end
-
-  attr_protected :access_key
 
   # Returns a token allowing that particular person to access the task.
   # The token is validated by calling #authorize.  The token is only valid

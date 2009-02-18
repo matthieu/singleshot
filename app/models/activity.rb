@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Activity stream records who did what to which task. Activities are logged
+# when updating at task.
+#
 # == Schema Information
 # Schema version: 20090206215123
 #
@@ -27,18 +30,21 @@
 #
 class Activity < ActiveRecord::Base
 
-  belongs_to :person
-  validates_presence_of :person_id
-  
+  # Activity associated with a task.
   belongs_to :task
-  validates_presence_of :task
+
+  # Activity associated with a person.
+  belongs_to :person
+  validates_presence_of :person
   
+  symbolize :name
   validates_presence_of :name
 
   def readonly? #:nodoc:
     !new_record?
   end
 
+=begin
   # Eager loads all activities and their dependents (task, person).
   named_scope :with_dependents, :include=>[:task, :person]
 
@@ -58,5 +64,6 @@ class Activity < ActiveRecord::Base
 
   # Returns activities by recently added order.
   default_scope :order=>'created_at desc'
+=end
 
 end

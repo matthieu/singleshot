@@ -29,6 +29,7 @@ require File.dirname(__FILE__) + '/helpers'
 #  created_at :datetime        not null
 #
 describe Stakeholder do
+
   describe 'new' do
     subject { Stakeholder.make_unsaved }
 
@@ -39,7 +40,7 @@ describe Stakeholder do
 
     it { should have_attribute(:role, :string, :null=>false) }
     it { should validate_presence_of(:role) }
-    it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner], :not_in=>:foo) }
+    it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner, :past_owner], :not_in=>:foo) }
     it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
   end
 

@@ -50,7 +50,6 @@ class CreateTasks < ActiveRecord::Migration
       t.string      :name,        :null => false
       t.datetime    :created_at,  :null => false
     end
-    add_index :activities, [:person_id, :task_id, :name], :unique => true
   end
 
   def self.down
