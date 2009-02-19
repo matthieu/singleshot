@@ -168,7 +168,9 @@ class Person < ActiveRecord::Base
     #   task.update_attributes :status=>:completed
     def find(*args)
       super.tap do |found|
-        found.modified_by = proxy_owner
+        Array(found).each do |task|
+          task.modified_by = proxy_owner
+        end
       end
     end
 
