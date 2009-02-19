@@ -152,7 +152,7 @@ class Person < ActiveRecord::Base
     def create(attributes = {})
       Task.create attributes do |task|
         task.modified_by = proxy_owner
-        task.associate :creator=>proxy_owner if task.in_role(:creator).empty?
+        task.stakeholders.build :role=>:creator, :person=>proxy_owner if task.in_role(:creator).empty?
       end
     end
 
