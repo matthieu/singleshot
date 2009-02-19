@@ -1,73 +1,81 @@
-Given /^the person (.*) exists$/ do |name|
+Given /^the person (\S*) exists$/ do |name|
   Person.identify(name) rescue Person.create!(:email=>"#{name}@example.com", :password=>'secret')
 end
 
-Given /^a newly created task$/ do
+Given /^a newly created task "(.*)"$/ do |title|
   Given "the person creator exists"
-  @task = Person.identify('creator').tasks.create!(:title=>'newly created task')
+  Person.identify('creator').tasks.create!(:title=>title)
 end
 
-Given /^a newly created task assigned to (.*)$/ do |person|
+Given /^a newly created task "(.*)" assigned to (\S*)$/ do |title, person|
   Given "the person creator exists"
   Given "the person #{person} exists"
-  @task = Person.identify('creator').tasks.create!(:title=>'newly created task', :owner=>Person.identify(person))
+  Person.identify('creator').tasks.create!(:title=>title, :owner=>Person.identify(person))
 end
 
-Given /^owner (.*)$/ do |person|
+Given /^owner (\S*) for "(.*)"$/ do |person, title|
   Given "the person #{person} exists"
-  @task.stakeholders.create! :role=>:owner, :person=>Person.identify(person)
+  Task.find_by_title(title).stakeholders.create! :role=>:owner, :person=>Person.identify(person)
 end
 
-Given /^potential owners (.*)$/ do |people|
+Given /^potential owners (.*) for "(.*)"$/ do |people, title|
+  task = Task.find_by_title(title)
   people.split(/,\s*/).each do |person|
     Given "the person #{person} exists"
-    @task.stakeholders.build :role=>:potential_owner, :person=>Person.identify(person)
+    task.stakeholders.build :role=>:potential_owner, :person=>Person.identify(person)
   end
-  @task.save!
+  task.save!
 end
 
-Given /^supervisor (.*)$/ do |person|
+Given /^supervisor (\S*) for "(.*)"$/ do |person, title|
   Given "the person #{person} exists"
-  @task.stakeholders.create! :role=>:supervisor, :person=>Person.identify(person)
+  Task.find_by_title(title).stakeholders.create! :role=>:supervisor, :person=>Person.identify(person)
 end
 
 
-When /^(.*) claims task$/ do |person|
+When /^(\S*) claims task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :owner=>Person.identify(person)
+end
+
+When /^(\S*) delegates task "(.*)" to (\S*)$/ do |person, title, designated|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :owner=>Person.identify(designated)
+end
+
+When /^(\S*) releases task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :owner=>nil
+end
+
+When /^(\S*) suspends task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :status=>:suspended
+end
+
+When /^(\S*) resumes task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :status=>:active
+end
+
+When /^(\S*) cancels task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :status=>:cancelled
+end
+
+When /^(\S*) completes task "(.*)"$/ do |person, title|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! :status=>:completed
+end
+
+When /^(\S*) modifies (\S*) of task "(.*)" to (.*)$/ do |person, attribute, title, value|
+  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
+  task.update_attributes! attribute=>value
+end
+
+
+Then /^activity log should show (\S*) (\S*) "(.*)"$/ do |person, name, title|
   person = Person.identify(person)
-  person.tasks.find(@task).update_attributes! :owner=>person
-end
-
-When /^(.*) delegates task to (.*)$/ do |by, to|
-  Person.identify(by).tasks.find(@task).update_attributes! :owner=>Person.identify(to)
-end
-
-When /^(.*) releases task$/ do |person|
-  Person.identify(person).tasks.find(@task).update_attributes! :owner=>nil
-end
-
-When /^(.*) suspends task$/ do |person|
-  Person.identify(person).tasks.find(@task).update_attributes! :status=>:suspended
-end
-
-When /^(.*) resumes task$/ do |person|
-  Person.identify(person).tasks.find(@task).update_attributes! :status=>:active
-end
-
-When /^(.*) cancels task$/ do |person|
-  Person.identify(person).tasks.find(@task).update_attributes! :status=>:cancelled
-end
-
-When /^(.*) completes task$/ do |person|
-  Person.identify(person).tasks.find(@task).update_attributes! :status=>:completed
-end
-
-When /^(.*) modifies task (.*)$/ do |person, attribute|
-  Person.identify(person).tasks.find(@task).update_attributes! attribute=>@task.send(attribute).upcase
-end
-
-
-Then /^activity log should show (.*) (.*) task$/ do |person, name|
-  person = Person.identify(person)
-  Task.find(@task).activities.any? { |activity| activity.name.to_s == name && activity.person == person } or
-    fail "Did not find {#{person.to_param} #{name} '#{@task.title}'}"
+  Task.find_by_title(title).activities.any? { |activity| activity.name.to_s == name && activity.person == person } or
+    fail "Did not find {#{person.to_param} #{name} "#{title}"}"
 end
