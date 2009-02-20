@@ -117,4 +117,25 @@ describe Person do
     it('should fail if no person identified')     { should_not identify('missing') }
   end
 
+  describe 'tasks' do
+    describe 'create' do
+      it 'should return new task, modified_by person'
+      it 'should associate task with person as creator'
+      it 'should leave specified creator intact'
+      it 'should attempt to save task'
+    end
+
+    describe 'create!' do
+      it 'should return task if new task created'
+      it 'should raise error unless task created'
+    end
+
+    describe 'find' do
+      it 'should return the task, modified_by person'
+      it 'should return tasks, modified_by person'
+      it 'should not return tasks inaccessible to person'
+    end
+
+  end
+
 end
