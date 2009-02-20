@@ -39,12 +39,10 @@ class ActivityPresenter < Presenter::Base #:nodoc:
     I18n.t("activity.entry.#{format}", :person=>person, :task=>task, :names=>names)
   end
   
-  def hash_for(activity)
-    task, person = activity.task, activity.person
-    { :id=>id_for(activity), :name=>activity.name, :published=>activity.created_at,
-      :task=>{ :id=>id_for(task), :url=>task_url(task), :title=>task.title },
-      :person=>{ :id=>person.identity, :url=>person.url, :name=>person.fullname }
-    }
+  def to_hash
+    super do |hash|
+      hash['person'] = activity.person.to_param
+    end
   end
         
 end

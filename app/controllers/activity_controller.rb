@@ -16,22 +16,24 @@
 
 class ActivityController < ApplicationController #:nodoc:
 
+  respond_to :html, :json, :xml, :atom, :ics
+
   def index
     @title = I18n.t('activity.index.title')
     @subtitle = I18n.t('activity.index.subtitle')
-    for_stakeholder = Activity.for_stakeholder(authenticated)
-    @activities = for_stakeholder.with_dependents.paginate(:page=>params['page'], :per_page=>50)
-    respond_to do |want|
-      want.html do
-        @atom_feed_url = activity_url(:format=>:atom, :access_key=>authenticated.access_key)
-        @next = activity_url(:page=>@activities.next_page) if @activities.next_page
-        @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
-        @graph = for_stakeholder.for_dates(Date.current - 1.month)
-      end
-      want.atom { @root_url = activity_url }
-      want.json { render :json=>@activities, :callback=>params[:callback] }
-      want.xml { render :xml=>@activities }
-    end
+    @activities = Activity.for(authenticated).paginate(:page=>params['page'], :per_page=>50)
+    present @activities, :name=>:activities
+    #respond_to do |want|
+    #  want.html do
+    #    @atom_feed_url = activity_url(:format=>:atom, :access_key=>authenticated.access_key)
+    #    @next = activity_url(:page=>@activities.next_page) if @activities.next_page
+    #    @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
+    #    @graph = for_stakeholder.for_dates(Date.current - 1.month)
+    #  end
+    #  want.atom { @root_url = activity_url }
+    #  want.json { render :json=>@activities, :callback=>params[:callback] }
+    #  want.xml { render :xml=>@activities }
+    #end
   end
 
 end
