@@ -86,23 +86,3 @@ When /^"(.*)" modifies (\S*) of task "(.*)" to (.*)$/ do |person, attribute, tit
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
   task.update_attributes! attribute=>value
 end
-
-
-Then /^activity log should show "(\S*) (\S*) (.*)"$/ do |person, name, title|
-  http_accept :json
-  visit "/activity"
-  fail "You forgot to authenticate!" if response.code == "401"
-  activities = ActiveSupport::JSON.decode(response_body)['activities']
-  fail "No activities returned" unless activities
-  matching = activities.select { |activity| activity['name'] == name && activity['person'] == person && activity['task']['title'] == title }
-  matching.should_not be_empty
-end
-
-Then /^last activity in log should show "(\S*) (\S*) (.*)"$/ do |person, name, title|
-  http_accept :json
-  visit "/activity"
-  fail "You forgot to authenticate!" if response.code == "401"
-  activity = ActiveSupport::JSON.decode(response_body)['activities'].last
-  fail "No activities returned" unless activity
-  [activity['person'], activity['name'], activity['task']['title']].should == [person, name, title]
-end

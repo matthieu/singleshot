@@ -3,6 +3,9 @@ def path_to(page_name)
   
   when /the homepage/i
     root_path
+
+  when /activity page/i
+    activity_path
   
   # Add more page name => path mappings here
   
