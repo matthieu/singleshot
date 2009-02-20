@@ -171,7 +171,7 @@ class TasksController < ApplicationController #:nodoc:
 private
 
   def set_task
-    @task = Task.for_stakeholder(authenticated).with_stakeholders.find(params[:id])
+    @task = authenticated.tasks.find(params[:id])
   end
 
   # Determines the outcome content type based on the request content type.
