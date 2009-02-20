@@ -306,6 +306,7 @@ describe Task do
 
     it { should be_available }
     it('should have creator') { subject.in_role(:creator).should == [Person.creator] }
+    it('should have supervisor') { subject.in_role(:supervisor).should == [Person.creator] }
     it('should not have owner') { subject.owner.should be_nil }
     it { should log_activity(Person.creator, :created) }
   end
