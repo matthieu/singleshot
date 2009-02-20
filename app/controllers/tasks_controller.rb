@@ -16,12 +16,21 @@
 
 class TasksController < ApplicationController #:nodoc:
 
-  verify :params=>:task, :only=>:update, :render=>{:text=>'Missing task', :status=>:bad_request}
-  before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
+  verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
+  #before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
   skip_filter :authenticate, :only=>[:opensearch]
 
 
   respond_to :html, :json, :xml, :atom, :ics
+
+
+  def create
+    task = authenticated.tasks.create!(params[:task])
+    respond_with presenting(task), :action=>'show', :status=>:created, :location=>task
+  end
+
+
+
 
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
@@ -65,11 +74,6 @@ class TasksController < ApplicationController #:nodoc:
     render :template=>'tasks/opensearch.builder', :content_type=>'application/opensearchdescription', :layout=>false
   end
 
-
-  def create
-    @task = Task.create!(params[:task])
-    respond_with @task, :action=>'show', :status=>:created, :location=>@task
-  end
 
   def show
     @title = @task.title
