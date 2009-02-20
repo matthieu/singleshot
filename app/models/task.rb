@@ -346,8 +346,8 @@ class Task < ActiveRecord::Base
   before_update do |task|
     past_owner, owner = task.changes['owner']
     if owner
-      task.activities.build :person=>owner, :name=>:owns
       task.activities.build :person=>task.modified_by, :name=>:delegated if task.modified_by != owner
+      task.activities.build :person=>owner, :name=>:owns
     else
       task.activities.build :person=>past_owner, :name=>:released
     end

@@ -49,4 +49,7 @@ describe Activity do
     it { should be_readonly }
   end
 
+  describe 'for scope'
+  describe 'default scope'
+
 end

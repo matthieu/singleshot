@@ -40,30 +40,31 @@ class Activity < ActiveRecord::Base
   symbolize :name
   validates_presence_of :name
 
+  attr_readable :name, :task, :person, :created_at
+
   def readonly? #:nodoc:
     !new_record?
   end
 
-=begin
-  # Eager loads all activities and their dependents (task, person).
-  named_scope :with_dependents, :include=>[:task, :person]
-
   # Returns activities from all tasks associated with this stakeholder.
-  named_scope :for_stakeholder, lambda { |person|
+  named_scope :for, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
-      :conditions=>["involved.person_id=? AND involved.role != 'excluded'", person.id],
-      :order=>'activities.created_at DESC', :group=>'activities.task_id, activities.person_id, activities.name' } }
-
+      :conditions=>["involved.person_id=?", person.id], :include=>[:task, :person],
+      :order=>'activities.created_at desc' } }
+=begin
   # Returns activities for a range of dates (from..to) or from a given date to today.
-  named_scope :for_dates, lambda { |arg|
+  named_scope :during, lambda { |arg|
     range = case arg
     when Date, Time; arg.to_time.in_time_zone.beginning_of_day..Time.current.end_of_day
     when Range;      arg.first.to_time.in_time_zone.beginning_of_day..arg.last.to_time.in_time_zone.end_of_day
     end
     { :conditions=>{ :created_at=>range } } }
 
+  # Eager loads all activities and their dependents (task, person).
+  named_scope :with_dependents, :include=>[:task, :person]
+=end
+
   # Returns activities by recently added order.
   default_scope :order=>'created_at desc'
-=end
 
 end

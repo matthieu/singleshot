@@ -77,7 +77,7 @@ class TasksController < ApplicationController #:nodoc:
 #                   Mime::ICS=>task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
 #                   Mime::ATOM=>task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
     @alternate = {}
-    respond_with @task
+    present @task
     #wants.ics  do
     #  @title = @task.title
     #  @tasks = [@task]
