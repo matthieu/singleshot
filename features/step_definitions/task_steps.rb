@@ -14,33 +14,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^the person (\S*) exists$/ do |name|
-  Person.identify(name) rescue Person.create!(:email=>"#{name}@example.com", :password=>'secret')
-end
-
 Given /^a newly created task "([^"]*)"$/ do |title|
-  Given "the person creator exists"
+  Given %{the person "creator"}
   Person.identify('creator').tasks.create!(:title=>title)
 end
 
 Given /^a newly created task "(.*?)" assigned to "(\S*)"$/ do |title, person|
-  Given "the person creator exists"
-  Given "the person #{person} exists"
+  Given %{the person "creator"}
+  Given %{the person "#{person}"}
   Person.identify('creator').tasks.create!(:title=>title, :owner=>Person.identify(person))
 end
 
 Given /^owner "(.*)" for "(.*)"$/ do |person, title|
-  Given "the person #{person} exists"
+  Given %{the person "#{person}"}
   Task.find_by_title(title).stakeholders.create! :role=>:owner, :person=>Person.identify(person)
 end
 
 Given /^potential owner "(.*)" for "(.*)"$/ do |person, title|
-  Given "the person #{person} exists"
+  Given %{the person "#{person}"}
   Task.find_by_title(title).stakeholders.create! :role=>:potential_owner, :person=>Person.identify(person)
 end
 
 Given /^supervisor "(.*)" for "(.*)"$/ do |person, title|
-  Given "the person #{person} exists"
+  Given %{the person "#{person}"}
   Task.find_by_title(title).stakeholders.create! :role=>:supervisor, :person=>Person.identify(person)
 end
 
@@ -85,4 +81,39 @@ end
 When /^"(.*)" modifies (\S*) of task "(.*)" to (.*)$/ do |person, attribute, title, value|
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
   task.update_attributes! attribute=>value
+end
+
+
+
+When /^I create a new task with this request$/ do |request|
+  http_accept :json
+  request_page '/tasks', :post, ActiveSupport::JSON.decode(request)
+  status.should == 201
+  response.content_type.should == Mime::JSON
+  response.location.should == task_url(Task.last)
+end
+
+Then /^the response should be a task$/ do
+  json = ActiveSupport::JSON.decode(body)
+  json.keys.should == ['task']
+end
+
+Then /^the (.*) of the response task should be "(.*)"$/ do |attribute, value|
+  task = ActiveSupport::JSON.decode(body)['task']
+  case attribute
+  when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
+    task['stakeholders'].select { |sh| sh['role'] == attribute }.map { |sh| sh['person'] }.should include(value)
+  else
+    task[attribute].should == value
+  end
+end
+
+Then /^the response task should have no (.*)$/ do |attribute|
+  task = ActiveSupport::JSON.decode(body)['task']
+  case attribute
+  when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
+    task['stakeholders'].select { |sh| sh['role'] == attribute }.should be_empty
+  else
+    task[attribute].should be_nil
+  end
 end
