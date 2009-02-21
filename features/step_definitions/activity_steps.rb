@@ -14,21 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Then /^activity log should include "(\S*) (\S*) (.*)"$/ do |person, name, title|
-  http_accept :json
-  visit path_to('activity page')
-  fail "You forgot to authenticate!" if response.code == "401"
-  activities = ActiveSupport::JSON.decode(response_body)['activities']
-  fail "No activities returned" unless activities
-  matching = activities.select { |activity| activity['name'] == name && activity['person'] == person && activity['task']['title'] == title }
-  matching.should_not be_empty
-end
-
-Then /^last activity in log should be "(\S*) (\S*) (.*)"$/ do |person, name, title|
-  http_accept :json
-  visit "/activity"
-  fail "You forgot to authenticate!" if response.code == "401"
-  activity = ActiveSupport::JSON.decode(response_body)['activities'].last
-  fail "No activities returned" unless activity
-  [activity['person'], activity['name'], activity['task']['title']].should == [person, name, title]
+Then /^the activity log shows the entries$/ do |entries|
+  activities = Activity.all(:order=>'id').map { |activity| [activity.person.to_param, activity.name, activity.task.title].join(" ") }
+  activities.should == entries.split("\n")
 end

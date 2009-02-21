@@ -14,106 +14,49 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^a newly created task "([^"]*)"$/ do |title|
-  Given %{the person "creator"}
-  Person.identify('creator').tasks.create!(:title=>title)
+Given /^the task "(.*)" created by (\S*)$/ do |title, person|
+  Given "the person #{person}"
+  Person.identify(person).tasks.create!(:title=>title)
 end
 
-Given /^a newly created task "(.*?)" assigned to "(\S*)"$/ do |title, person|
-  Given %{the person "creator"}
-  Given %{the person "#{person}"}
-  Person.identify('creator').tasks.create!(:title=>title, :owner=>Person.identify(person))
+Given /^the task "(.*)" created by (.*) and assigned to (.*)$/ do |title, person, owner|
+  Given "the person #{person}"
+  Given "the person #{owner}"
+  Person.identify(person).tasks.create!(:title=>title, :owner=>owner)
 end
 
-Given /^owner "(.*)" for "(.*)"$/ do |person, title|
-  Given %{the person "#{person}"}
-  Task.find_by_title(title).stakeholders.create! :role=>:owner, :person=>Person.identify(person)
-end
-
-Given /^potential owner "(.*)" for "(.*)"$/ do |person, title|
-  Given %{the person "#{person}"}
-  Task.find_by_title(title).stakeholders.create! :role=>:potential_owner, :person=>Person.identify(person)
-end
-
-Given /^supervisor "(.*)" for "(.*)"$/ do |person, title|
-  Given %{the person "#{person}"}
-  Task.find_by_title(title).stakeholders.create! :role=>:supervisor, :person=>Person.identify(person)
+Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
+  Given "the person #{person}"
+  Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_').to_sym, :person=>Person.identify(person)
 end
 
 
-
-When /^"(.*)" claims task "(.*)"$/ do |person, title|
+When /^(.*) (.*) the task "(.*)"$/ do |person, action, title|
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :owner=>Person.identify(person)
-end
-
-When /^"(.*)" delegates task "(.*)" to "(.*)"$/ do |person, title, designated|
-  Person.identify(person)
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :owner=>Person.identify(designated)
-end
-
-When /^"(.*)" releases task "(.*)"$/ do |person, title|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :owner=>nil
-end
-
-When /^"(.*)" suspends task "(.*)"$/ do |person, title|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :status=>:suspended
-end
-
-When /^"(.*)" resumes task "(.*)"$/ do |person, title|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :status=>:active
-end
-
-When /^"(.*)" cancels task "(.*)"$/ do |person, title|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :status=>:cancelled
-end
-
-When /^"(.*)" completes task "(.*)"$/ do |person, title|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! :status=>:completed
-end
-
-When /^"(.*)" modifies (\S*) of task "(.*)" to (.*)$/ do |person, attribute, title, value|
-  task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
-  task.update_attributes! attribute=>value
-end
-
-
-
-When /^I create a new task with this request$/ do |request|
-  http_accept :json
-  request_page '/tasks', :post, ActiveSupport::JSON.decode(request)
-  status.should == 201
-  response.content_type.should == Mime::JSON
-  response.location.should == task_url(Task.last)
-end
-
-Then /^the response should be a task$/ do
-  json = ActiveSupport::JSON.decode(body)
-  json.keys.should == ['task']
-end
-
-Then /^the (.*) of the response task should be "(.*)"$/ do |attribute, value|
-  task = ActiveSupport::JSON.decode(body)['task']
-  case attribute
-  when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
-    task['stakeholders'].select { |sh| sh['role'] == attribute }.map { |sh| sh['person'] }.should include(value)
-  else
-    task[attribute].should == value
+  case action
+  when 'claims'
+    task.update_attributes! :owner=>Person.identify(person)
+  when 'releases'
+    task.update_attributes! :owner=>nil
+  when 'suspends'
+    task.update_attributes! :status=>:suspended
+  when 'resumes'
+    task.update_attributes! :status=>:active
+  when 'completes'
+    task.update_attributes! :status=>:completed
+  when 'cancels'
+    task.update_attributes! :status=>:cancelled
+  else fail "Unknown action #{action}"
   end
 end
 
-Then /^the response task should have no (.*)$/ do |attribute|
-  task = ActiveSupport::JSON.decode(body)['task']
-  case attribute
-  when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
-    task['stakeholders'].select { |sh| sh['role'] == attribute }.should be_empty
-  else
-    task[attribute].should be_nil
-  end
+When /^(.*) modifies the (.*) of task "(.*)" to (.*)$/ do |person, attribute, title, value|
+  Person.identify(person).tasks.find(:first, :conditions=>{:title=>title}).update_attributes! attribute=>value
 end
+
+When /^(.*) delegates the task "(.*)" to (.*)$/ do |person, title, new_owner|
+  Given "the person #{new_owner}"
+  Person.identify(person).tasks.find(:first, :conditions=>{:title=>title}).update_attributes! :owner=>Person.identify(new_owner)
+end
+
+

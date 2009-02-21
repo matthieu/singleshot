@@ -1,93 +1,122 @@
 Feature: activity log
 
-  In order to track who operates on what task
+  In order to know who operated on what task
   As a user of Singleshot
-  I want each task to have an activity log
+  I want an activity log that records changes to the tasks
 
-  Scenario: creating a new task
-    Given a newly created task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "creator created expenses"
 
-  Scenario: creating and claiming a new task
-    Given a newly created task "expenses" assigned to "creator"
-    And I am logged in as "creator"
-    Then activity log should include "creator created expenses"
-    And last activity in log should be "creator owns expenses"
+  Scenario: log shows owner creating task
+    Given the task "expenses" created by scott
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      """
 
-  Scenario: creating and delegating a new task
-    Given a newly created task "expenses" assigned to "owner"
-    And I am logged in as "creator"
-    Then activity log should include "creator created expenses"
-    And last activity in log should be "owner owns expenses"
+  Scenario: log shows owner creating and claiming task
+    Given the task "expenses" created by scott and assigned to scott
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott owns expenses
+      """
 
-  Scenario: potential owner claiming task
-    Given a newly created task "expenses"
-    And potential owner "alice" for "expenses"
-    And potential owner "bob" for "expenses"
-    When "alice" claims task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "alice owns expenses"
+  Scenario: log shows owner creating and delegating task
+    Given the task "expenses" created by scott and assigned to alice
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      alice owns expenses
+      """
 
-  Scenario: owner delegating task
-    Given a newly created task "expenses"
-    And potential owner "alice" for "expenses"
-    And potential owner "bob" for "expenses"
-    And "alice" claims task "expenses"
-    When "alice" delegates task "expenses" to "bob"
-    And I am logged in as "creator"
-    Then activity log should include "alice delegated expenses"
-    Then last activity in log should be "bob owns expenses"
+  Scenario: log shows potential owner claiming task
+    Given the task "expenses" created by scott
+    And alice is potential owner of task "expenses"
+    And bob is potential owner of task "expenses"
+    When alice claims the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      alice owns expenses
+      """
 
-  Scenario: supervisor delegating task
-    Given a newly created task "expenses"
-    And potential owner "alice" for "expenses"
-    And potential owner "bob" for "expenses"
-    And supervisor "chuck" for "expenses"
-    When "chuck" delegates task "expenses" to "alice"
-    And I am logged in as "creator"
-    Then activity log should include "chuck delegated expenses"
-    Then last activity in log should be "alice owns expenses"
+  Scenario: log shows owner delegating task
+    Given the task "expenses" created by scott
+    And alice is owner of task "expenses"
+    And bob is potential owner of task "expenses"
+    When alice delegates the task "expenses" to bob
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      alice delegated expenses
+      bob owns expenses
+      """
 
-  Scenario: owner releases task
-    Given a newly created task "expenses"
-    And owner "alice" for "expenses"
-    When "alice" releases task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "alice released expenses"
+  Scenario: log shows supervisor delegating task
+    Given the task "expenses" created by scott
+    And alice is owner of task "expenses"
+    And bob is potential owner of task "expenses"
+    When scott delegates the task "expenses" to bob
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott delegated expenses
+      bob owns expenses
+      """
 
-  Scenario: supervisor suspending task
-    Given a newly created task "expenses"
-    And supervisor "chuck" for "expenses"
-    When "chuck" suspends task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "chuck suspended expenses"
+  Scenario: log shows owner released task
+    Given the task "expenses" created by scott
+    And alice is owner of task "expenses"
+    When alice releases the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      alice released expenses
+      """
 
-  Scenario: supervisor resuming task
-    Given a newly created task "expenses"
-    And supervisor "chuck" for "expenses"
-    And "chuck" suspends task "expenses"
-    When "chuck" resumes task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "chuck resumed expenses"
+  Scenario: log shows supervisor modified task
+    Given the task "expenses" created by scott
+    When scott modifies the priority of task "expenses" to 5
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott modified expenses
+      """
 
-  Scenario: supervisor cancelling task
-    Given a newly created task "expenses"
-    And supervisor "chuck" for "expenses"
-    When "chuck" cancels task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "chuck cancelled expenses"
+  Scenario: log shows supervisor suspended task
+    Given the task "expenses" created by scott
+    When scott suspends the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott suspended expenses
+      """
 
-  Scenario: owner completing task
-    Given a newly created task "expenses"
-    And owner "alice" for "expenses"
-    When "alice" completes task "expenses"
-    And I am logged in as "creator"
-    Then last activity in log should be "alice completed expenses"
+  Scenario: log shows supervisor resumed task
+    Given the task "expenses" created by scott
+    And scott suspends the task "expenses"
+    When scott resumes the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott suspended expenses
+      scott resumed expenses
+      """
 
-  Scenario: supervisor modifying task
-    Given a newly created task "expenses"
-    And supervisor "chuck" for "expenses"
-    When "chuck" modifies priority of task "expenses" to 5
-    And I am logged in as "creator"
-    Then last activity in log should be "chuck modified expenses"
+  Scenario: log shows supervisor cancelled task
+    Given the task "expenses" created by scott
+    When scott cancels the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      scott cancelled expenses
+      """
+
+  Scenario: log shows owner completed task
+    Given the task "expenses" created by scott
+    And alice is owner of task "expenses"
+    When alice completes the task "expenses"
+    Then the activity log shows the entries
+      """
+      scott created expenses
+      alice completed expenses
+      """

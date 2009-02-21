@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-When /^I am logged in as "(.*)"$/ do |person|
+Given /^I am authenticated as (.*)$/ do |person|
+  Given "the person #{person}"
   basic_auth person, 'secret'
 end

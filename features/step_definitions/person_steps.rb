@@ -14,6 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^the person "(.*)"$/ do |name|
+Given /^the person (.*)$/ do |name|
   Person.identify(name) rescue Person.create!(:email=>"#{name}@example.com", :password=>'secret')
 end
