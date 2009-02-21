@@ -17,9 +17,10 @@ To get the latest copy use one of the following:
   git clone git://github.com/intalio/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
-Gems and setting up the development and test databases, run the setup task:
+dependencies and setting up the development and test databases, run the
+setup.rb script:
 
-  rake setup
+  ruby setup.rb
 
 This will also create a default account using your user name and the password
 'secret'
@@ -60,7 +61,7 @@ we uses the Annotates Models gem to, well, annotate the Rails models with the
 most recent database schema.  So when changing the database schema, follow
 with:
 
-  rake db:annotate
+  /usr/bin/annotate 
 
 Watch the source files for changes, move the schema annotations to their
 rightful place.

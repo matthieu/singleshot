@@ -25,37 +25,14 @@ file 'secret.key' do |task|
 end
 
 
-desc "Run this task first to setup your test/development environment"
-task 'setup'=>['gems:install', 'plugins:install', 'secret.key', 'db:create', 'db:test:clone', 'db:populate']
+task 'setup' do
+  puts <<-TEXT
+    rake setup was a nice idea, but suffered from the classical bootstrapping issue (aka catch-22).
+    So instead, the new way to setup Singleshot is to run:
+      ruby setup.rb
 
+    Like this ...  
 
-namespace 'plugins' do
-  
-  desc "Install all the plugins this app depends on"
-  task 'install' do
-    rb_bin = File.join(Config::CONFIG['bindir'], Config::CONFIG['ruby_install_name'])
-    install = lambda do |url|
-      sh rb_bin, 'script/plugin', 'install', url
-      path = url.pathmap("vendor/plugins/%n")
-      fail "Plugin #{path} not installed!" unless File.directory?(path)
-    end
-    install.call 'git://github.com/zargony/activerecord_symbolize.git'
-    install.call 'git://github.com/assaf/presenter.git'
-  end
-  
-  desc "List installed plugins"
-  task 'list'=>['environment'] do
-    plugins = Rails::Initializer.run.loaded_plugins
-    plugins.each do |plugin|
-      about = plugin.about
-      about['path'] = plugin.directory
-      puts "#{plugin.name}:"
-      width = plugin.about.keys.map(&:size).max
-      plugin.about.keys.sort.each do |name|
-        puts "  %#{width}s: %s" % [name, plugin.about[name]]
-      end
-      puts
-    end
-  end
-  
+  TEXT
+  ruby "setup.rb"
 end

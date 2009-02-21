@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+require 'faker'
+
 Task.blueprint do
   title           { Faker::Lorem.sentence }
   description     { Faker::Lorem.paragraphs(3).join("\n\n") }

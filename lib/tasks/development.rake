@@ -14,25 +14,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require 'faker'
-
-namespace 'db' do
-  desc 'Populate the database with mock values'
-  task 'populate'=>['environment', 'create', 'migrate'] do
-    require Rails.root + 'db/populate'
-    Populate.down
-    Populate.up
-  end
-
-  task 'annotate'=>['environment'] do
-    require 'annotate/annotate_models'
-    AnnotateModels.do_annotations :position=>:before
-  end
+desc 'Populate the database with mock values'
+task 'db:populate'=>['environment', 'db:create', 'db:migrate'] do
+  load Rails.root + 'db/populate.rb'
+  Populate.down
+  Populate.up
 end
 
-namespace 'routes' do
-  task 'annotate' do
-    require 'annotate/annotate_routes'
-    AnnotateRoutes.do_annotate
+
+desc "List installed plugins"
+task 'plugins:list'=>['environment'] do
+  plugins = Rails::Initializer.run.loaded_plugins
+  plugins.each do |plugin|
+    about = plugin.about
+    about['path'] = plugin.directory
+    puts "#{plugin.name}:"
+    width = plugin.about.keys.map(&:size).max
+    plugin.about.keys.sort.each do |name|
+      puts "  %#{width}s: %s" % [name, plugin.about[name]]
+    end
+    puts
   end
 end
