@@ -53,11 +53,11 @@ module Spec::Helpers #:nodoc:
 
     # Expecting the URL path to route as specified by the various options. For example:
     #   it { should route('/login', :controller=>'accounts', :action=>'login')
-    def route(path, options)
-      simple_matcher "route #{path} to #{options.inspect}" do |given, matcher|
-        actual = route_for(options)
-        matcher.failure_message = "expected '#{path}' but got '#{actual}'"
-        actual == path
+    #   it { should route('/post', :post, :controller=>'posts', :action=>'create')
+    def route(method, path, options)
+      simple_matcher "route #{method} #{path} to #{options.inspect}" do |given, matcher|
+        matcher.failure_message = "expected '#{options.inspect}' but got '#{params_from(method, path).inspect}'"
+        params_from(method, path) == options
       end
     end
 

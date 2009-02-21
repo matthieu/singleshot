@@ -16,17 +16,15 @@
 
 class TasksController < ApplicationController #:nodoc:
 
-  verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
   #before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
-  skip_filter :authenticate, :only=>[:opensearch]
+  #skip_filter :authenticate, :only=>[:opensearch]
 
-
-  respond_to :html, :json, :xml, :atom, :ics
-
+  respond_to :html, :json, :xml
+  verify :params=>:task, :only=>[:create], :render=>{:text=>'Missing task', :status=>:bad_request}
 
   def create
-    task = authenticated.tasks.create!(params[:task])
-    respond_with presenting(task), :action=>'show', :status=>:created, :location=>task
+    @task = authenticated.tasks.create!(params[:task])
+    respond_with presenting(@task), :action=>'show', :status=>:created, :location=>@task
   end
 
 

@@ -16,82 +16,76 @@
 
 require File.dirname(__FILE__) + '/helpers'
 
-=begin
 describe TasksController do
   
   controller_name :tasks
   before { controller.use_rails_error_handling! }
 
-
-  describe 'POST /tasks' do
-    before :each do
-      authenticate person('assaf')
+  describe 'create' do
+    it { should route(:post, '/tasks', :controller=>'tasks', :action=>'create') }
+    it 'should require authenctication' do
+      post :create
+      should redirect_to(session_url)
     end
-
-    it 'should map to /tasks/' do
-      route_for(:controller=>'tasks', :action=>'create').should eql('/tasks')
+    it 'should verify parameters include task' do
+      authenticate Person.creator
+      post :create
+      response.code.should == '400'
     end
-
-    it 'should create empty task if no input provided' do
-      post :create, :format=>'json'
-      response.should be_see_other
-      task = Task.find(:first)
-      task.should be_reserved
-      response.headers['Location'].should eql(task_url(task))
+    it 'should require task to have a title' do
+      authenticate Person.creator
+      post :create, :task=>{}, :format=>:json
+      response.code.should == '422'
     end
-
-    it 'should create task from supplied inputs' do
-      post :create, :task=>defaults, :format=>'json'
-      response.should be_created
-      task = Task.find(:first)
-      task.should be_active
-      response.headers['Location'].should eql(task_url(task))
-      defaults.each { |key, val| task.send(key).should eql(val) }
+    it 'should create new task' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      Task.last.title.should == 'expenses'
     end
-
-    it 'should infer XML as outcome MIME type from accepted content type' do
-      request.headers['CONTENT_TYPE'] = Mime::XML.to_s
-      post :create, :task=>defaults
-      Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
+    it 'should set task creator to authenticated person' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      Task.last.in_role(:creator).should == [Person.creator]
     end
-
-    it 'should infer JSON as outcome MIME type from accepted content type' do
-      request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
-      post :create, :task=>defaults
-      Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
+    it 'should set task supervisor to authenticated person' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      Task.last.in_role(:supervisor).should == [Person.creator]
     end
-
-    it 'should default to XML as outcome MIME type for all other content types' do
-      post :create, :task=>defaults
-      Task.find(:first).outcome_type.should eql(Mime::XML.to_s)
+    it 'should return status 201 Created' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      response.code.should == '201'
     end
-
-    it 'should ignore outcome MIME type in request' do
-      request.headers['CONTENT_TYPE'] = Mime::JSON.to_s
-      post :create, :task=>defaults(:outcome_type=>'application/xml')
-      Task.find(:first).outcome_type.should eql(Mime::JSON.to_s)
+    it 'should return location of new task' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      response.location.should == task_url(Task.last)
     end
-
-    it 'should add authenticated user as task admin' do
-      Task.should_receive(:create!) do |params|
-        admins = params[:admins]
-        admins.size.should eql(1)
-        admins.should include(person('assaf'))
-      end
-      post :create, :task=>defaults
+    it 'should render new task (HTML)' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:html
+      response.should render(:template=>'tasks/show.html.erb')
     end
-
-    it 'should set authenticated user as task admin' do
-      Task.should_receive(:create!) do |params|
-        admins = params[:admins]
-        admins.size.should eql(2)
-        admins.should include(person('assaf'), 'alex')
-      end
-      post :create, :task=>defaults(:admins=>['alex'])
+    it 'should render new task (JSON)' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:json
+      ActiveSupport::JSON.decode(response.body)['task']['title'].should == 'expenses'
     end
-
+    it 'should render new task (XML)' do
+      authenticate Person.creator
+      post :create, :task=>{ :title=>'expenses' }, :format=>:xml
+      Hash.from_xml(response.body)['task']['title'].should == 'expenses'
+    end
   end
 
+
+end
+=begin
+describe TasksController do
+  
+  controller_name :tasks
+  before { controller.use_rails_error_handling! }
 
   describe 'GET /tasks/{id}' do
     before :each do

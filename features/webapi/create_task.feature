@@ -1,4 +1,4 @@
-Feature: Task API
+Feature: Creating task using API
 
   In order to write applications to use Singleshot
   As a developer of these applications
