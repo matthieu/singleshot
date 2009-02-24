@@ -17,10 +17,10 @@ To get the latest copy use one of the following:
   git clone git://github.com/intalio/singleshot.git
 
 To setup you development environment, specifically installing all the necessary
-dependencies and setting up the development and test databases, run the
-setup.rb script:
+dependencies and setting up the development and test databases, run the script
+script/setup:
 
-  ruby setup.rb
+  ruby script/setup
 
 This will also create a default account using your user name and the password
 'secret'
@@ -37,7 +37,7 @@ password.
 
 The database is configured in config/databases.yml.  The development and test
 database is set to use SQLite3, and the SQLite3 drive is installed when running
-rake setup.  For production, you should consider using something else (the
+script/setup.  For production, you should consider using something else (the
 default configuration is MySQL).
 
 

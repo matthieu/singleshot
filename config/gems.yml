@@ -1,8 +1,8 @@
 # These gems are part of the application and used in all environments.
 all:
-  'friendly_id':
-    version:  ~> 2.0
-    source:   'http://gems.rubyforge.org'
+#  'friendly_id':
+#    version:  ~> 2.0
+#    source:   'http://gems.rubyforge.org'
   'mislav-will_paginate':
     version:  ~> 2.3.4
     source:   'http://gems.github.com'

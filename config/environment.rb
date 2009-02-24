@@ -34,6 +34,9 @@ Rails::Initializer.run do |config|
   # Activate observers that should always be running
   # config.active_record.observers = :cacher, :garbage_collector, :forum_observer
 
+  secret = File.read(Rails.root + 'secret.key') rescue ActiveSupport::SecureRandom.hex(64)
+  config.action_controller.session = { :key => '_singleshot_session', :secret => secret }
+
   # Set Time.zone default to the specified zone and make Active Record auto-convert to this zone.
   # Run "rake -D time" for a list of tasks for finding time zone names.
   config.time_zone = 'UTC'
