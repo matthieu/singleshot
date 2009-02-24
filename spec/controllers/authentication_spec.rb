@@ -54,12 +54,12 @@ describe AuthenticationController do
   end
 
   describe 'with invalid session' do
-    before { get :index, nil, :person_id=>0 }
+    before { get :index, nil, :authenticated=>0 }
     it { should redirect_to(session_url) }
   end
 
   describe 'with authenticated session' do
-    before { get :index, nil, :person_id=>@person.id }
+    before { get :index, nil, :authenticated=>@person.id }
     it { should respond_with(200) }
     it { should accept_authenticated_user }
     it('should set I18n locale')               { I18n.locale.should == :tlh }

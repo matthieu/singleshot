@@ -22,63 +22,48 @@ describe TasksController do
   before { controller.use_rails_error_handling! }
 
   describe 'create' do
+    before { @params = { :task=>{ :title=>'expenses' }, :format=>:json } }
+
     it { should route(:post, '/tasks', :controller=>'tasks', :action=>'create') }
-    it 'should require authenctication' do
-      post :create
-      should redirect_to(session_url)
-    end
-    it 'should verify parameters include task' do
-      authenticate Person.creator
-      post :create
-      response.code.should == '400'
-    end
-    it 'should require task to have a title' do
-      authenticate Person.creator
-      post :create, :task=>{}, :format=>:json
-      response.code.should == '422'
-    end
-    it 'should create new task' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      Task.last.title.should == 'expenses'
-    end
-    it 'should set task creator to authenticated person' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      Task.last.in_role(:creator).should == [Person.creator]
-    end
-    it 'should set task supervisor to authenticated person' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      Task.last.in_role(:supervisor).should == [Person.creator]
-    end
-    it 'should return status 201 Created' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      response.code.should == '201'
-    end
-    it 'should return location of new task' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      response.location.should == task_url(Task.last)
-    end
-    it 'should render new task (HTML)' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:html
-      response.should render(:template=>'tasks/show.html.erb')
-    end
-    it 'should render new task (JSON)' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:json
-      ActiveSupport::JSON.decode(response.body)['task']['title'].should == 'expenses'
-    end
-    it 'should render new task (XML)' do
-      authenticate Person.creator
-      post :create, :task=>{ :title=>'expenses' }, :format=>:xml
-      Hash.from_xml(response.body)['task']['title'].should == 'expenses'
+    it ('should require authenctication')         { post(:create).should redirect_to(session_url) }
+    it ('should verify parameters include task')  { post(:create, nil, as_creator).should respond_with(400) }
+    it ('should require task to have a title')    { post(:create, { :task=>{}, :format=>:json }, as_creator).should respond_with(422) }
+    it ('should create new task')                 { new_task!.title.should == 'expenses' }
+    it ('should set task creator to authenticated person')    { new_task!.in_role(:creator).first.should == Person.creator }
+    it ('should set task supervisor to authenticated person') { new_task!.in_role(:supervisor).first.should == Person.creator }
+    it ('should return status 201 Created')       { post(:create, @params, as_creator).should respond_with(201) }
+    it ('should return location of new task')     { post(:create, @params, as_creator).should respond_with('Location'=>task_url(Task.last)) }
+    it ('should render new task (HTML)')          { post(:create, @params.merge(:format=>:html), as_creator).should respond_with('tasks/show.html.erb') }
+    it ('should render new task (JSON)')          { parse(:json, post(:create, @params, as_creator))['task']['title'].should == 'expenses' }
+    it ('should render new task (XML)')           { parse(:xml, post(:create, @params.merge(:format=>:xml), as_creator))['task']['title'].should == 'expenses' }
+
+    def new_task!(params = {})
+      post :create, @params.merge(params), as_creator
+      Task.last
     end
   end
 
+  
+
+
+
+
+  def parse(*args)
+    response = args.pop
+    args.shift.to_s.should == response.content_type if Symbol === args.first
+    case response.content_type
+    when Mime::JSON
+      ActiveSupport::JSON.decode(response.body)
+    when Mime::XML
+      Hash.from_xml(response.body)
+    else fail "Don't know how to parse #{response.content_type}"
+    end
+  end
+
+
+  def as_creator
+    session_for(Person.creator)
+  end
 
 end
 =begin

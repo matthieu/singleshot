@@ -50,7 +50,10 @@ class Activity < ActiveRecord::Base
   named_scope :for, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
       :conditions=>["involved.person_id=?", person.id], :include=>[:task, :person],
-      :order=>'activities.created_at desc' } }
+      :order=>'activities.created_at desc, activities.id desc', :group=>'activities.id' }
+    # ^ Ordering by created_at is imprecise and may return two activities out of owner
+    #   (e.g. owns before created).
+  }
 =begin
   # Returns activities for a range of dates (from..to) or from a given date to today.
   named_scope :during, lambda { |arg|
@@ -65,6 +68,6 @@ class Activity < ActiveRecord::Base
 =end
 
   # Returns activities by recently added order.
-  default_scope :order=>'created_at desc'
+  default_scope :order=>'created_at desc, id desc'
 
 end

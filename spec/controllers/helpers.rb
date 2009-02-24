@@ -31,19 +31,24 @@ module Spec::Helpers #:nodoc:
     #
     # Without arguments, authenticates as 'person'.
     def authenticate(person = Person.named('me'))
-      previous, session[:person_id] = session[:person_id], person.id
+      previous, session[:authenticated] = session[:authenticated], person.id
       if block_given?
         begin
           yield
         ensure
-          session[:person_id] = previous
+          session[:authenticated] = previous
         end
       end
+      self
+    end
+
+    def session_for(person)
+      { :authenticated=>person.id }
     end
 
     # Returns the currently authenticated person.
     def authenticated
-      Person.find(session[:person_id]) if session[:person_id] 
+      Person.find(session[:authenticated]) if session[:authenticated] 
     end
 
     # Returns true if the previous request was authenticated and authorized.
@@ -53,8 +58,11 @@ module Spec::Helpers #:nodoc:
 
     # Expecting the URL path to route as specified by the various options. For example:
     #   it { should route('/login', :controller=>'accounts', :action=>'login')
-    #   it { should route('/post', :post, :controller=>'posts', :action=>'create')
-    def route(method, path, options)
+    #   it { should route(:post, '/post', :controller=>'posts', :action=>'create')
+    def route(*args)
+      method = Symbol === args.first ? args.shift : :get
+      path = args.shift
+      options = args.last || {}
       simple_matcher "route #{method} #{path} to #{options.inspect}" do |given, matcher|
         matcher.failure_message = "expected '#{options.inspect}' but got '#{params_from(method, path).inspect}'"
         params_from(method, path) == options
@@ -93,11 +101,20 @@ module Spec::Helpers #:nodoc:
       end
     end
 
-    def respond_with(status, headers = {})
-      simple_matcher "respond with #{status}" do |given, matcher|
-        matcher.failure_message = "expected status #{status} but got #{response.code}"
-        matcher.negative_failure_message = "expected status other than #{status} but got #{status}"
-        response.code == status.to_s
+    def respond_with(*args) #status, headers = {})
+      expect = args.extract_options!.stringify_keys
+      actual = response.headers.slice(*expect.keys)
+      case args.first
+      when Numeric
+        expect['Status'] = args.shift.to_s
+      when String
+        expect['Template'] = args.shift.to_s
+      end
+      actual['Status'] = response.code if expect.has_key?('Status')
+      actual['Template'] = response.rendered[:template].to_s if expect.has_key?('Template')
+      simple_matcher "respond with #{expect.inspect}" do |given, matcher|
+        matcher.failure_message = "expected #{expect.inspect} but got #{actual.inspect}"
+        expect == actual
       end
     end
   end

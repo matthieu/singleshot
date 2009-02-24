@@ -36,7 +36,7 @@ describe SessionsController do
       before { post :create, :login=>@person.identity, :password=>'secret' }
 
       it { should redirect_to(root_url) }
-      it('should store authenticated user in session')  { session[:person_id].should == @person.id }
+      it('should store authenticated user in session')  { session[:authenticated].should == @person.id }
       it('should clear flash')                          { flash.should be_empty }
     end
 
@@ -51,14 +51,14 @@ describe SessionsController do
       before { post :create }
 
       it { should redirect_to(session_url) }
-      it('should have no authencited user in session')  { session[:person_id].should be_nil }
+      it('should have no authencited user in session')  { session[:authenticated].should be_nil }
     end
 
     describe 'wrong credentials' do
       before { post :create, :login=>@person.identity, :password=>'wrong' }
 
       it { should redirect_to(session_url) }
-      it('should have no authencited user in session')  { session[:person_id].should be_nil }
+      it('should have no authencited user in session')  { session[:authenticated].should be_nil }
       it('should have error message in flash')          { flash[:error].should match(/no account/i) }
     end
   end

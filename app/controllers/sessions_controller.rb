@@ -24,7 +24,7 @@ class SessionsController < ApplicationController #:nodoc:
   def create
     login, password = params.values_at(:login, :password)
     if person = Person.authenticate(login, password)
-      session[:person_id] = person.id
+      session[:authenticated] = person.id
       redirect_to session.delete(:return_url) || root_url, :status=>:see_other 
     else
       flash[:error] = 'No account with this login and password.' unless login.blank?

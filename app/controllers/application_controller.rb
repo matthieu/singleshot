@@ -58,7 +58,7 @@ protected
         end
         reset_session
       else
-        @authenticated = Person.find(session[:person_id]) rescue nil
+        @authenticated = Person.find(session[:authenticated]) rescue nil
         unless @authenticated
           # Browsers respond favorably to this test, so we use it to detect browsers
           # and redirect the use to a login page.  Otherwise we assume dumb machine and
