@@ -45,6 +45,20 @@ describe TasksController do
   end
 
 
+  describe 'show' do
+    before { @task = Task.make(:title=>'expenses') }
+    before { @params = { :id=>@task.id } }
+
+    it { should route(:get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1') }
+    it ('should require authentication (HTML)')   { get(:show, @params).should redirect_to(session_url) }
+    it ('should require authentication (JSON)')   { get(:show, @params.merge(:format=>:json)).should respond_with(401) }
+    it ('should reject unauthorized requests')    { get(:show, @params.merge(:format=>:json), as_other).should respond_with(404) }
+    it ('should render task (HTML)')              { get(:show, @params.merge(:format=>:html), as_creator).should respond_with('tasks/show.html.erb') }
+    it ('should render task (JSON)')              { parse(:json, get(:show, @params.merge(:format=>:json), as_creator)).should include('task') }
+    it ('should render task (XML)')               { parse(:xml, get(:show, @params.merge(:format=>:xml), as_creator)).should include('task') }
+  end
+
+
   describe 'update' do
     before { @task = Task.make(:title=>'expenses') }
     before { @params = { :id=>@task.id, :task=>{ 'priority'=>1 } } }
@@ -82,6 +96,10 @@ describe TasksController do
 
   def as_supervisor
     session_for(Person.supervisor)
+  end
+
+  def as_other
+    session_for(Person.other)
   end
 end
 =begin

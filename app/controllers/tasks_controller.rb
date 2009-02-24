@@ -20,11 +20,15 @@ class TasksController < ApplicationController #:nodoc:
 
   respond_to :html, :json, :xml
   verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
-  before_filter :task, :only=>[:update]
+  before_filter :task, :only=>[:show, :update]
 
   def create
     @task = authenticated.tasks.create!(params[:task])
     respond_with presenting(@task), :action=>'show', :status=>:created, :location=>@task
+  end
+
+  def show
+    respond_with presenting(@task), :action=>'show'
   end
 
   verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
@@ -40,7 +44,7 @@ protected
     @task ||= authenticated.tasks.find(params[:id])
   end
 
-
+=begin
 
   def index
     @title, @subtitle = 'Tasks', 'Tasks you are performing or can claim for your own.'
@@ -85,20 +89,6 @@ protected
   end
 
 
-  def show
-    @title = @task.title
-#    @alternate = { Mime::HTML=>task_url(@task),
-#                   Mime::ICS=>task_url(@task, :format=>:ics, :access_key=>authenticated.access_key),
-#                   Mime::ATOM=>task_activity_url(@task, :format=>:atom, :access_key=>authenticated.access_key) }
-    @alternate = {}
-    present @task
-    #wants.ics  do
-    #  @title = @task.title
-    #  @tasks = [@task]
-    #  render :action=>'index'
-    #end
-  end
-
   def complete_redirect
     render :text=>"<script>frames.top.location.href='#{tasks_url}'</script>"
   end
@@ -113,13 +103,6 @@ protected
     end
   end
 
-  def destroy
-    raise ActiveRecord::StaleObjectError, 'This task already completed, you cannot cancel it.' if @task.completed?
-    raise NotAuthorized, 'You are not allowed to cancel this task.' unless @task.can_cancel?(authenticated)
-      @task.cancel!
-    head :ok
-  end
-  
   def activities
     @activities = @task.activities
     @title = "Activities - #{@task.title}"
@@ -136,13 +119,10 @@ protected
 
 private
 
-  def set_task
-    @task = authenticated.tasks.find(params[:id])
-  end
-
   # Determines the outcome content type based on the request content type.
   def suggested_outcome_type
     Task::OUTCOME_MIME_TYPES.include?(request.content_type) ? request.content_type : Mime::XML
   end
+=end
 
 end
