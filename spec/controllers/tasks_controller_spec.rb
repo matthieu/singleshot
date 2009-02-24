@@ -22,19 +22,20 @@ describe TasksController do
   before { controller.use_rails_error_handling! }
 
   describe 'create' do
-    before { @params = { :task=>{ :title=>'expenses' }, :format=>:json } }
+    before { @params = { :task=>{ :title=>'expenses' } } }
 
     it { should route(:post, '/tasks', :controller=>'tasks', :action=>'create') }
-    it ('should require authenctication')         { post(:create).should redirect_to(session_url) }
-    it ('should verify parameters include task')  { post(:create, nil, as_creator).should respond_with(400) }
-    it ('should require task to have a title')    { post(:create, { :task=>{}, :format=>:json }, as_creator).should respond_with(422) }
+    it ('should require authentication (HTML)')   { post(:create, @params).should redirect_to(session_url) }
+    it ('should require authentication (API)')    { post(:create, @params.merge(:format=>:json)).should respond_with(401) }
+    it ('should verify parameters include task')  { post(:create, @params.except(:task), as_creator).should respond_with(400) }
+    it ('should require task to have a title')    { post(:create, { :task=>@params.except(:title), :format=>:json }, as_creator).should respond_with(422) }
     it ('should create new task')                 { new_task!.title.should == 'expenses' }
     it ('should set task creator to authenticated person')    { new_task!.in_role(:creator).first.should == Person.creator }
     it ('should set task supervisor to authenticated person') { new_task!.in_role(:supervisor).first.should == Person.creator }
-    it ('should return status 201 Created')       { post(:create, @params, as_creator).should respond_with(201) }
-    it ('should return location of new task')     { post(:create, @params, as_creator).should respond_with('Location'=>task_url(Task.last)) }
+    it ('should return status 201 Created')       { post(:create, @params.merge(:format=>:json), as_creator).should respond_with(201) }
+    it ('should return location of new task')     { post(:create, @params.merge(:format=>:json), as_creator).should respond_with('Location'=>task_url(Task.last)) }
     it ('should render new task (HTML)')          { post(:create, @params.merge(:format=>:html), as_creator).should respond_with('tasks/show.html.erb') }
-    it ('should render new task (JSON)')          { parse(:json, post(:create, @params, as_creator))['task']['title'].should == 'expenses' }
+    it ('should render new task (JSON)')          { parse(:json, post(:create, @params.merge(:format=>:json), as_creator))['task']['title'].should == 'expenses' }
     it ('should render new task (XML)')           { parse(:xml, post(:create, @params.merge(:format=>:xml), as_creator))['task']['title'].should == 'expenses' }
 
     def new_task!(params = {})
@@ -43,7 +44,21 @@ describe TasksController do
     end
   end
 
-  
+
+  describe 'update' do
+    before { @task = Task.make(:title=>'expenses') }
+    before { @params = { :id=>@task.id, :task=>{ 'priority'=>1 } } }
+
+    it { should route(:put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1') }
+    it ('should require authentication (HTML)')   { put(:update, @params).should redirect_to(session_url) }
+    it ('should require authentication (JSON)')   { put(:update, @params.merge(:format=>:json)).should respond_with(401) }
+    it ('should reject unauthorized requests')    { put(:update, @params.merge(:format=>:json), as_creator).should respond_with(422) }
+    it ('should verify parameters include task')  { put(:update, @params.except(:task), as_supervisor).should respond_with(400) }
+    it ('should render task (HTML)')              { put(:update, @params.merge(:format=>:html), as_supervisor).should respond_with('tasks/show.html.erb') }
+    it ('should render task (JSON)')              { parse(:json, put(:update, @params.merge(:format=>:json), as_supervisor)).should include('task') }
+    it ('should render task (XML)')               { parse(:xml, put(:update, @params.merge(:format=>:xml), as_supervisor)).should include('task') }
+    it ('should modify task')                     { lambda { put(:update, @params, as_supervisor) }.should change { Task.find(@task).priority }.to(1) }
+  end
 
 
 
@@ -65,6 +80,9 @@ describe TasksController do
     session_for(Person.creator)
   end
 
+  def as_supervisor
+    session_for(Person.supervisor)
+  end
 end
 =begin
 describe TasksController do

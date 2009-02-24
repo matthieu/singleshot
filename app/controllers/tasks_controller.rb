@@ -16,17 +16,29 @@
 
 class TasksController < ApplicationController #:nodoc:
 
-  #before_filter :set_task, :only=>[:show, :update, :complete, :destroy]
   #skip_filter :authenticate, :only=>[:opensearch]
 
   respond_to :html, :json, :xml
-  verify :params=>:task, :only=>[:create], :render=>{:text=>'Missing task', :status=>:bad_request}
+  verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
+  before_filter :task, :only=>[:update]
 
   def create
     @task = authenticated.tasks.create!(params[:task])
     respond_with presenting(@task), :action=>'show', :status=>:created, :location=>@task
   end
 
+  verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
+    :render=>{ :text=>'You are not authorized to change this task', :status=>:unauthorized }
+  def update
+    @task.update_attributes! params[:task]
+    respond_with presenting(@task), :action=>'show'
+  end
+
+protected
+
+  def task
+    @task ||= authenticated.tasks.find(params[:id])
+  end
 
 
 
@@ -85,28 +97,6 @@ class TasksController < ApplicationController #:nodoc:
     #  @tasks = [@task]
     #  render :action=>'index'
     #end
-  end
-
-  def update
-    # TODO: rescue ActiveRecord::ReadOnlyRecord
-    @task.modify_by(authenticated).update_attributes!(params[:task])
-
-=begin
-    # TODO: conditional put
-    raise ActiveRecord::StaleObjectError, 'This task already completed.' if @task.completed?
-    input = params[:task]
-    input[:outcome_type] ||= suggested_outcome_type unless @task.outcome_type
-    filter = @task.filter_update_for(authenticated)
-    raise NotAuthorized, 'You are not allowed to change this task.' unless filter
-    input = filter[input]
-    raise NotAuthorized, 'You cannot make this change.' unless input
-    @task.update_attributes! input
-=end
-    respond_to do |wants|
-      wants.html { flash['highlight'] = dom_id(@task) ; redirect_to :back }
-      # TODO: wants.xml
-      # TODO: wants.json
-    end
   end
 
   def complete_redirect
