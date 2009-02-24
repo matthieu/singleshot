@@ -615,4 +615,7 @@ class Task < ActiveRecord::Base
   named_scope :visible, :conditions=>["tasks.status != 'reserved'"]
 
 =end
+
+  named_scope :pending, :limit=>5
+  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
 end

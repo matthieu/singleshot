@@ -75,15 +75,38 @@ describe TasksController do
   end
 
 
+  describe 'index' do
+    before { @tasks = [Task.make(:title=>'expenses'), Task.make(:title=>'tps report')] }
+
+    it { should route(:get, '/tasks', :controller=>'tasks', :action=>'index') }
+    it ('should require authentication (HTML)')   { get(:index).should redirect_to(session_url) }
+    it ('should require authentication (JSON)')   { get(:index, :format=>:json).should respond_with(401) }
+    it ('should render tasks (HTML)')             { get(:index, { :format=>:html }, as_creator).should respond_with('tasks/index.html.erb') }
+    it ('should render tasks (JSON)')             { parse(:json, get(:index, { :format=>:json }, as_creator)).should include('task_list') }
+    it ('should render tasks (XML)')              { parse(:xml, get(:index, { :format=>:xml }, as_creator)).should include('task_list') }
+    it  'should render tasks (Atom)'
+    it  'should render tasks (iCal)'
+    it ('should render tasks for authenticated person') { rendered.proxy_owner.should == Person.creator }
+    it ('should render pending tasks')            { rendered.proxy_scope.proxy_options.should == Task.pending.proxy_options }
+    it ('should load tasks with stakeholders')    { rendered.proxy_options.should == Task.with_stakeholders.proxy_options }
+      
+    def rendered
+      unless @rendered
+        controller.should_receive(:presenting) { |sym, tasks| @rendered = tasks }
+        get :index, { :format=>:html }, as_creator
+      end
+      @rendered
+    end
+  end
 
 
   def parse(*args)
     response = args.pop
-    args.shift.to_s.should == response.content_type if Symbol === args.first
+    response.content_type.should == args.shift.to_s if Symbol === args.first
     case response.content_type
     when Mime::JSON
       ActiveSupport::JSON.decode(response.body)
-    when Mime::XML
+    when Mime::XML, Mime::ATOM
       Hash.from_xml(response.body)
     else fail "Don't know how to parse #{response.content_type}"
     end

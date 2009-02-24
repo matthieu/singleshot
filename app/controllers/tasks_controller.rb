@@ -22,6 +22,11 @@ class TasksController < ApplicationController #:nodoc:
   verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :task, :only=>[:show, :update]
 
+  def index
+    @tasks = authenticated.tasks.pending.with_stakeholders
+    respond_with presenting(:task_list, @tasks), :action=>'index', :to=>[:html, :json, :xml, :atom]
+  end
+
   def create
     @task = authenticated.tasks.create!(params[:task])
     respond_with presenting(@task), :action=>'show', :status=>:created, :location=>@task
