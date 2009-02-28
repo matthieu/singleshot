@@ -14,8 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#require 'rest-open-uri'
-#require 'acts_as_ferret'
 require File.join(Rails.root, 'lib/validators')
 require File.join(Rails.root, 'lib/templates')
 require File.join(Rails.root, 'lib/singleshot')
