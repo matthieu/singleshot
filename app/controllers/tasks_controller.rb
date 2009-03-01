@@ -28,8 +28,8 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def create
-    @task = authenticated.tasks.create!(params[:task])
-    respond_with presenting(@task), :action=>'show', :status=>:created, :location=>@task
+    @task = authenticated.tasks.create!(map_stakeholders(params['task']))
+    respond_with presenting(@task), :status=>:created, :location=>@task
   end
 
   def show
@@ -39,14 +39,20 @@ class TasksController < ApplicationController #:nodoc:
   verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
     :render=>{ :text=>'You are not authorized to change this task', :status=>:unauthorized }
   def update
-    @task.update_attributes! params[:task]
-    respond_with presenting(@task), :action=>'show'
+    @task.update_attributes! map_stakeholders(params[:task])
+    respond_with presenting(@task), :redirect_to=>@task
   end
 
 protected
 
   def task
     @task ||= authenticated.tasks.find(params[:id])
+  end
+
+  def map_stakeholders(attrs)
+    return attrs unless attrs['stakeholders']
+    stakeholders = Array(attrs['stakeholders']).map { |sh| Stakeholder.new :role=>sh['role'], :person=>Person.identify(sh['person']) }
+    attrs.update('stakeholders'=>stakeholders)
   end
 
 =begin

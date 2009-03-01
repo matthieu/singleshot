@@ -27,16 +27,11 @@ ActionController::Routing::Routes.draw do |map|
   end
   map.search '/search', :controller=>'tasks', :action=>'search'
   map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
- 
-  map.activity '/activity', :controller=>'activity', :action=>'index'
-  #map.formatted_activity '/activity.:format', :controller=>'activity', :action=>'index'
-  map.recent_activity '/activity/recent', :controller=>'activity', :action=>'recent'
+
+  map.resources 'activities'
   
   map.sparklines '/sparklines', :controller=>'sparklines'
   map.root :controller=>'application'
-
-  map.resource 'sandwich'
-  map.resource 'survey', :controller=>'survey'
 
   # Install the default routes as the lowest priority.
   map.connect ':controller/:action/:id'

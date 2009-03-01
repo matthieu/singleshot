@@ -6,12 +6,11 @@ atom_feed :root_url=>@root_url do |feed|
   feed.link :href=>@previous, :rel=>'previous', :type=>Mime::ATOM if @previous
   feed.generator 'Singleshot', :version=>Singleshot::VERSION
 
-  grouped = @activities.group_by { |activity| [activity.task, activity.person, activity.created_at] }
-  grouped.each do |(task, person, published), related|
-    feed.entry related.first, :url=>task_url(task) do |entry|
-      related = presenting(related)
-      entry.title related.single_entry(:text)
-      entry.content related.single_entry(:html), :type=>'html'
+  @activities.each do |activity|
+    feed.entry activity, :url=>task_url(activity.task, :format=>nil) do |entry|
+      task, person = activity.task, activity.person
+      entry.title t("activity.expanded.#{activity.name}", :person=>activity.person, :task=>activity.task)
+      #entry.content related.single_entry(:html), :type=>'html'
       entry.author do |author|
         author.name  person ? person.fullname : 'Unknown'
         author.url   person.url if person && person.url

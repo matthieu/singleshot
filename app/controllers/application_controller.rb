@@ -18,10 +18,6 @@ class ApplicationController < ActionController::Base #:nodoc:
 
   helper :all # include all helpers, all the time
 
-  def index
-    redirect_to tasks_url
-  end
-
 protected
 
   # --- Authentication/Security ---

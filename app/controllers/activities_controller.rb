@@ -14,15 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class ActivityController < ApplicationController #:nodoc:
+class ActivitiesController < ApplicationController #:nodoc:
 
   respond_to :html, :json, :xml, :atom, :ics
 
   def index
-    @title = I18n.t('activity.index.title')
-    @subtitle = I18n.t('activity.index.subtitle')
+    @title = t('activity.index.title')
+    @subtitle = t('activity.index.subtitle')
     @activities = Activity.for(authenticated).paginate(:page=>params['page'], :per_page=>50)
-    present @activities, :name=>:activities
+    respond_with presenting(:activities, @activities)
     #respond_to do |want|
     #  want.html do
     #    @atom_feed_url = activity_url(:format=>:atom, :access_key=>authenticated.access_key)
@@ -31,8 +31,6 @@ class ActivityController < ApplicationController #:nodoc:
     #    @graph = for_stakeholder.for_dates(Date.current - 1.month)
     #  end
     #  want.atom { @root_url = activity_url }
-    #  want.json { render :json=>@activities, :callback=>params[:callback] }
-    #  want.xml { render :xml=>@activities }
     #end
   end
 
