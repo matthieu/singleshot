@@ -30,7 +30,6 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources 'activities'
   
-  map.sparklines '/sparklines', :controller=>'sparklines'
   map.root :controller=>'application'
 
   # Install the default routes as the lowest priority.
@@ -38,45 +37,37 @@ ActionController::Routing::Routes.draw do |map|
   map.connect ':controller/:action/:id.:format'
 end
 #== Route Map
-# Generated on 09 Feb 2009 17:41
+# Generated on 01 Mar 2009 01:31
 #
-#             new_session GET    /session/new(.:format)             {:action=>"new", :controller=>"sessions"}
-#            edit_session GET    /session/edit(.:format)            {:action=>"edit", :controller=>"sessions"}
-#                 session GET    /session(.:format)                 {:action=>"show", :controller=>"sessions"}
-#                         PUT    /session(.:format)                 {:action=>"update", :controller=>"sessions"}
-#                         DELETE /session(.:format)                 {:action=>"destroy", :controller=>"sessions"}
-#                         POST   /session(.:format)                 {:action=>"create", :controller=>"sessions"}
-#         completed_tasks GET    /tasks/completed(.:format)         {:action=>"completed", :controller=>"tasks"}
-# complete_redirect_tasks GET    /tasks/complete_redirect(.:format) {:action=>"complete_redirect", :controller=>"tasks"}
-#         following_tasks GET    /tasks/following(.:format)         {:action=>"following", :controller=>"tasks"}
-#                   tasks GET    /tasks(.:format)                   {:action=>"index", :controller=>"tasks"}
-#                         POST   /tasks(.:format)                   {:action=>"create", :controller=>"tasks"}
-#                new_task GET    /tasks/new(.:format)               {:action=>"new", :controller=>"tasks"}
-#               edit_task GET    /tasks/:id/edit(.:format)          {:action=>"edit", :controller=>"tasks"}
-#         activities_task        /tasks/:id/activities(.:format)    {:action=>"activities", :controller=>"tasks"}
-#                    task GET    /tasks/:id(.:format)               {:action=>"show", :controller=>"tasks"}
-#                         PUT    /tasks/:id(.:format)               {:action=>"update", :controller=>"tasks"}
-#                         DELETE /tasks/:id(.:format)               {:action=>"destroy", :controller=>"tasks"}
-#                         POST   /tasks/:id                         {:action=>"complete", :controller=>"tasks"}
-#                         PUT    /tasks/:task_id/for/:person_id     {:action=>"update", :controller=>"task_for"}
-#         task_for_person        /tasks/:task_id/for/:person_id     {:action=>"show", :controller=>"task_for"}
-#                  search        /search                            {:action=>"search", :controller=>"tasks"}
-#             open_search        /search/osd                        {:action=>"opensearch", :controller=>"tasks"}
-#                activity        /activity                          {:action=>"index", :controller=>"activity"}
-#         recent_activity        /activity/recent                   {:action=>"recent", :controller=>"activity"}
-#              sparklines        /sparklines                        {:action=>"index", :controller=>"sparklines"}
-#                    root        /                                  {:action=>"index", :controller=>"application"}
-#            new_sandwich GET    /sandwich/new(.:format)            {:action=>"new", :controller=>"sandwiches"}
-#           edit_sandwich GET    /sandwich/edit(.:format)           {:action=>"edit", :controller=>"sandwiches"}
-#                sandwich GET    /sandwich(.:format)                {:action=>"show", :controller=>"sandwiches"}
-#                         PUT    /sandwich(.:format)                {:action=>"update", :controller=>"sandwiches"}
-#                         DELETE /sandwich(.:format)                {:action=>"destroy", :controller=>"sandwiches"}
-#                         POST   /sandwich(.:format)                {:action=>"create", :controller=>"sandwiches"}
-#              new_survey GET    /survey/new(.:format)              {:action=>"new", :controller=>"survey"}
-#             edit_survey GET    /survey/edit(.:format)             {:action=>"edit", :controller=>"survey"}
-#                  survey GET    /survey(.:format)                  {:action=>"show", :controller=>"survey"}
-#                         PUT    /survey(.:format)                  {:action=>"update", :controller=>"survey"}
-#                         DELETE /survey(.:format)                  {:action=>"destroy", :controller=>"survey"}
-#                         POST   /survey(.:format)                  {:action=>"create", :controller=>"survey"}
+#             new_session GET    /session/new(.:format)             {:controller=>"sessions", :action=>"new"}
+#            edit_session GET    /session/edit(.:format)            {:controller=>"sessions", :action=>"edit"}
+#                 session GET    /session(.:format)                 {:controller=>"sessions", :action=>"show"}
+#                         PUT    /session(.:format)                 {:controller=>"sessions", :action=>"update"}
+#                         DELETE /session(.:format)                 {:controller=>"sessions", :action=>"destroy"}
+#                         POST   /session(.:format)                 {:controller=>"sessions", :action=>"create"}
+#         completed_tasks GET    /tasks/completed(.:format)         {:controller=>"tasks", :action=>"completed"}
+# complete_redirect_tasks GET    /tasks/complete_redirect(.:format) {:controller=>"tasks", :action=>"complete_redirect"}
+#         following_tasks GET    /tasks/following(.:format)         {:controller=>"tasks", :action=>"following"}
+#                   tasks GET    /tasks(.:format)                   {:controller=>"tasks", :action=>"index"}
+#                         POST   /tasks(.:format)                   {:controller=>"tasks", :action=>"create"}
+#                new_task GET    /tasks/new(.:format)               {:controller=>"tasks", :action=>"new"}
+#               edit_task GET    /tasks/:id/edit(.:format)          {:controller=>"tasks", :action=>"edit"}
+#         activities_task        /tasks/:id/activities(.:format)    {:controller=>"tasks", :action=>"activities"}
+#                    task GET    /tasks/:id(.:format)               {:controller=>"tasks", :action=>"show"}
+#                         PUT    /tasks/:id(.:format)               {:controller=>"tasks", :action=>"update"}
+#                         DELETE /tasks/:id(.:format)               {:controller=>"tasks", :action=>"destroy"}
+#                         POST   /tasks/:id                         {:controller=>"tasks", :action=>"complete"}
+#                         PUT    /tasks/:task_id/for/:person_id     {:controller=>"task_for", :action=>"update"}
+#         task_for_person        /tasks/:task_id/for/:person_id     {:controller=>"task_for", :action=>"show"}
+#                  search        /search                            {:controller=>"tasks", :action=>"search"}
+#             open_search        /search/osd                        {:controller=>"tasks", :action=>"opensearch"}
+#              activities GET    /activities(.:format)              {:controller=>"activities", :action=>"index"}
+#                         POST   /activities(.:format)              {:controller=>"activities", :action=>"create"}
+#            new_activity GET    /activities/new(.:format)          {:controller=>"activities", :action=>"new"}
+#           edit_activity GET    /activities/:id/edit(.:format)     {:controller=>"activities", :action=>"edit"}
+#                activity GET    /activities/:id(.:format)          {:controller=>"activities", :action=>"show"}
+#                         PUT    /activities/:id(.:format)          {:controller=>"activities", :action=>"update"}
+#                         DELETE /activities/:id(.:format)          {:controller=>"activities", :action=>"destroy"}
+#                    root        /                                  {:controller=>"application", :action=>"index"}
 #                                /:controller/:action/:id           
 #                                /:controller/:action/:id(.:format) 

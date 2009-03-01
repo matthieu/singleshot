@@ -17,8 +17,3 @@
 require File.join(Rails.root, 'lib/validators')
 require File.join(Rails.root, 'lib/templates')
 require File.join(Rails.root, 'lib/singleshot')
-
-#require 'sparklines'
-#module ApplicationHelper
-#  include SparklinesHelper
-#end
