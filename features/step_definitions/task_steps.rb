@@ -31,7 +31,7 @@ Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
 end
 
 
-When /^(.*) (.*) the task "(.*)"$/ do |person, action, title|
+When /^(\S*) (\S*) the task "(.*)"$/ do |person, action, title|
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
   case action
   when 'claims'
@@ -58,5 +58,3 @@ When /^(.*) delegates the task "(.*)" to (.*)$/ do |person, title, new_owner|
   Given "the person #{new_owner}"
   Person.identify(person).tasks.find(:first, :conditions=>{:title=>title}).update_attributes! :owner=>Person.identify(new_owner)
 end
-
-

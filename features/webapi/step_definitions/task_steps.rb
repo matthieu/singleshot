@@ -14,11 +14,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# Example:
+#   When I post this request to create a task
+#     """
+#     { task: { title: "expenses" }}
+#     """
 When /^I post this request to create a task$/ do |request|
   http_accept :json
   request_page '/tasks', :post, ActiveSupport::JSON.decode(request)
 end
 
+# Example:
+#   When I request json representation of the task "expenses"
+When /^I request (.*) representation of the task "(.*)"$/ do |format, title|
+  http_accept format
+  request_page task_url(Task.find_by_title(title)), :get, nil
+end
+
+
+Then /^the response looks like this$/ do |match|
+  body.should == match
+end
 
 Then /^the response should be a task$/ do
   json = ActiveSupport::JSON.decode(body)
@@ -31,16 +47,30 @@ Then /^the response should be a new task$/ do
   Then "the response should be a task"
 end
 
-Then /^the (.*) of the task should be "(.*)"$/ do |attribute, value|
+Then /^the (.*) of the task should be (.*)$/ do |attribute, value|
   task = ActiveSupport::JSON.decode(body)['task']
   case attribute
   when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
     task['stakeholders'].select { |sh| sh['role'] == attribute }.map { |sh| sh['person'] }.should include(value)
   else
-    task[attribute].should == value
+    task[attribute].inspect.should == value
   end
 end
 
+# Example:
+#   Then the response task title should be "expenses"
+Then /^the response task (.*) should be (.*)$/ do |attribute, value|
+  task = ActiveSupport::JSON.decode(body)['task']
+  case attribute
+  when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
+    task['stakeholders'].select { |sh| sh['role'] == attribute }.map { |sh| sh['person'] }.should include(value)
+  else
+    task[attribute].inspect.should == value
+  end
+end
+
+# Example:
+#   Then the response task should have no supervisor
 Then /^the response task should have no (.*)$/ do |attribute|
   task = ActiveSupport::JSON.decode(body)['task']
   case attribute
@@ -51,8 +81,15 @@ Then /^the response task should have no (.*)$/ do |attribute|
   end
 end
 
-
-
-
-
-
+# Example:
+#   Then people associated with the task are
+#     """
+#     creator: scott
+#     supervisor: alice, bob
+#     """
+Then /^people associated with the task are$/ do |roles_people|
+  expecting = roles_people.split("\n").inject({}) { |hash, line| role, *names = line.split(/[:, ]+/) ; hash.update(role=>Array(names).sort) }
+  actual = ActiveSupport::JSON.decode(body)['task']['stakeholders'].
+    inject({}) { |hash, sh| role = sh['role'] ; hash.update(role=>Array(hash[role]).push(sh['person']).sort) }
+  actual.should == expecting
+end
