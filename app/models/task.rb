@@ -136,9 +136,9 @@ class Task < ActiveRecord::Base
   attr_accessible :stakeholders, :owner
   attr_readable   :stakeholders
 
-  def stakeholders_with_supervisor_access=(stakeholders)
+  def stakeholders_with_supervisor_access=(list)
     raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?(:supervisor, modified_by)
-    stakeholders_without_supervisor_access = stakeholders
+    self.stakeholders_without_supervisor_access = list
   end
   alias_method_chain :stakeholders=, :supervisor_access
 
