@@ -3,9 +3,9 @@
     <%= content_tag 'p', flash[:error], :class=>'error' if flash[:error] %>
     <dl>
       <dt><%= label_tag 'login', t('sessions.login.label') %></dt>
-      <dd><%= text_field_tag 'login', nil, :size=>30, :watermark=>t('sessions.login.hint') %></dd>
+      <dd><%= text_field_tag 'login', nil, :size=>30, :title=>t('sessions.login.hint') %></dd>
       <dt><%= label_tag 'password', t('sessions.password.label') %></dt>
-      <dd><%= password_field_tag 'password', nil, :size=>30, :watermark=>t('sessions.password.hint') %></dd>
+      <dd><%= password_field_tag 'password', nil, :size=>30, :title=>t('sessions.password.hint') %></dd>
       <dd><%= submit_tag t('sessions.login.button'), :class=>'button' %></dd>
     </dl> 
   </fieldset>
