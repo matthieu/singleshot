@@ -6,7 +6,8 @@
   <div id='header'>
     <div class='actions'>
       <%= quick_actions(@task) %>
-      <%= content_tag 'button', 'More Options', :id=>'more_options', :class=>'button-to', :title=>'Click to reveal task details and more options', :alternative=>'Less Options' %>
+      <%= link_to 'More options &raquo;', '#details', :id=>'more_options', :title=>'Click to reveal task details and more options',
+                  :expanded=>'Less options &laquo;' %>
       <%= button_to 'Completed', task_url(@task), :title=>'Click when task completed' if performing && @task.rendering.use_completion_button?  %>
     </div>
     <ul class='tabs'><li><%= link_to truncate(@task.title, 50), '#', :class=>'current', :title=>truncate(strip_tags(@task.description), 250) %></li><li><%= link_to '➠ Inbox', tasks_url, :title=>'Return to tasks list' %></li></ul>
@@ -33,16 +34,17 @@
 <% end %>
 <%= javascript_tag <<JS
 $(function() {
-  $('#more_options').click(function() {
+  $('#more_options').click(function(event) {
     var target = $('#details')
     if (target.is(':visible')) {
       target.slideUp(500)
       $(this).text($(this).data('original'))
     } else {
       $(this).data('original', this.innerHTML)
-      $(this).text($(this).attr('alternative'))
+      $(this).text($(this).attr('expanded'))
       target.slideDown(500)
     }
+    return false;
   })
 
   $('#task_frame').each(function() {

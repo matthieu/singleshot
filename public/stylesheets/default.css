@@ -56,29 +56,6 @@ optgroup {
 form.button-to, form.button-to div {
   display: inline;
 }
-form.button-to input, input.button, input a.button-to, button {
-  font-size: 1em;
-  font-weight: normal;
-  border: none;
-  padding: 0.3em 0.6em 0.3em 0.6em;
-  margin: 0;
-  color: #fff;
-  background-color: #848080;
-  cursor: pointer;
-  text-decoration: none;
-  -moz-border-radius: 2px;
-  -webkit-border-radius: 4px;
-  -webkit-box-shadow: 2px 2px 5px #ccc;
-}
-form.button-to input:hover, input.button:hover, a.button-to:hover, button:hover {
-  border: none;
-  color: #fff;
-  background-color: #504c4c;
-}
-form.button-to input[disabled], input.button[disabled], button[disabled] {
-  background-color: #ccc;
-  cursor: default;
-}
 
 form dl {
   margin: 0 0 1em 0;
