@@ -2,12 +2,12 @@
   <fieldset>
     <%= content_tag 'p', flash[:error], :class=>'error' if flash[:error] %>
     <dl>
-      <dt><label for='login'>Login:</label></dt>
-      <dd><%= text_field_tag 'login', nil, :size=>30 %></dd>
-      <dt><label for='password'>Password:</label></dt>
-      <dd><%= password_field_tag 'password', nil, :size=>30 %></dd>
-      <dd><button class='positive'>Login</button></dd>
+      <dt><%= label_tag 'login', t('sessions.login.label') %></dt>
+      <dd><%= text_field_tag 'login', nil, :size=>30, :watermark=>t('sessions.login.hint') %></dd>
+      <dt><%= label_tag 'password', t('sessions.password.label') %></dt>
+      <dd><%= password_field_tag 'password', nil, :size=>30, :watermark=>t('sessions.password.hint') %></dd>
+      <dd><%= submit_tag t('sessions.login.button'), :class=>'button' %></dd>
     </dl> 
   </fieldset>
 <% end %>
-<%= javascript_tag "$('login').focus()" %>
+<%= javascript_tag "$('#login').focus()" %>

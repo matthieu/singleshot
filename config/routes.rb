@@ -30,7 +30,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources 'activities'
   
-  map.root :controller=>'application'
+  map.root :controller=>'tasks', :action=>'index'
 
   # Install the default routes as the lowest priority.
   map.connect ':controller/:action/:id'

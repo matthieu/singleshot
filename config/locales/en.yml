@@ -28,3 +28,11 @@ en:
       resumed:    "{{person}} resumed {{task}}"
       cancelled:  "{{person}} created {{task}}"
       completed:  "{{person}} completed {{task}}"
+  sessions:
+    login:
+      label:  "Login:"
+      hint:   "Your user name"
+      button: "Login"
+    password:
+      label:  "Password:"
+      hint:   "Your password is case sensitive"

@@ -1,12 +1,6 @@
 COPYRIGHT NOTICES
 -----------------
 
-prototype.js, copyright of Sam Stephenson, licensed under the MIT license.
-http://www.prototypejs.org
-
-script.aculo.us, copyright of Thomas Fuchs, Ivan Krstic, Jon Tirsen and Sammi
-Williams, licensed under the MIT license.  http://script.aculo.us/
-
 RSpec on Rails, licensed under the MIT license:
 RSpec, Copyright (c) 2005-2007 The RSpec Development Team
 ARTS, Copyright (c) 2006 Kevin Clark, Jake Howerton
@@ -36,16 +30,19 @@ SQLite Ruby, copyright of Jamis Buck, licensed under BSD license.
 http://sqlite-ruby.rubyforge.org/
 http://github.com/jamis/sqlite3-ruby/tree/master
 
-Thin, copyright of Marc-Andre Cournoyer, with MIT license but supposedly
-under Ruby license with some GPL code thrown in.  Not a runtime dependency.
-http://code.macournoyer.com/thin/
-http://github.com/macournoyer/thin/
-
 ActiveRecord Symbolize, copyright Andreas Neuhaus, license under the MIT
 license.  http://github.com/zargony/activerecord_symbolize/
 
 Presenter, copyright Assaf Arkin, licensed under the MIT license.
 http://github.com/assaf/presenter/
+
+
+jQuery JavaScript Library, Copyright (c) 2009 John Resig, licensed under the
+MIT and GPL licenses.
+http://docs.jquery.com/License
+
+jQuery Form Watermark, DAER Systems, licensed under the MIT license.
+http://plugins.jquery.com/project/Watermark
 
 
 Silk icon set, copyright of Mark James, licensed under the Creative Commons
