@@ -52,10 +52,13 @@ class Task < ActiveRecord::Base
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-  # -- Descriptive --
+  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :status, :data
+  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :status, :data,
+                  :version, :created_at, :updated_at
 
-  attr_accessible :title, :description, :language
-  attr_readable   :title, :description, :language
+  # -- Descriptive --
+  # title, description, language
+
   validates_presence_of :title  # Title is required, description and language are optional
 
 
@@ -64,19 +67,14 @@ class Task < ActiveRecord::Base
   PRIORITY = 1..5 # Priority ranges from 1 to 5, 1 is the highest priority.
   DEFAULT_PRIORITY = 3 # Default priority is 3.
 
-  attr_accessible :priority, :due_on, :start_on
-  attr_readable   :priority, :due_on, :start_on
   validates_inclusion_of :priority, :in=>PRIORITY
 
   
+  def over_due?
+    # due_on ? (ready? || active?) && due_on < Date.current : false
+  end
 =begin
   
-
-
-  def over_due?
-    due_on ? (ready? || active?) && due_on < Date.current : false
-  end
-
   # If t-0 is the due date for this task, return days past deadline as positive
   # number, calculated so one wee 
   #
@@ -133,8 +131,6 @@ class Task < ActiveRecord::Base
   # Stakeholders and people (as stakeholders) associated with this task.
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
     :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
-  attr_accessible :stakeholders, :owner
-  attr_readable   :stakeholders
 
   def stakeholders_with_supervisor_access=(list)
     raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?(:supervisor, modified_by)
@@ -288,8 +284,6 @@ class Task < ActiveRecord::Base
 
   # -- Data and reference --
 
-  attr_accessible :data
-  attr_readable   :data
   serialize :data, Hash
   before_validation(:unless=>:data) { |record| record.data = {} }
   validate { |task| task.errors.add :data, "Must be a hash" unless Hash === task.data }
@@ -306,8 +300,6 @@ class Task < ActiveRecord::Base
   STATUSES = [:available, :active, :suspended, :completed, :cancelled]
 
   symbolize :status, :in=>STATUSES
-  attr_accessible :status
-  attr_readable   :status
 
   # Check method for each status (active?, completed?, etc).
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
@@ -427,7 +419,6 @@ class Task < ActiveRecord::Base
 
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
-  attr_readable :version, :created_at, :updated_at
 
   def clone
     returning super do |clone|

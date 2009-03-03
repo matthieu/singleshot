@@ -17,8 +17,8 @@
 module TaskHelper
 
   def quick_actions(task)
-    [ task.admin?(authenticated) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
-      task.can_claim?(authenticated) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated),
+    [ authenticated.can_change?(task) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
+      authenticated.can_claim?(task) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated),
                                                                           :method=>:put, :title=>'Claim task')
     ].select { |action| action }.join(' ')
   end
@@ -44,12 +44,12 @@ module TaskHelper
 
   def task_actions(task)
     actions = []
-    actions << button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :method=>:put, :title=>'Cancel this task') if task.can_cancel?(authenticated)
-    if task.can_suspend?(authenticated)
+    actions << button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :method=>:put, :title=>'Cancel this task') if authenticated.can_cancel?(task)
+    if authenticated.can_suspend?(task)
       actions << button_to('Suspend', task_url(task, 'task[status]'=>'suspended'), :method=>:put, :title=>'Suspend this task', :disabled=>task.suspended?)
       actions << button_to('Resume', task_url(task, 'task[status]'=>'active'), :method=>:put, :title=>'Resume this task', :disabled=>!task.suspended?)
     end
-    if task.can_delegate?(authenticated)
+    if authenticated.can_delegate?(task)
       others = task.potential_owners - [@task.owner]
       unless others.empty?
         actions << form_tag(task_url(task), :method=>:put, :class=>'button-to') + 

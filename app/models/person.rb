@@ -185,8 +185,8 @@ class Person < ActiveRecord::Base
   end
 
   # Returns true if this person can delegate the task. Offered to current owner and supervisor.
-  def can_delegate?(task, person)
-    (task.owner == self || task.in_role?(:supervisor, self)) && task.can_own?(person)
+  def can_delegate?(task, person = nil)
+    (task.owner == self || task.in_role?(:supervisor, self)) && (person.nil? || task.can_own?(person))
   end
 
   # Returns true if this person can suspend the task.
@@ -207,6 +207,9 @@ class Person < ActiveRecord::Base
   # Returns true if this person can complete the task. Must be owner of an active task.
   def can_complete?(task)
     task.active? && task.in_role?(:owner, self)
+  end
+
+  def can_change?(task) # TODO: spec and implement
   end
 
 end
