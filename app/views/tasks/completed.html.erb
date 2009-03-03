@@ -1,7 +1,5 @@
-<% graph = @graph.group_by { |updated| updated.to_date }
-   range = graph.last.first..Date.current %>
-<div class='right'><%= sparkline_tag range.map { |date| graph[date] ? graph[date].size : 0 },
-                                     :title=>'Tasks completed each day in the last month' unless graph.empty? %></div>
+<div class='head-sparkline'><span id='sparkline' title="Tasks completed each day in the last month">Loading ...</span></div>
+<%= javascript_tag "$('#sparkline').sparkline([#{@datapoints.call.join(',')}], {type:'bar', barColor: '#aaf'})" %>
 <ol class='dates hfeed'>
   <% for date, tasks in group_by_dates(@tasks, :updated_at) %>
     <li class='date'>

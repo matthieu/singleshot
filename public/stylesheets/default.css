@@ -415,6 +415,9 @@ div.right {
   margin-right: 3em;
 }
 
+.head-sparkline { margin: 2em 3.6em -4em 0; text-align: right }
+
+
 
 /** Login **/
 form.login {

@@ -43,6 +43,14 @@ class TasksController < ApplicationController #:nodoc:
     respond_with presenting(@task), :redirect_to=>@task
   end
 
+  def completed
+    @tasks = authenticated.tasks.completed.with_stakeholders
+    #range = graph.last.first..Date.current %>
+    @graph = lambda { authenticated.tasks.completed.group_by { |task| task.updated_at.to_date }.map { |date, entries| entries.size } }
+    @datapoints = lambda { [5,9,3,0,4,3,2] }
+    respond_with presenting(:task_list, @tasks), :action=>'completed', :to=>[:html, :json, :xml, :atom]
+  end
+
 protected
 
   def task

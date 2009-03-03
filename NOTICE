@@ -16,8 +16,6 @@ licensed under the MIT license.  http://github.com/norman/friendly_id/
 
 Will Paginate, copyright of PJ Hyett and Mislav Marohnić, licensed under MIT
 license. http://github.com/mislav/will_paginate/
-
-Machinist, copyright Peter Yandell, licensed under MIT license.
 http://github.com/notahat/machinist/
 
 Annotate Models, copyright of Cuong Tran, licensed under MIT license.
@@ -37,12 +35,15 @@ Presenter, copyright Assaf Arkin, licensed under the MIT license.
 http://github.com/assaf/presenter/
 
 
-jQuery JavaScript Library, Copyright (c) 2009 John Resig, licensed under the
+jQuery JavaScript Library, copyright of John Resig, licensed under the
 MIT and GPL licenses.
 http://docs.jquery.com/License
 
-jQuery Form Watermark, DAER Systems, licensed under the MIT license.
+jQuery Form Watermark, copyright of DAER Systems, licensed under the MIT license.
 http://plugins.jquery.com/project/Watermark
+
+jQuery Sparkline, copyright of Splunk Inc., licensed under the new BSD license.
+http://omnipotent.net/jquery.sparkline/
 
 
 Silk icon set, copyright of Mark James, licensed under the Creative Commons
