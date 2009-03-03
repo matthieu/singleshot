@@ -241,6 +241,7 @@ describe Task do
       it { should_not offer_supervisor_to_resume }
       it { should offer_supervisor_to_cancel }
       it { should_not offer_owner_to_complete }
+      it { should offer_supervisor_to_change }
     end
 
     describe 'active' do
@@ -259,6 +260,7 @@ describe Task do
       it { should_not offer_supervisor_to_resume }
       it { should offer_supervisor_to_cancel }
       it { should offer_owner_to_complete }
+      it { should offer_supervisor_to_change }
     end
 
     describe 'suspended' do
@@ -274,6 +276,7 @@ describe Task do
       it { should offer_supervisor_to_resume }
       it { should offer_supervisor_to_cancel }
       it { should_not offer_owner_to_complete }
+      it { should offer_supervisor_to_change }
     end
 
     describe 'completed' do
@@ -285,6 +288,7 @@ describe Task do
       it { should_not offer_supervisor_to_resume }
       it { should_not offer_supervisor_to_cancel }
       it { should_not offer_owner_to_complete }
+      it { should_not offer_supervisor_to_change }
     end
 
     describe 'cancelled' do
@@ -296,6 +300,7 @@ describe Task do
       it { should_not offer_supervisor_to_resume }
       it { should_not offer_supervisor_to_cancel }
       it { should_not offer_owner_to_complete }
+      it { should_not offer_supervisor_to_change }
     end
 
   end
@@ -461,6 +466,26 @@ describe Task do
   it { should have_updated_at_timestamp }
 
 
+  # -- Query scopes --
+
+  describe 'completed' do
+    before(:all) { @options = Task.completed.proxy_options }
+
+    it('should select tasks with status completed') { @options.delete(:conditions).should == "tasks.status = 'completed'" }
+    it('should order by updated timestamp from most recent to least') { @options.delete(:order).should == 'tasks.updated_at desc' }
+
+    after(:all) { @options.should be_empty }
+  end
+
+  describe 'cancelled' do
+    before(:all) { @options = Task.cancelled.proxy_options }
+
+    it('should select tasks with status cancelled') { @options.delete(:conditions).should == "tasks.status = 'cancelled'" }
+    it('should order by updated timestamp from most recent to least') { @options.delete(:order).should == 'tasks.updated_at desc' }
+
+    after(:all) { @options.should be_empty }
+  end
+
   # Expecting the subject to change status after executing the block. Uses the reason argument
   # as part of the description. Most often used in the negative. For example:
   #   it { should_not change_status("when changing title") { subject.title = "modified" } }
@@ -583,17 +608,34 @@ describe Task do
     end
   end
 
+  # Expecting that supervisor own can change subject.
+  def offer_supervisor_to_change
+    simple_matcher("offer supervisor to change task") { |given| Person.supervisor.can_change?(subject) }
+  end
+
+  # Expecting that subject can change a particular set of attributes:
+  # - nil/:any -- Can change attribute. This is used in the negative form.
+  # - :all -- Can change all attributes.
+  # - symbols -- Can change specific attributes.
+  #
+  # For example:
+  #   it { should_not able_to_change_task }
+  #   it { should able_to_change_task(:data) }
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
       all = { :title=>'new title', :priority=>5, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
-              :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>:observer)] }
+              :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>:observer),
+                              Stakeholder.new(:person=>Person.supervisor, :role=>:supervisor)] }
       changed = all.select { |attr, value| subject.tasks.find(Task.make_active).update_attributes(attr=>value) rescue false }.map(&:first)
       case attrs.first
       when nil, :any
+        fail if subject.can_change?(Task.make_active)
         !changed.empty?
       when :all
+        fail unless subject.can_change?(Task.make_active)
         changed == all.keys
       else
+        fail if subject.can_change?(Task.make_active)
         changed == attrs
       end
     end

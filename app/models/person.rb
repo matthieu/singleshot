@@ -209,7 +209,9 @@ class Person < ActiveRecord::Base
     task.active? && task.in_role?(:owner, self)
   end
 
-  def can_change?(task) # TODO: spec and implement
+  # Returns true if this person can change various task attributes.
+  def can_change?(task)
+    !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
   end
 
 end

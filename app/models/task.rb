@@ -187,7 +187,6 @@ class Task < ActiveRecord::Base
 
   def stakeholders_before_remove(sh)
     changed_attributes['owner'] = sh.person if sh.role == :owner
-    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
 
   private :stakeholders_before_add, :stakeholders_before_remove
@@ -609,4 +608,10 @@ class Task < ActiveRecord::Base
 
   named_scope :pending, :limit=>5
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
+
+  # Completed tasks only in reverse chronological order.
+  named_scope :completed, :conditions=>"tasks.status = 'completed'", :order=>"tasks.updated_at desc"
+  
+  # Cancelled tasks only in reverse chronological order.
+  named_scope :cancelled, :conditions=>"tasks.status = 'cancelled'", :order=>"tasks.updated_at desc"
 end
