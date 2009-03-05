@@ -25,7 +25,7 @@ describe '/sessions/shows' do
         with_tag 'fieldset' do
           with_tag 'input[name=login][type=text]'
           with_tag 'input[name=password][type=password]'
-          with_tag 'button', 'Login'
+          with_tag 'input[type=submit][value=Login]'
           without_tag('p.error')
         end
       end
