@@ -16,8 +16,6 @@
 
 class TasksController < ApplicationController #:nodoc:
 
-  #skip_filter :authenticate, :only=>[:opensearch]
-
   respond_to :html, :json, :xml
   verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
   before_filter :task, :only=>[:show, :update]
@@ -28,24 +26,24 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def create
-    @task = authenticated.tasks.create!(map_stakeholders(params['task']))
-    respond_with presenting(@task), :status=>:created, :location=>@task
+    @task = authenticated.tasks.new
+    presenter.update! params[:task]
+    respond_with presenter, :status=>:created, :location=>@task
   end
 
   def show
-    respond_with presenting(@task), :action=>'show', :layout=>'head'
+    respond_with presenter, :action=>'show', :layout=>'head'
   end
 
   verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
     :render=>{ :text=>'You are not authorized to change this task', :status=>:unauthorized }
   def update
-    @task.update_attributes! map_stakeholders(params[:task])
-    respond_with presenting(@task), :redirect_to=>@task
+    presenter.update! params[:task]
+    respond_with presenter, :redirect_to=>@task
   end
 
   def completed
     @tasks = authenticated.tasks.completed.with_stakeholders
-    #range = graph.last.first..Date.current %>
     @datapoints = lambda { authenticated.tasks.completed.group_by { |task| task.updated_at.to_date }.map { |date, entries| entries.size } }
     respond_with presenting(:task_list, @tasks), :action=>'completed', :to=>[:html, :json, :xml, :atom]
   end
@@ -56,10 +54,8 @@ protected
     @task ||= authenticated.tasks.find(params[:id])
   end
 
-  def map_stakeholders(attrs)
-    return attrs unless attrs['stakeholders']
-    stakeholders = Array(attrs['stakeholders']).map { |sh| Stakeholder.new :role=>sh['role'], :person=>Person.identify(sh['person']) }
-    attrs.update('stakeholders'=>stakeholders)
+  def presenter
+    @presenter ||= presenting(task)
   end
 
 end

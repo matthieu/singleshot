@@ -119,21 +119,34 @@ describe Person do
 
   describe 'tasks' do
     describe 'create' do
-      it 'should return new task, modified_by person'
-      it 'should associate task with person as creator'
-      it 'should leave specified creator intact'
-      it 'should attempt to save task'
+      before  { @bob = Person.named('bob') }
+      subject { @bob.tasks.create(:title=>'foo') }
+
+      it('should return new task, modified_by person')      { subject.modified_by.should == @bob }
+      it('should associate task with person as creator')    { subject.in_role(:creator).should == [@bob] }
+      it('should associate task with person as supervisor') { subject.in_role(:supervisor).should == [@bob] }
+      it('should attempt to save task')                     { subject.should == Task.last }
     end
 
     describe 'create!' do
-      it 'should return task if new task created'
-      it 'should raise error unless task created'
+      before  { @bob = Person.named('bob') }
+
+      it('should return task if new task created')        { @bob.tasks.create!(:title=>'foo').should be_kind_of(Task) }
+      it('should raise error unless task created')        { lambda { @bob.tasks.create! }.should raise_error }
     end
 
     describe 'find' do
-      it 'should return the task, modified_by person'
-      it 'should return tasks, modified_by person'
-      it 'should not return tasks inaccessible to person'
+      before  do
+        @bob = Person.named('bob')
+        2.times do
+          @bob.tasks.create! :title=>'foo'
+        end
+        Person.named('alice').tasks.create :title=>'bar'
+      end
+
+      it('should return the task, modified_by person')      { @bob.tasks.find(Task.first).modified_by.should == @bob }
+      it('should return tasks, modified_by person')         { @bob.tasks.find(:all).map(&:modified_by).uniq.should == [@bob] }
+      it('should not return tasks inaccessible to person')  { @bob.tasks.find(:all).size.should == 2 }
     end
 
   end
