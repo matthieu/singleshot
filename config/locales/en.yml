@@ -36,3 +36,5 @@ en:
     password:
       label:  "Password:"
       hint:   "Your password is case sensitive"
+  sparkline:
+    loading: "Loading &hellip;"

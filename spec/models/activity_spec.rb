@@ -49,7 +49,26 @@ describe Activity do
     it { should be_readonly }
   end
 
+  describe 'date' do
+    subject { Activity.make }
+
+    it('should return created_at date') { subject.date.should == subject.created_at.to_date }
+  end
+
   describe 'for scope'
-  describe 'default scope'
+
+  describe 'default scope' do
+    subject { Activity.send(:scope, :find) }
+
+    it('should return activities by reverse chronological order') { subject[:order].split(/,\s/).should == ['created_at desc', 'id desc'] }
+    it('should only affect selection order') { subject.except(:order).should be_empty }
+  end
+
+  describe 'since scope' do
+    subject { Activity.since(@date = Date.yesterday).proxy_options }
+
+    it('should select all activities created since given date') { subject[:conditions].should == ['created_at >= ?', @date] }
+    it('should only affect selection criteria') { subject.except(:conditions).should be_empty }
+  end
 
 end

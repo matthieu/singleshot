@@ -22,16 +22,8 @@ class ActivitiesController < ApplicationController #:nodoc:
     @title = t('activity.index.title')
     @subtitle = t('activity.index.subtitle')
     @activities = Activity.for(authenticated).paginate(:page=>params['page'], :per_page=>50)
+    @datapoints = lambda { Activity.since(Date.today - 1.month).group_by(&:date).map { |date, entries| entries.size } }
     respond_with presenting(:activities, @activities)
-    #respond_to do |want|
-    #  want.html do
-    #    @atom_feed_url = activity_url(:format=>:atom, :access_key=>authenticated.access_key)
-    #    @next = activity_url(:page=>@activities.next_page) if @activities.next_page
-    #    @previous = activity_url(:page=>@activities.previous_page) if @activities.previous_page
-    #    @graph = for_stakeholder.for_dates(Date.current - 1.month)
-    #  end
-    #  want.atom { @root_url = activity_url }
-    #end
   end
 
 end

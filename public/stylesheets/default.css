@@ -297,7 +297,7 @@ ol.activities {
 ol.activities li.activity {
   margin: 0 0 0.6em 0;
 }
-ol.activities li.activity abbr.published {
+ol.activities li.activity .published {
   color: #666;
   font-size: 0.7em;
   margin-right: 1.2em;
@@ -415,7 +415,11 @@ div.right {
   margin-right: 3em;
 }
 
-.head-sparkline { margin: 2em 3.6em -4em 0; text-align: right }
+/* Nothing semantic about this one, but the sparklines seem to not display properly any other way */
+.right-shifted-sparkline {
+  margin: 2em 3.6em -4em 0;
+  text-align: right;
+}
 
 
 

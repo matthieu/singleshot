@@ -469,22 +469,23 @@ describe Task do
   # -- Query scopes --
 
   describe 'completed' do
-    before(:all) { @options = Task.completed.proxy_options }
+    subject { Task.completed.proxy_options }
 
-    it('should select tasks with status completed') { @options.delete(:conditions).should == "tasks.status = 'completed'" }
-    it('should order by updated timestamp from most recent to least') { @options.delete(:order).should == 'tasks.updated_at desc' }
-
-    after(:all) { @options.should be_empty }
+    it('should select tasks with status completed') { subject.delete(:conditions).should == "tasks.status = 'completed'" }
+    it('should order by updated timestamp from most recent to least') { subject.delete(:order).should == 'tasks.updated_at desc' }
+    it('should only affect selection criteria and order')  { subject.except(:conditions, :order).should be_empty }
   end
 
   describe 'cancelled' do
-    before(:all) { @options = Task.cancelled.proxy_options }
+    subject { Task.cancelled.proxy_options }
 
-    it('should select tasks with status cancelled') { @options.delete(:conditions).should == "tasks.status = 'cancelled'" }
-    it('should order by updated timestamp from most recent to least') { @options.delete(:order).should == 'tasks.updated_at desc' }
-
-    after(:all) { @options.should be_empty }
+    it('should select tasks with status cancelled') { subject.delete(:conditions).should == "tasks.status = 'cancelled'" }
+    it('should order by updated timestamp from most recent to least') { subject.delete(:order).should == 'tasks.updated_at desc' }
+    it('should only affect selection criteria and order')  { subject.except(:conditions, :order).should be_empty }
   end
+
+
+
 
   # Expecting the subject to change status after executing the block. Uses the reason argument
   # as part of the description. Most often used in the negative. For example:

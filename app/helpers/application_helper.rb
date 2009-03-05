@@ -17,6 +17,20 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
 
+  # Renders bar sparkline. First argument are data points, second argument are options:
+  # * id -- ID to use for element (default to 'sparkline')
+  # * title -- Title to show when hovering over element
+  def bar_sparkline(datum, options = {})
+    id = options[:id] || 'sparkline'
+    content_tag('div', content_tag('span', t('sparkline.loading'), :id=>id, :title=>options[:title]), :class=>'right-shifted-sparkline') <<
+      javascript_tag("$('##{id}').sparkline([#{datum.join(',')}], {type:'bar', barColor: '#8fafff'})")
+  end
+
+
+
+
+
+
   # Returns a link to a person using their full name as the link text and site URL
   # (or profile, if unspecified) as the reference.
   def link_to_person(person, options = {})

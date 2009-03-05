@@ -46,6 +46,11 @@ class Activity < ActiveRecord::Base
     !new_record?
   end
 
+  # Date activity was created at.
+  def date
+    created_at.to_date
+  end
+
   # Returns activities from all tasks associated with this stakeholder.
   named_scope :for, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
@@ -69,5 +74,8 @@ class Activity < ActiveRecord::Base
 
   # Returns activities by recently added order.
   default_scope :order=>'created_at desc, id desc'
+
+  # Return activities created since a given date.
+  named_scope :since, lambda { |date| { :conditions=>['created_at >= ?', date] } }
 
 end

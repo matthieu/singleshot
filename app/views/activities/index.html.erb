@@ -1,10 +1,5 @@
 <%  @atom_feed_url = activities_url(:format=>:atom, :access_key=>authenticated.access_key) %>
-<%  if @graph
-      graph = @graph.group_by { |activity| activity.created_at.to_date }
-      range = graph.last.first..Date.current %>
-      <div class='right'><%= sparkline_tag range.map { |date| graph[date] ? graph[date].size : 0 },
-                                           :title=>'Level of activity for each day' unless graph.empty?  %></div>
-<%  end %>
+<%= bar_sparkline @datapoints.call, :title=>"Activity in the last 30 days" %>
 <ol class='dates hfeed'>
   <% for date, activities in @activities.group_by{ |a| a.created_at.to_date } %>
     <li class='date'>
@@ -12,6 +7,7 @@
       <ol class='activities'>
         <% activities.each do |activity| %>
           <% content_tag_for 'li', activity, :class=>'hentry' do %>
+            <%= content_tag 'span', activity.created_at.strftime('%H:%M %p'), :title=>l(activity.created_at), :class=>'published' %>
             <%= translate "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to_task(activity.task) %>
           <% end %>
         <% end %>

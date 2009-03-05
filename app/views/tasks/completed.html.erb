@@ -1,5 +1,4 @@
-<div class='head-sparkline'><span id='sparkline' title="Tasks completed each day in the last month">Loading ...</span></div>
-<%= javascript_tag "$('#sparkline').sparkline([#{@datapoints.call.join(',')}], {type:'bar', barColor: '#aaf'})" %>
+<%= bar_sparkline @datapoints.call, :title=>"Tasks completed each day in the last month" %>
 <ol class='dates hfeed'>
   <% for date, tasks in group_by_dates(@tasks, :updated_at) %>
     <li class='date'>
