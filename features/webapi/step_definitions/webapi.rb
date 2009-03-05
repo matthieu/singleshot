@@ -43,11 +43,5 @@ class RackApp
     [ '200', {}, 'OK' ]
   end
 end
-rack = lambda { |env|
-  $notification = { :url=>env['REQUEST_URI'], :method=>env['REQUEST_METHOD'], :enctype=>env['CONTENT_TYPE'] }
-  [ '200', {}, 'OK' ]
-}
-#Thread.new do
-#  Rack::Handler::WEBrick.run rack, :Port=>1234, :Logger=>nil
-#end
+
 RackApp.start
