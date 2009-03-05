@@ -16,9 +16,7 @@ Rails::Initializer.run do |config|
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
   # Specify gems that this application depends on and have them installed with rake gems:install
-  gems = YAML.load_file(File.join(File.dirname(__FILE__), 'gems.yml')).
-    values_at('all', RAILS_ENV).compact.inject { |combo, i| combo.merge(i) }
-  gems.each do |name, options|
+  YAML.load_file(Rails.root + '.gems').each do |name, options|
     config.gem name, (options || {}).inject({}) { |hash, (k,v)| hash.update(k.to_sym=>v) }
   end
 

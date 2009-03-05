@@ -1,0 +1,30 @@
+---
+rails:
+  version: 2.3.1
+  source: http://gems.rubyonrails.org
+mislav-will_paginate:
+  version: ~> 2.3.4
+  source: http://gems.github.com
+  lib: will_paginate
+annotate:
+  version:  ~>2.0.1
+  lib:      false
+faker:
+  version:  ~>0.3
+  lib:      false
+notahat-machinist:
+  version:  ~>0.2
+  source:   http://gems.github.com
+  lib:      false
+rspec-rails:
+  version:  1.1.12
+  lib:      false
+cucumber:
+  version:  0.1.16
+  lib:      false
+sqlite3-ruby:
+  version:  ~>1.2
+  lib:      sqlite3
+braid:
+  version:  ~>0.5
+  lib:      false

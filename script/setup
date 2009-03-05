@@ -62,8 +62,7 @@ namespace 'setup' do
     gem_install 'rails', 'version'=>'2.3.1', 'source'=>'http://gems.rubyonrails.org'
 
     # Install all (incl. development and test) Gem dependencies.
-    gems = YAML.load_file(File.join('config/gems.yml')).inject({}) { |all, (k,v)| all.update(v) }
-    gems.each do |name, options|
+    YAML.load_file('.gems').each do |name, options|
       gem_install name, options
     end
 
