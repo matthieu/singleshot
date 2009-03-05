@@ -29,7 +29,7 @@ task 'setup' do
   puts <<-TEXT
     rake setup was a nice idea, but suffered from the classical bootstrapping issue (aka catch-22).
     So instead, the new way to setup Singleshot is to run:
-      ruby setup.rb
+      ruby ./script/setup
 
     Like this ...  
 
