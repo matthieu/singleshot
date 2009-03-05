@@ -1,0 +1,23 @@
+require 'rake/gempackagetask'
+
+
+spec = Gem::Specification.load(File.join(File.dirname(__FILE__), 'presenter.gemspec'))
+
+task 'setup' do
+end
+
+
+package = Rake::GemPackageTask.new(spec) do |pkg|
+  pkg.need_tar = true
+  pkg.need_zip = true
+end
+
+desc "Install the package locally"
+task 'install'=>['setup', 'package'] do |task|
+  system 'sudo', 'gem', 'install', "pkg/#{spec.name}-#{spec.version}.gem"
+end
+
+desc "Uninstall previously installed packaged"
+task 'uninstall' do |task|
+  system 'sudo', 'gem', 'uninstall', spec.name, '-v', spec.version.to_s
+end

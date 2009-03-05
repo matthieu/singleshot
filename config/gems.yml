@@ -15,11 +15,9 @@ all:
 development: &development
   'annotate':
     version:  ~>2.0.1  # Used for annotating models with database schema (rake db:annotate)
-    source:   'http://gems.rubyforge.org'
     lib:      false
   'faker':
     version:  ~>0.3    # Used to populate development database with fake data (rake db:populate)
-    source:   'http://gems.rubyforge.org'
     lib:      false
   'notahat-machinist':
     version:  ~>0.2
@@ -27,16 +25,16 @@ development: &development
     lib:      'machinist'
   'rspec-rails':
     version:  1.1.12
-    source:   'http://gems.rubyforge.org'
     lib:      false
   'cucumber':
     version:  0.1.16
-    source:   'http://gems.rubyforge.org'
     lib:      false
   'sqlite3-ruby':
     version:  ~>1.2    # Development and test databases use SQLite3 by default. 
-    source:   'http://gems.rubyforge.org'
     lib:      'sqlite3'
+  'braid':
+    version:  ~>0.5
+    lib:      false
 
 
 # Same as development above.

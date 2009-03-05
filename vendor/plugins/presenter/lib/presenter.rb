@@ -1,0 +1,6 @@
+require 'presenter/method'
+require 'presenter/base'
+require 'presenter/array_presenter'
+require 'presenter/rspec'
+require 'presenter/readable_attr'
+require 'presenter/responding'

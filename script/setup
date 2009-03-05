@@ -42,6 +42,7 @@ def gem_install(name, options)
   if Gem::SourceIndex.from_installed_gems.search(dep).empty?
     check "Installing #{name} ..." do
       args = ['-S', 'gem', 'install', name, '-v', options['version']]
+      args << '--source' << 'http://gems.rubyforge.org' # Always.
       args << '--source' << options['source'] if options['source']
       args << '--no-ri' << '--no-rdoc' << '--format-executable'
       ruby *args
@@ -66,16 +67,14 @@ namespace 'setup' do
       gem_install name, options
     end
 
-    $plugins.each do |url|
-      name, path = url.pathmap('%n'), url.pathmap('vendor/plugins/%n')
-      if Dir["#{path}/*"].empty?
-        check "Installing plugin #{name}" do
-          ruby "script/plugin install #{url}"
+    check "Installing/updating plugins" do
+      $plugins.each do |url|
+        name, path = url.pathmap('%n'), url.pathmap('vendor/plugins/%n')
+        if Dir["#{path}/*"].empty?
+          sh "braid add -p #{url.inspect}"
           fail "Plugin #{name} not installed! (looked for it in #{path})" if Dir["#{path}/*"].empty?
-        end
-      else
-        check "Upgrading plugin #{name}" do
-          ruby "script/plugin update #{name}"
+        else
+          sh "braid update #{path}"
         end
       end
     end
