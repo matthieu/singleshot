@@ -16,11 +16,12 @@
 
 require 'faker'
 
-Task.blueprint do
-  title           { Faker::Lorem.sentence }
-  description     { Faker::Lorem.paragraphs(3).join("\n\n") }
-  object.associate :potential_owner=>[Person.identify(ENV['USER']), Person.identify('other')]
-end
+#Task.blueprint do
+#  title           { Faker::Lorem.sentence }
+#  description     { Faker::Lorem.paragraphs(3).join("\n\n") }
+#  object.associate :potential_owner=>[Person.identify(ENV['USER']), Person.identify('bond')]
+#end
+require 'task'
 
 class Task
   # Associate peoples with roles. Returns self. For example:
@@ -55,40 +56,45 @@ class Populate < ActiveRecord::Migration
     puts "Creating an account for:"
     puts "  Username: #{ENV['USER']}"
     puts "  Password: secret"
-    me = Person.make(:email=>"#{ENV['USER']}@example.com", :password=>'secret')
+    @me = Person.make(:email=>"#{ENV['USER']}@example.com", :password=>'secret')
 
-    puts "Populating database for #{me.to_param}"
-    other = Person.make(:email=>"other@example.com")
+    puts "Populating database for #{@me.to_param}"
+    @bond = Person.make(:email=>"bond@example.com", :fullname=>"Mr.Bond")
 
     # Tasks I should not see.
-    Task.make 
+    #Task.make 
     # Tasks in which we are:
     # - creator
     # - owner
     # - observer
     # - admin
-    Task.make.associate! :creator=>me
-    Task.make.associate! :creator=>me
-    me.tasks.last.update_attributes! :owner=>me
-    Task.make.associate! :observer=>me
-    Task.make.associate! :supervisor=>me
+    new_task! :creator=>@me
+    new_task! :creator=>@me
+    advance
+    @me.tasks.last.update_attributes! :owner=>@me
+    new_task! :observer=>@me
+    new_task! :supervisor=>@me
     # Tasks in which we are only or one of many potential owners.
-    Task.make.associate! :potential_owner=>me
-    Task.make.associate! :potential_owner=>[me, other]
-    Task.last.update_attributes! :owner=>other
+    new_task! :potential_owner=>@me
+    new_task! :potential_owner=>[@me, @bond]
+    advance
+    Task.last.update_attributes! :owner=>@bond
     # High priority should show first.
-    Task.make(:priority=>Task::PRIORITY.first).associate! :owner=>me
+    new_task! :priority=>Task::PRIORITY.first, :owner=>@me
     # Over-due before due today before anything else.
-    Task.make(:due_on=>Date.current - 1.day).associate! :owner=>me
-    Task.make(:due_on=>Date.current).associate! :owner=>me
-    Task.make(:due_on=>Date.current + 1.day).associate! :owner=>me
+    new_task! :due_on=>Date.current - 1.day, :owner=>@me
+    new_task! :due_on=>Date.current, :owner=>@me
+    new_task! :due_on=>Date.current + 1.day, :owner=>@me
     # Completed, cancelled, suspended
-    Task.make.associate! :potential_owner=>[me, other], :supervisor=>other
-    other.tasks.last.update_attributes! :status=>:suspended
-    Task.make.associate! :owner=>me
-    me.tasks.last.update_attributes! :status=>:completed
-    Task.make.associate! :supervisor=>me
-    me.tasks.last.update_attributes! :status=>:cancelled
+    new_task! :potential_owner=>[@me, @bond], :supervisor=>@bond
+    advance
+    @bond.tasks.last.update_attributes! :status=>:suspended
+    new_task! :owner=>@me
+    advance
+    @me.tasks.last.update_attributes! :status=>:completed
+    advance
+    new_task! :supervisor=>@me
+    @me.tasks.last.update_attributes! :status=>:cancelled
   end
 
   def self.down
@@ -97,5 +103,28 @@ class Populate < ActiveRecord::Migration
     Task.delete_all
     Person.delete_all
   end
-    
+
+  def self.new_task!(args = {})
+    advance
+    args[:title] ||= Faker::Lorem.sentence
+    args[:description] ||= Faker::Lorem.paragraphs(3).join("\n\n")
+    Task.new args do |task|
+      args[:potential_owner] ||= [@me, @bond]
+      [:creator, :potential_owner, :excluded_owner, :supervisor, :observer].select { |role| args.has_key?(role) }.each do |role|
+        Array(args[role]).each do |person|
+          task.stakeholders.build :role=>role, :person=>person
+        end
+      end
+    end.save!
+  end
+
+  def self.advance(duration = (rand(45) + 30).minutes)
+    Task.all.each do |task|
+      Task.update_all({:created_at=>task.created_at - duration, :updated_at=>task.updated_at - duration}, {:id=>task.id})
+    end
+    Activity.all.each do |activity|
+      Activity.update_all({:created_at=>activity.created_at - duration}, {:id=>activity.id})
+    end
+  end
+      
 end
