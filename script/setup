@@ -27,15 +27,10 @@ $plugins = 'git://github.com/assaf/presenter.git',
 
 
 def check(message)
-  if Rake.application.tty_output?
-    message = message[0, Rake.application.dynamic_width - 9]
-    print("[ ]  %s ... " % message)
-    $stdout.flush
-    pos = $stdout.pos, $stderr.pos
-  end
+  message = message[0, Rake.application.dynamic_width - 9]
+  puts "## %s ...\n" % message
   yield
-  print "\r" if pos == [$stdout.pos, $stderr.pos]
-  print "[x]  #{message}\n"
+  puts
 end
 
 def rake(*args)
@@ -62,8 +57,8 @@ namespace 'setup' do
   end
 
   task 'dependencies' do
-    # Install Rails 2.3.0 RC.
-    gem_install 'rails', 'version'=>'2.3.0', 'source'=>'http://gems.rubyonrails.org'
+    # Install Rails 2.3.1 (RC2).
+    gem_install 'rails', 'version'=>'2.3.1', 'source'=>'http://gems.rubyonrails.org'
 
     # Install all (incl. development and test) Gem dependencies.
     gems = YAML.load_file(File.join('config/gems.yml')).inject({}) { |all, (k,v)| all.update(v) }
