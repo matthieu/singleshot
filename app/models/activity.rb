@@ -51,6 +51,12 @@ class Activity < ActiveRecord::Base
     created_at.to_date
   end
 
+  after_save do |activity|
+    activity.task.webhooks.select do |hook|
+      hook.send_notification if hook.event == activity.name.to_s
+    end
+  end
+
   # Returns activities from all tasks associated with this stakeholder.
   named_scope :for, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',

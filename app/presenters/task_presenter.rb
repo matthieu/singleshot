@@ -9,6 +9,10 @@ class TaskPresenter < Presenter::Base
     if stakeholders = attrs.delete('stakeholders')
       attrs['stakeholders'] = Array(stakeholders).map { |sh| Stakeholder.new :role=>sh['role'], :person=>Person.identify(sh['person']) }
     end
+    if webhooks = attrs.delete('webhooks')
+      attrs['webhooks'] = Array(webhooks).map { |attr| Webhook.new attr }
+    end
+    # TODO: should take over access control validation, no?
     task.modified_by = authenticated
     task.update_attributes! attrs
   end

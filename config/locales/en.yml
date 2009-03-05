@@ -21,7 +21,7 @@ en:
       subtitle: "Activity from all tasks you own or observe"
     expanded:
       created:    "{{person}} created {{task}}"
-      owns:       "{{person}} is owner of {{task}}"
+      claimed:    "{{person}} is owner of {{task}}"
       delegated:  "{{person}} delegated {{task}}"
       modified:   "{{person}} modified {{task}}"
       suspended:  "{{person}} suspended {{task}}"

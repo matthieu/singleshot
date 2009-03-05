@@ -5,7 +5,7 @@ Feature: Listing tasks using API
     And I am authenticated as scott
     When I request to view the updated task list
     Then the response should be a task list
-    With the following tasks in this order
+    And with the following tasks in this order
     """
     """
 
@@ -14,7 +14,7 @@ Feature: Listing tasks using API
     And I am authenticated as scott
     When I request to view the created task list
     Then the response should be a task list
-    With the following tasks in this order
+    And with the following tasks in this order
     """
     """
 
@@ -23,6 +23,6 @@ Feature: Listing tasks using API
     And I am authenticated as scott
     When I request to view the created task list
     Then the response should be a task list
-    With the following tasks in this order
+    And with the following tasks in this order
     """
     """

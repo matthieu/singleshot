@@ -14,7 +14,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+require 'rack'
+
 Given /^I am authenticated as (.*)$/ do |person|
   Given "the person #{person}"
   basic_auth person, 'secret'
 end
+
+class RackApp
+  def self.instance
+    @instance ||= new
+  end
+
+  def self.start
+    Thread.new do
+      Rack::Handler::WEBrick.run instance, :Port=>1234, :Logger=>WEBrick::Log.new(nil, WEBrick::Log::ERROR)
+    end
+  end
+
+  def initialize
+    @requests = []
+  end
+
+  attr_reader :requests
+
+  def call(env)
+    requests << { :url=>env['REQUEST_URI'], :method=>env['REQUEST_METHOD'], :enctype=>env['CONTENT_TYPE'] }
+    [ '200', {}, 'OK' ]
+  end
+end
+rack = lambda { |env|
+  $notification = { :url=>env['REQUEST_URI'], :method=>env['REQUEST_METHOD'], :enctype=>env['CONTENT_TYPE'] }
+  [ '200', {}, 'OK' ]
+}
+#Thread.new do
+#  Rack::Handler::WEBrick.run rack, :Port=>1234, :Logger=>nil
+#end
+RackApp.start

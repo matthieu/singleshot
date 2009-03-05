@@ -93,3 +93,7 @@ Then /^people associated with the task are$/ do |roles_people|
     inject({}) { |hash, sh| role = sh['role'] ; hash.update(role=>Array(hash[role]).push(sh['person']).sort) }
   actual.should == expecting
 end
+
+Then /^the resource (.*) received (.*) notification$/ do |url, method|
+  RackApp.instance.requests.last.slice(:url, :method) == { :url=>url, :method=>method }
+end

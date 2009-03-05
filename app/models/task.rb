@@ -52,7 +52,7 @@ class Task < ActiveRecord::Base
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :status, :data
+  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :status, :data, :webhooks
   attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :status, :data,
                   :version, :created_at, :updated_at
 
@@ -330,35 +330,40 @@ class Task < ActiveRecord::Base
   before_create do |task|
     creator = task.in_role(:creator).first
     task.modified_by ||= creator
-    task.activities.build :person=>creator, :name=>:created if creator
-    task.activities.build :person=>task.owner, :name=>:owns if task.owner
+    task.activities.build :name=>:created, :person=>creator  if creator
+    task.activities.build :name=>:claimed, :person=>task.owner if task.owner
   end
 
   before_update do |task|
     past_owner, owner = task.changes['owner']
     if owner
-      task.activities.build :person=>task.modified_by, :name=>:delegated if task.modified_by && task.modified_by != owner
-      task.activities.build :person=>owner, :name=>:owns
+      task.activities.build :name=>:delegated, :person=>task.modified_by  if task.modified_by && task.modified_by != owner
+      task.activities.build :name=>:claimed, :person=>owner
     else
-      task.activities.build :person=>past_owner, :name=>:released
+      task.activities.build :name=>:released, :person=>past_owner
     end
 
     if task.status_changed?
       case task.status
       when :active, :available
-        task.activities.build :person=>task.modified_by, :name=>:resumed if task.status_was == 'suspended' && task.modified_by
+        task.activities.build :name=>:resumed, :person=>task.modified_by if task.status_was == 'suspended' && task.modified_by
       when :suspended
-        task.activities.build :person=>task.modified_by, :name=>:suspended if task.modified_by
+        task.activities.build :name=>:suspended, :person=>task.modified_by if task.modified_by
       when :completed
-        task.activities.build :person=>task.owner, :name=>:completed
+        task.activities.build :name=>:completed, :person=>task.owner
       when :cancelled
-        task.activities.build :person=>task.modified_by, :name=>:cancelled if task.modified_by
+        task.activities.build :name=>:cancelled, :person=>task.modified_by if task.modified_by
       end
     end
   
     changed = task.changed - ['status', 'owner']
-    task.activities.build :person=>task.modified_by, :name=>:modified unless changed.empty?
+    task.activities.build :name=>:modified, :person=>task.modified_by unless changed.empty?
   end
+
+
+  # -- Webhooks --
+ 
+  has_many :webhooks, :dependent=>:delete_all
 
 
   # -- Access Control --
@@ -411,9 +416,6 @@ class Task < ActiveRecord::Base
       end
     end
   end
-
-
-
 
 
   # Locking column used for versioning and detecting update conflicts.

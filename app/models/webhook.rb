@@ -41,14 +41,22 @@ class Webhook < ActiveRecord::Base
   def initialize(*args)
     super
     self[:http_method] ||= 'post'
-    self.enctype ||= Mime::URL_ENCODED_FORM.to_s
+    self[:enctype] ||= Mime::URL_ENCODED_FORM.to_s
   end
 
   belongs_to :task
 
-  attr_accessible :event, :url, :method, :enctype
-  validates_presence_of :event
-  validates_presence_of :url
-  validates_presence_of :http_method
-  validates_presence_of :enctype
+  attr_accessible :event, :url, :http_method, :enctype
+  validates_presence_of :event, :url, :http_method, :enctype
+
+  require 'net/http'
+  require 'uri'
+
+  def send_notification
+    uri = URI.parse(url)
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      http.post uri.path, "foooo", 'Content-Type'=>enctype
+    end 
+  end
+
 end
