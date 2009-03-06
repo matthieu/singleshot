@@ -3,6 +3,8 @@ layout: default
 title: Singleshot
 ---
 
+!images/screenshot.png!
+
 Singleshot is a task manager. You use it to track and complete your tasks,
 processes use it to involve you.
 

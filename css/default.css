@@ -102,7 +102,8 @@ th, thead td {
 
 
 #header {
-  margin: 0 0 3em 18em;
+  margin: 0 0 1em 0;
+  border: none;
 }
 
 #header .tagline {
@@ -154,7 +155,6 @@ th, thead td {
 
 #content { /* Parent Wrapper for inside boxes */
 /*  display: inline; *//* IE Hack */
-  float: right;
   width: 44em;
   margin-left: 0.3em;
   margin-bottom: 5em;
