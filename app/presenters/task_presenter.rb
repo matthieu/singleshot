@@ -10,7 +10,8 @@ class TaskPresenter < Presenter::Base
       attrs['stakeholders'] = Array(stakeholders).map { |sh| Stakeholder.new :role=>sh['role'], :person=>Person.identify(sh['person']) }
     end
     if webhooks = attrs.delete('webhooks')
-      attrs['webhooks'] = Array(webhooks).map { |attr| Webhook.new attr }
+      webhooks = [webhooks.first] unless Array === webhooks
+      attrs['webhooks'] = webhooks.map { |attr| Webhook.new attr }
     end
     # TODO: should take over access control validation, no?
     task.modified_by = authenticated
@@ -21,9 +22,9 @@ class TaskPresenter < Presenter::Base
     super do |hash|
       hash['links'] = [ link_to('self', href) ]
       hash['actions'] = []
-      hash['actions'] << action('claim', url_for(:id=>task, :owner=>authenticated)) if authenticated.can_claim?(task)
-      hash['actions'] << action('complete', url_for(:id=>task, :status=>'completed')) if authenticated.can_complete?(task)
-      hash['actions'] << action('cancel', url_for(:id=>task, :status=>'cancelled')) if authenticated.can_cancel?(task)
+      hash['actions'] << action('claim', url_for(:id=>task, 'task[owner]'=>authenticated)) if authenticated.can_claim?(task)
+      hash['actions'] << action('complete', url_for(:id=>task, 'task[status]'=>'completed')) if authenticated.can_complete?(task)
+      hash['actions'] << action('cancel', url_for(:id=>task, 'task[status]'=>'cancelled')) if authenticated.can_cancel?(task)
     end
   end
 
