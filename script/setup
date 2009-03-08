@@ -84,10 +84,18 @@ namespace 'setup' do
   end
 
   task 'database' do
-    check("Creating a new database")                         { rake "db:create" }
+    check "Creating a new database" do
+      db = YAML.load_file("config/database.yml")['development']
+      p "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
+      rake "db:create"
+    end
     check("Running all migrations against the new database") { rake "db:migrate:reset" }
-    check("Creating a clone test database")                  { rake "db:test:clone" }
     check("Populating development database with mock data")  { rake "db:populate" }
+    check "Creating a clone test database" do
+      db = YAML.load_file("config/database.yml")['development']
+      p "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
+      rake "db:test:clone"
+    end
   end
 
   task 'have_fun' do
