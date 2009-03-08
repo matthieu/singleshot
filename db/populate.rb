@@ -15,13 +15,8 @@
 
 
 require 'faker'
-
-#Task.blueprint do
-#  title           { Faker::Lorem.sentence }
-#  description     { Faker::Lorem.paragraphs(3).join("\n\n") }
-#  object.associate :potential_owner=>[Person.identify(ENV['USER']), Person.identify('bond')]
-#end
 require 'task'
+require 'person'
 
 class Task
   # Associate peoples with roles. Returns self. For example:
@@ -44,9 +39,6 @@ class Task
   end
 end
 
-Person.blueprint do
-end
-
 
 # This is a special migration that populates the database with one usable
 # account and a lot of fake tasks. Gets you going when you first install
@@ -56,10 +48,10 @@ class Populate < ActiveRecord::Migration
     puts "Creating an account for:"
     puts "  Username: #{ENV['USER']}"
     puts "  Password: secret"
-    @me = Person.make(:email=>"#{ENV['USER']}@example.com", :password=>'secret')
+    @me = Person.create!(:email=>"#{ENV['USER']}@example.com", :password=>'secret')
 
     puts "Populating database for #{@me.to_param}"
-    @bond = Person.make(:email=>"bond@example.com", :fullname=>"Mr.Bond")
+    @bond = Person.create!(:email=>"bond@example.com", :fullname=>"Mr.Bond")
 
     # Tasks I should not see.
     #Task.make 
