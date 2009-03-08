@@ -60,7 +60,7 @@ describe Activity do
   describe 'default scope' do
     subject { Activity.send(:scope, :find) }
 
-    it('should return activities by reverse chronological order') { subject[:order].split(/,\s/).should == ['created_at desc', 'id desc'] }
+    it('should return activities by reverse chronological order') { subject[:order].should == 'activities.created_at desc' }
     it('should only affect selection order') { subject.except(:order).should be_empty }
   end
 

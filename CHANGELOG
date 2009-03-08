@@ -1,0 +1,3 @@
+* Switched to using MySQL instead of SQLite. There are some noticable
+differences and developing on the same database we intend to deploy on is just
+better.

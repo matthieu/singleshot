@@ -448,8 +448,8 @@ describe Task do
   it { should allow_mass_assigning_of(:data) }
   it('should have empty hash as default data')  { subject.data.should == {} }
   it('should allowing assigning nil to data')   { subject.update_attributes :data => nil; subject.data.should == {} }
-  it('should validate data is a hash')          { lambda { Person.supervisor.tasks.find(subject).update_attributes :data=>'string' }.
-                                                  should raise_error(ActiveRecord::SerializationTypeMismatch) }
+  it('should validate data is a hash')          { lambda { Person.supervisor.tasks.find(subject).update_attributes! :data=>'string' }.
+                                                  should raise_error(ActiveRecord::RecordInvalid) }
   it('should store and retrieve data')          { Person.supervisor.tasks.find(subject).update_attributes!(:data=>{ 'foo'=>'bar'})
                                                   subject.reload.data.should == { 'foo'=>'bar' } }
 

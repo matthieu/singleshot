@@ -48,7 +48,6 @@ class Task < ActiveRecord::Base
     super
     self[:status] = :available
     self[:priority] ||= DEFAULT_PRIORITY
-    self[:data] ||= {}
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
@@ -283,8 +282,13 @@ class Task < ActiveRecord::Base
 
   # -- Data and reference --
 
-  serialize :data, Hash
-  before_validation(:unless=>:data) { |record| record.data = {} }
+  serialize :data
+
+  def data #:nodoc:
+    write_attribute(:data, Hash.new) if read_attribute(:data).blank?
+    read_attribute(:data) || write_attribute(:data, Hash.new)
+  end
+  
   validate { |task| task.errors.add :data, "Must be a hash" unless Hash === task.data }
 
 

@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
     t.string   "fullname",                 :null => false
     t.string   "email",                    :null => false
     t.string   "locale",     :limit => 5
-    t.integer  "timezone",   :limit => 4
+    t.integer  "timezone"
     t.string   "password",   :limit => 64
     t.string   "access_key", :limit => 32, :null => false
     t.datetime "created_at"
