@@ -49,11 +49,14 @@ Feature: Creating task using API
 
   Scenario: creating a task with specific taskholders
     Given I am authenticated as scott
+    And the person alice
+    And the person bob
     When I post this request to create a task
       """
       { task: {
+          title: "From Alice to Bob",
           stakeholders: [
-            { role: cretor, person: alice },
+            { role: creator, person: alice },
             { role: owner, person: bob }
           ]
       } }

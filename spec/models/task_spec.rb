@@ -323,7 +323,7 @@ describe Task do
     it('should have creator') { subject.in_role(:creator).should == [Person.creator] }
     it('should have owner') { subject.owner.should == Person.owner }
     it { should log_activity(Person.creator, :created) }
-    it { should log_activity(Person.owner, :owns) }
+    it { should log_activity(Person.owner, :claimed) }
   end
 
   describe 'owner claiming' do
@@ -335,7 +335,7 @@ describe Task do
 
     it { should be_active }
     it('should have owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.owner, :owns) }
+    it { should log_activity(Person.owner, :claimed) }
   end
 
   describe 'owner delegating' do
@@ -348,7 +348,7 @@ describe Task do
     it { should be_active }
     it('should have new owner') { subject.owner.should == Person.potential }
     it { should log_activity(Person.owner, :delegated) }
-    it { should log_activity(Person.potential, :owns) }
+    it { should log_activity(Person.potential, :claimed) }
   end
 
   describe 'supervisor delegating' do
@@ -361,7 +361,7 @@ describe Task do
     it { should be_active }
     it('should have new owner') { subject.owner.should == Person.potential }
     it { should log_activity(Person.supervisor, :delegated) }
-    it { should log_activity(Person.potential, :owns) }
+    it { should log_activity(Person.potential, :claimed) }
   end
 
   describe 'owner releasing' do

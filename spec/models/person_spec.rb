@@ -51,7 +51,7 @@ describe Person do
   it { should allow_mass_assigning_of(:fullname) }
   it('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
 
-  it { should have_attribute(:timezone, :integer, :null=>true, :limit=>4) }
+  it { should have_attribute(:timezone, :integer, :null=>true) }
   it { should allow_mass_assigning_of(:timezone) }
   it { should_not validate_presence_of(:timezone) }
 

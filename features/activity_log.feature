@@ -17,7 +17,7 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created expenses
-      scott owns expenses
+      scott claimed expenses
       """
 
   Scenario: log shows owner creating and delegating task
@@ -25,7 +25,7 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created expenses
-      alice owns expenses
+      alice claimed expenses
       """
 
   Scenario: log shows potential owner claiming task
@@ -36,7 +36,7 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created expenses
-      alice owns expenses
+      alice claimed expenses
       """
 
   Scenario: log shows owner delegating task
@@ -48,7 +48,7 @@ Feature: activity log
       """
       scott created expenses
       alice delegated expenses
-      bob owns expenses
+      bob claimed expenses
       """
 
   Scenario: log shows supervisor delegating task
@@ -60,7 +60,7 @@ Feature: activity log
       """
       scott created expenses
       scott delegated expenses
-      bob owns expenses
+      bob claimed expenses
       """
 
   Scenario: log shows owner released task
