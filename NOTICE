@@ -16,6 +16,8 @@ licensed under the MIT license.  http://github.com/norman/friendly_id/
 
 Will Paginate, copyright of PJ Hyett and Mislav Marohnić, licensed under MIT
 license. http://github.com/mislav/will_paginate/
+
+Machinist, copyright of Pete Yandell, licensed under MIT license.
 http://github.com/notahat/machinist/
 
 Annotate Models, copyright of Cuong Tran, licensed under MIT license.
@@ -24,14 +26,13 @@ http://github.com/ctran/annotate_models/
 Faker, copyright of Benjamin Curtis, licensed under MIT license.
 http://faker.rubyforge.org/
 
-SQLite Ruby, copyright of Jamis Buck, licensed under BSD license.
-http://sqlite-ruby.rubyforge.org/
-http://github.com/jamis/sqlite3-ruby/tree/master
+Remarkable, copyright of Carlos Brando, licensed under MIT license.
+http://github.com/carlosbrando/remarkable/
 
-ActiveRecord Symbolize, copyright Andreas Neuhaus, license under the MIT
+ActiveRecord Symbolize, copyright of Andreas Neuhaus, license under the MIT
 license.  http://github.com/zargony/activerecord_symbolize/
 
-Presenter, copyright Assaf Arkin, licensed under the MIT license.
+Presenter, copyright of Assaf Arkin, licensed under the MIT license.
 http://github.com/assaf/presenter/
 
 

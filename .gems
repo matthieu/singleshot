@@ -22,6 +22,10 @@ rspec-rails:
 cucumber:
   version:  0.1.16
   lib:      false
+carlosbrando-remarkable:
+  version:  2.2.8
+  lib:      remarkable
+  source:   http://gems.github.com
 braid:
   version:  ~>0.5
   lib:      false
