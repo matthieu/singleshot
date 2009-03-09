@@ -18,6 +18,7 @@
 
 $(function() {
   $('input[title]').each(function() { $(this).watermark(this.title) })
+  $('input.auto_focus').each(function() { $(this).focus() ; return false })
 })
 
 

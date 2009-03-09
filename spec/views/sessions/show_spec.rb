@@ -33,6 +33,14 @@ describe '/sessions' do
     end
   end
 
+  it 'should include authenticity token' do
+    @controller.allow_forgery_protection = true
+    render '/sessions/show'
+    response.should have_tag('form.login') do
+      with_tag 'input[name=authenticity_token][type=hidden]'
+    end
+  end
+
   it 'should render flash error inside login box' do
     flash[:error] = 'Error message'
     render '/sessions/show'
@@ -48,4 +56,12 @@ describe '/sessions' do
     end
   end
 
+  it 'should auto-focus username field' do
+    render '/sessions/show'
+    response.should have_tag('form.login') do
+      with_tag 'input.auto_focus', 1 do |tags|
+        tags.first.attributes['name'].should == 'username'
+      end
+    end
+  end
 end
