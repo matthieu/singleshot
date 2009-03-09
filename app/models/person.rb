@@ -92,6 +92,9 @@ class Person < ActiveRecord::Base
   # Must have identity.
   validates_presence_of :identity
   validates_uniqueness_of :identity#, :message=>"A person with this identity already exists."
+  def username
+    identity
+  end
 
   # Must have e-mail address.
   validates_email         :email, :message=>"I need a valid e-mail address."
