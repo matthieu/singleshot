@@ -27,11 +27,11 @@ protected
   # from your application log (in this case, all fields with names like "password"). 
   filter_parameter_logging :password
 
+  # All requests authenticated unless said otherwise. This filter must run before CSRF protection.
+  prepend_before_filter :authenticate
+
   # See ActionController::RequestForgeryProtection for details
   protect_from_forgery
-
-  # All requests authenticated unless said otherwise.
-  before_filter :authenticate
 
   # Returns currently authenticated user.
   attr_reader :authenticated
@@ -53,6 +53,7 @@ protected
           @authenticated = Person.authenticate(login, password)
         end
         reset_session
+        params[request_forgery_protection_token] = form_authenticity_token
       else
         @authenticated = Person.find(session[:authenticated]) rescue nil
         unless @authenticated
