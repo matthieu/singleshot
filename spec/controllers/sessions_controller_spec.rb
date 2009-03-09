@@ -21,55 +21,62 @@ describe SessionsController do
   controller_name :sessions
 
   it { should route(:get, '/session', :controller =>'sessions', :action=>'show') }
+  it { should route(:post, '/session', :controller =>'sessions', :action=>'create') }
+  it { should route(:delete, '/session', :controller =>'sessions', :action=>'destroy') }
   it { should filter_params(:password) }
 
-  describe 'get /' do
+  describe 'get /session' do
     before { get :show }
 
     it { should render_template('sessions/show') }
   end
 
-
-  describe 'post /' do
+  describe 'post /session' do
     before { @person = Person.named('me') }
 
-    describe 'authenticated' do
-      before { post :create, :login=>@person.identity, :password=>'secret' }
-
-      it { should redirect_to(root_url) }
-      it('should store authenticated user in session')  { session[:authenticated].should == @person.id }
-      it('should clear flash')                          { flash.should be_empty }
-    end
-
-    describe 'authenticated with return_url' do
-      before { post :create, { :login=>@person.identity, :password=>'secret' }, { :return_url=>'http://return_url' } }
-
-      it { should redirect_to('http://return_url') }
-      it('should clear return_url from session')         { session[:return_url].should be_nil }
-    end
-
-    describe 'no credentials' do
+    describe '(no credentials)' do
       before { post :create }
 
-      it { should redirect_to(session_url) }
-      it('should have no authencited user in session')  { session[:authenticated].should be_nil }
+      it('should redirect back to /session')                  { should redirect_to(session_url) }
+      it('should have no authenticated user in session')      { session[:authenticated].should be_nil }
     end
 
-    describe 'wrong credentials' do
-      before { post :create, :login=>@person.identity, :password=>'wrong' }
+    describe '(wrong credentials)' do
+      before { post :create, :username=>@person.identity, :password=>'wrong' }
 
-      it { should redirect_to(session_url) }
-      it('should have no authencited user in session')  { session[:authenticated].should be_nil }
-      it('should have error message in flash')          { flash[:error].should match(/no account/i) }
+      it('should redirect back to /session')                  { should redirect_to(session_url) }
+      it('should have no authenticated user in session')      { session[:authenticated].should be_nil }
+      it('should have error message in flash')                { flash[:error].should match(/no account/i) }
     end
+
+    describe '(valid credentials)' do
+      before { session[:older] = true }
+      before { post :create, :username=>@person.identity, :password=>'secret' }
+
+      it('should redirect to root url')                       { should redirect_to(root_url) }
+      it('should store authenticated user in session')        { session[:authenticated].should == @person.id }
+      it('should reset session to prevent session fixation')  { session[:older].should be_nil } 
+      it('should clear flash')                                { flash.should be_empty }
+    end
+
+    describe '(valid credentials and return url)' do
+      before { post :create, { :username=>@person.identity, :password=>'secret' }, { :return_url=>'http://return_url' } }
+
+      it('should redirect to return url')                   { should redirect_to('http://return_url') }
+      it('should clear return url from session')            { session[:return_url].should be_nil }
+      it('should store authenticated user in session')      { session[:authenticated].should == @person.id }
+    end
+
   end
 
-  describe 'delete /' do
-    before { authenticate }
-    before { delete :destroy }
+  describe 'delete /session' do
+    before do
+      authenticate
+      delete :destroy
+    end
 
-    it('should clear session') { session.should be_empty }
-    it { should redirect_to(root_url) }
+    it('should reset session')        { session.should be_empty }
+    it('should redirect to root url') { should redirect_to(root_url) }
   end
 
 end

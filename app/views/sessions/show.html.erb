@@ -2,11 +2,11 @@
   <fieldset>
     <%= content_tag 'p', flash[:error], :class=>'error' if flash[:error] %>
     <dl>
-      <dt><%= label_tag 'login', t('sessions.login.label') %></dt>
-      <dd><%= text_field_tag 'login', nil, :size=>30, :title=>t('sessions.login.hint') %></dd>
-      <dt><%= label_tag 'password', t('sessions.password.label') %></dt>
-      <dd><%= password_field_tag 'password', nil, :size=>30, :title=>t('sessions.password.hint') %></dd>
-      <dd><%= submit_tag t('sessions.login.button') %></dd>
+      <dt><%= label_tag 'username', t('session.username.label') %></dt>
+      <dd><%= text_field_tag 'username', nil, :size=>30, :title=>t('session.username.hint') %></dd>
+      <dt><%= label_tag 'password', t('session.password.label') %></dt>
+      <dd><%= password_field_tag 'password', nil, :size=>30, :title=>t('session.password.hint') %></dd>
+      <dd><%= submit_tag t('session.login.button') %></dd>
     </dl> 
   </fieldset>
 <% end %>

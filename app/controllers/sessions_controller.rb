@@ -22,12 +22,14 @@ class SessionsController < ApplicationController #:nodoc:
   end
 
   def create
-    login, password = params.values_at(:login, :password)
-    if person = Person.authenticate(login, password)
+    username, password = params.values_at(:username, :password)
+    if person = Person.authenticate(username, password)
+      redirect = session[:return_url] || root_url
+      reset_session # prevent session fixation
       session[:authenticated] = person.id
-      redirect_to session.delete(:return_url) || root_url, :status=>:see_other 
+      redirect_to redirect, :status=>:see_other 
     else
-      flash[:error] = 'No account with this login and password.' unless login.blank?
+      flash[:error] = t('session.login.nomatch')  unless username.blank?
       redirect_to session_url, :status=>:see_other
     end
   end

@@ -16,23 +16,24 @@
 
 require File.dirname(__FILE__) + '/../helpers'
 
-describe '/sessions/shows' do
+describe '/sessions' do
 
   it 'should render login form' do
     render '/sessions/show'
     response.should have_tag('form.login') do
       with_tag 'form[method=post][action=?]', session_url do
         with_tag 'fieldset' do
-          with_tag 'input[name=login][type=text]'
-          with_tag 'input[name=password][type=password]'
+          with_tag 'label[for=username]', "Username:"
+          with_tag 'input[name=username][type=text][title=Your username]'
+          with_tag 'label[for=password]', "Password:"
+          with_tag 'input[name=password][type=password][title=Your password is case sensitive]'
           with_tag 'input[type=submit][value=Login]'
-          without_tag('p.error')
         end
       end
     end
   end
 
-  it 'should render flash[:error] inside login box' do
+  it 'should render flash error inside login box' do
     flash[:error] = 'Error message'
     render '/sessions/show'
     response.should have_tag('form.login fieldset') do
@@ -40,7 +41,7 @@ describe '/sessions/shows' do
     end
   end
 
-  it 'should not render empty container without flash[:error]' do
+  it 'should not render empty flash error' do
     render '/sessions/show'
     response.should have_tag('form.login fieldset') do
       without_tag('p.error')
