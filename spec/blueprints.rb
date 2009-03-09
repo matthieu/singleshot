@@ -15,8 +15,8 @@
 
 
 Person.blueprint do
-  email 'john.smith@example.com'
-  password 'secret'
+  email    { 'john.smith@example.com' }
+  password { 'secret' }
 end
 
 class Person #:nodoc:

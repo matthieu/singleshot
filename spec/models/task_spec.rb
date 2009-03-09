@@ -48,48 +48,47 @@ describe Task do
 
   # -- Descriptive --
 
-  it { should have_attribute(:title, :string, :null=>false) }
-  it { should allow_mass_assigning_of(:title) }
-  it { should_not validate_uniquness_of(:title) }
+  it { should have_attribute(:title) }
+  it { should have_db_column(:title, :type=>:string) }
+  it { should allow_mass_assignment_of(:title) }
+  it { should_not validate_uniqueness_of(:title) }
   it { should validate_presence_of(:title) }
 
-  it { should have_attribute(:description, :string, :null=>true) }
-  it { should allow_mass_assigning_of(:description) }
-  it { should_not validate_uniquness_of(:description) }
+  it { should have_attribute(:description) }
+  it { should have_db_column(:description, :type=>:string) }
+  it { should allow_mass_assignment_of(:description) }
+  it { should_not validate_uniqueness_of(:description) }
   it { should_not validate_presence_of(:description) }
 
-  it { should have_attribute(:language, :string, :null=>true, :limit=>5) }
-  it { should allow_mass_assigning_of(:language) }
+  it { should have_attribute(:language) }
+  it { should have_db_column(:language, :type=>:string, :limit=>5) }
+  it { should allow_mass_assignment_of(:language) }
   it { should_not validate_presence_of(:language) }
 
 
   # -- Urgency --
 
-  def allow_priority(value) # expecting priority to validate
-    simple_matcher("allow priority #{value}") { |given| given.priority = value ; given.valid? || given.errors.on(:priority).nil? }
-  end
-
-  it { should have_attribute(:priority, :integer, :null=>false, :limit=>1) }
-  it { should allow_mass_assigning_of(:priority) }
+  it { should have_attribute(:priority) }
+  it { should have_db_column(:priority, :type=>:integer, :limit=>1) }
+  it { should allow_mass_assignment_of(:priority) }
   it('should default to priority 3')          { subject.priority.should == 3 }
-  it { should allow_priority(1) }
-  it { should allow_priority(5) }
-  it { should_not allow_priority(0) }
-  it { should_not allow_priority(6) }
+  it { should validate_inclusion_of(:priority, :in=>1..5) }
 
-  it { should have_attribute(:due_on, :date, :null=>true) }
-  it { should allow_mass_assigning_of(:due_on) }
+  it { should have_attribute(:due_on) }
+  it { should have_db_column(:due_on, :type=>:date) }
+  it { should allow_mass_assignment_of(:due_on) }
 
-  it { should have_attribute(:start_on, :date, :null=>true) }
-  it { should allow_mass_assigning_of(:start_on) }
+  it { should have_attribute(:start_on) }
+  it { should have_db_column(:start_on, :type=>:date) }
+  it { should allow_mass_assignment_of(:start_on) }
 
 
   # -- Stakeholders --
   describe 'stakeholders' do
 
-    it { should have_many(:stakeholders, Stakeholder, :include=>:person, :dependent=>:delete_all) }
-    it { should allow_mass_assigning_of(:stakeholders) }
-    it { should allow_mass_assigning_of(:owner) }
+    it { should have_many(:stakeholders, :include=>:person, :dependent=>:delete_all) }
+    it { should allow_mass_assignment_of(:stakeholders) }
+    it { should allow_mass_assignment_of(:owner) }
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
@@ -139,17 +138,6 @@ describe Task do
       it { should_not able_to_cancel_task }
       it { should able_to_complete_task }
       it { should able_to_change_task(:data) }
-=begin
-
-      it { should allow_delegation('owner', 'potential') } # Can delegate to another potential owner, or noone (release),
-      it { should_not allow_delegation('owner', 'other') } # but can't delegate to random person.
-      it { should_not allow_delegation('owner', 'excluded') }
-      it { should allow_delegation('owner', nil) }
-      it { should_not allow_delegation('other', 'other') }  # Random person can't delegate to themselves, neither can potential owners.
-      it { should allow_delegation('potential', 'potential') }
-      it { should allow_delegation('supervisor', 'other') } # Supervisor can delegate to anyone, except excluded owners.
-      it { should_not allow_delegation('supervisor', 'excluded') }
-=end
     end
 
     describe 'past owner' do
@@ -224,8 +212,9 @@ describe Task do
   # -- Status --
   describe 'status' do
 
-    it { should have_attribute(:status, :string, :null=>false) }
-    it { should allow_mass_assigning_of(:status) }
+    it { should have_attribute(:status) }
+    it { should have_db_column(:status, :type=>:string) }
+    it { should allow_mass_assignment_of(:status) }
     it('should not allow random values') { subject.status = :random ; subject.should have(1).error_on(:status) }
 
     describe 'available' do
@@ -438,14 +427,15 @@ describe Task do
 
   # -- Activity --
   
-  it { should have_many(:activities, Activity, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc') }
-  it { should_not allow_mass_assigning_of(:activities) }
+  it { should have_many(:activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc') }
+  it { should_not allow_mass_assignment_of(:activities) }
 
 
   # -- Data --
 
-  it { should have_attribute(:data, :text, :null=>false) }
-  it { should allow_mass_assigning_of(:data) }
+  it { should have_attribute(:data) }
+  it { should have_db_column(:data, :type=>:text) }
+  it { should allow_mass_assignment_of(:data) }
   it('should have empty hash as default data')  { subject.data.should == {} }
   it('should allowing assigning nil to data')   { subject.update_attributes :data => nil; subject.data.should == {} }
   it('should validate data is a hash')          { lambda { Person.supervisor.tasks.find(subject).update_attributes! :data=>'string' }.
@@ -456,35 +446,25 @@ describe Task do
 
   # -- Access key --
 
-  it { should have_attribute(:access_key, :string, :null=>false, :limit=>32) }
-  it { should_not allow_mass_assigning_of(:access_key) }
-  it('should create hexdigest access key')                { subject.access_key.should look_like_hexdigest(32) }
+  it { should have_attribute(:access_key) }
+  it { should have_db_column(:access_key, :type=>:string, :limit=>32) }
+  it { should_not allow_mass_assignment_of(:access_key) }
+  it('should create hexdigest access key')                { subject.access_key.should =~ /^[0-9a-f]{32}$/ }
   it('should give each task unique access key')           { [Task.make, Task.make, Task.make].map(&:access_key).uniq.size.should be(3) }
 
-  it { should have_locking_column(:version) }
-  it { should have_created_at_timestamp }
-  it { should have_updated_at_timestamp }
+  it { should have_attribute(:version) }
+  it { should have_db_column(:version, :type=>:integer) }
+  it('should have locking column version') { subject.class.locking_enabled? && subject.class.locking_column == 'version' }
+  it { should have_attribute(:created_at) }
+  it { should have_db_column(:created_at, :type=>:datetime) }
+  it { should have_attribute(:updated_at) }
+  it { should have_db_column(:updated_at, :type=>:datetime) }
 
 
   # -- Query scopes --
 
-  describe 'completed' do
-    subject { Task.completed.proxy_options }
-
-    it('should select tasks with status completed') { subject.delete(:conditions).should == "tasks.status = 'completed'" }
-    it('should order by updated timestamp from most recent to least') { subject.delete(:order).should == 'tasks.updated_at desc' }
-    it('should only affect selection criteria and order')  { subject.except(:conditions, :order).should be_empty }
-  end
-
-  describe 'cancelled' do
-    subject { Task.cancelled.proxy_options }
-
-    it('should select tasks with status cancelled') { subject.delete(:conditions).should == "tasks.status = 'cancelled'" }
-    it('should order by updated timestamp from most recent to least') { subject.delete(:order).should == 'tasks.updated_at desc' }
-    it('should only affect selection criteria and order')  { subject.except(:conditions, :order).should be_empty }
-  end
-
-
+  it { should have_named_scope(:completed, :conditions=>"tasks.status = 'completed'", :order=>'tasks.updated_at desc') }
+  it { should have_named_scope(:cancelled, :conditions=>"tasks.status = 'cancelled'", :order=>'tasks.updated_at desc') }
 
 
   # Expecting the subject to change status after executing the block. Uses the reason argument

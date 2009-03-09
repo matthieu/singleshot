@@ -29,33 +29,27 @@ require File.dirname(__FILE__) + '/helpers'
 #  created_at :datetime        not null
 #
 describe Activity do
+  subject { Activity.make }
 
-  describe 'new' do
-    subject { Activity.make_unsaved }
+  it { should belong_to(:person) }
+  it { should validate_presence_of(:person) }
 
-    it { should belong_to(:person, Person) }
-    it { should validate_presence_of(:person) }
+  it { should belong_to(:task) }
 
-    it { should belong_to(:task, Task) }
+  it { should have_attribute(:name) }
+  it { should have_db_column(:name, :type=>:string) }
+  it { should validate_presence_of(:name) }
 
-    it { should have_attribute(:name, :string, :null=>false) }
-    it { should validate_presence_of(:name) }
-    it { should have_attribute(:created_at, :datetime, :null=>false) }
-  end
+  it { should have_attribute(:created_at) }
+  it { should have_db_column(:created_at, :type=>:datetime) }
 
-  describe 'existing' do
-    subject { Activity.make }
-
-    it { should be_readonly }
-  end
+  it { should be_readonly }
 
   describe 'date' do
     subject { Activity.make }
 
     it('should return created_at date') { subject.date.should == subject.created_at.to_date }
   end
-
-  describe 'for scope'
 
   describe 'default scope' do
     subject { Activity.send(:scope, :find) }
@@ -64,11 +58,7 @@ describe Activity do
     it('should only affect selection order') { subject.except(:order).should be_empty }
   end
 
-  describe 'since scope' do
-    subject { Activity.since(@date = Date.yesterday).proxy_options }
-
-    it('should select all activities created since given date') { subject[:conditions].should == ['created_at >= ?', @date] }
-    it('should only affect selection criteria') { subject.except(:conditions).should be_empty }
-  end
+  it { should have_named_scope('since(2009)', :conditions=>['created_at >= ?', 2009]) }
+  xit { should have_named_scope(:for) }
 
 end

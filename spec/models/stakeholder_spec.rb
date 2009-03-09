@@ -29,26 +29,19 @@ require File.dirname(__FILE__) + '/helpers'
 #  created_at :datetime        not null
 #
 describe Stakeholder do
+  subject { Stakeholder.make }
 
-  describe 'new' do
-    subject { Stakeholder.make_unsaved }
-
-    it { should belong_to(:person, Person) }
-    it { should validate_presence_of(:person) }
-
-    it { should belong_to(:task, Task) }
-
-    it { should have_attribute(:role, :string, :null=>false) }
-    it { should validate_presence_of(:role) }
-    it { should validate_inclusion_of(:role, :in=>[:owner, :potential_owner, :excluded_owner, :past_owner], :not_in=>:foo) }
-    it { should validate_inclusion_of(:role, :in=>[:creator, :observer, :supervisor]) }
-  end
-
-  describe 'existing' do
-    subject { Stakeholder.make }
-
-    it { should be_readonly }
-    it('should not allow person/task/role duplicate')       { subject.clone.should have(1).error_on(:role) }
-  end
-
+  it { should belong_to(:person) }
+  it { should validate_presence_of(:person) }
+  it { should belong_to(:task) }
+  it { should have_attribute(:role) }
+  it { should have_db_column(:role, :type=>:string) }
+  it { should validate_presence_of(:role) }
+  it { should validate_inclusion_of(:role, :in=>[:creator, :owner]) }
+  it { should validate_inclusion_of(:role, :in=>[:potential_owner, :excluded_owner, :past_owner]) }
+  it { should validate_inclusion_of(:role, :in=>[:supervisor, :observer]) }
+  it { should have_readonly_attributes(:task, :role, :person) }
+  it { should have_attribute(:created_at) }
+  it { should have_db_column(:created_at, :type=>:datetime) }
+  it { should validate_uniqueness_of(:role, :scope=>[:task_id, :person_id]) }
 end

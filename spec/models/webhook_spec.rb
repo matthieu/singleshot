@@ -31,26 +31,31 @@ require File.dirname(__FILE__) + '/helpers'
 #  hmac_key    :string(255)
 #
 describe Webhook do
-  subject { Webhook.make }
 
-  it { should belong_to(:task, Task) }
+  it { should belong_to(:task) }
 
-  it { should have_attribute(:event, :string, :null=>false) }
+  it { should have_attribute(:event) }
+  it { should have_db_column(:event, :type=>:string) }
   it { should validate_presence_of(:event) }
 
-  it { should have_attribute(:url, :string, :null=>false) }
+  it { should have_attribute(:url) }
+  it { should have_db_column(:url, :type=>:string) }
   it { should validate_presence_of(:url) }
 
-  it { should have_attribute(:http_method, :string, :null=>false) }
+  it { should have_attribute(:http_method) } #, :string, :null=>false) }
+  it { should have_db_column(:http_method, :type=>:string) }
   it { should validate_presence_of(:http_method) }
   it('should have http_method=post by default') { subject.http_method.should == 'post' }
-  it { should allow_mass_assigning_of(:http_method) }
+  it { should allow_mass_assignment_of(:http_method) }
 
-  it { should have_attribute(:enctype, :string, :null=>false) }
+  it { should have_attribute(:enctype) }
+  it { should have_db_column(:enctype, :type=>:string) }
   it { should validate_presence_of(:enctype) }
   it('should have enctype=url-encoded by default') { subject.enctype.should == Mime::URL_ENCODED_FORM.to_s }
 
-  it { should have_attribute(:hmac_key, :string) }
+  it { should have_attribute(:hmac_key) }
+  it { should have_db_column(:hmac_key, :type=>:string) }
   it { should_not validate_presence_of(:hmac_key) }
 
+  it { should allow_mass_assignment_of(:event, :url, :http_method, :enctype, :hmac_key) }
 end

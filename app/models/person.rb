@@ -90,11 +90,12 @@ class Person < ActiveRecord::Base
   end
 
   # Must have identity.
-  validates_uniqueness_of :identity, :message=>'A person with this identity already exists.'
+  validates_presence_of :identity
+  validates_uniqueness_of :identity#, :message=>"A person with this identity already exists."
 
   # Must have e-mail address.
   validates_email         :email, :message=>"I need a valid e-mail address."
-  validates_uniqueness_of :email, :message=>'This e-mail is already in use.'
+  validates_uniqueness_of :email#, :message=>"This e-mail is already in use."
 
   before_validation do |record|
     record.email = record.email.to_s.strip.downcase

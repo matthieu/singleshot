@@ -45,7 +45,10 @@ class Stakeholder < ActiveRecord::Base
   # * observer        -- Watches and receives notifications about the task.
   PLURAL_ROLES = [:potential_owner, :excluded_owner, :past_owner, :observer, :supervisor]
 
-  ALL_ROLES = SINGULAR_ROLES + PLURAL_ROLES
+  ROLES = SINGULAR_ROLES + PLURAL_ROLES
+  
+  attr_accessible :task, :person, :role
+  attr_readonly :task, :person, :role
 
   # Stakeholder associated with a task.
   belongs_to :task
@@ -54,12 +57,9 @@ class Stakeholder < ActiveRecord::Base
   belongs_to :person
   validates_presence_of :person
 
-  symbolize :role, :in=>ALL_ROLES
+  symbolize :role, :in=>ROLES
+  validates_presence_of :role
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
-
-  def readonly? #:nodoc:
-    !new_record?
-  end
 
   def to_hash
     { 'role'=>role.to_s, 'person'=>person.to_param }
