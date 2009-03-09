@@ -25,16 +25,16 @@ describe TasksController do
     before { @params = { :task=>{ :title=>'expenses' } } }
 
     it { should route(:post, '/tasks', :controller=>'tasks', :action=>'create') }
-    it ('should require authentication (HTML)')   { post(:create, @params).should redirect_to(session_url) }
-    it ('should require authentication (API)')    { post(:create, @params.merge(:format=>:json)).should respond_with(401) }
-    it ('should verify parameters include task')  { post(:create, @params.except(:task), as_creator).should respond_with(400) }
-    it ('should require task to have a title')    { post(:create, { :task=>@params.except(:title), :format=>:json }, as_creator).should respond_with(422) }
+    it ('should require authentication (HTML)')   { post(:create, @params) ; should redirect_to(session_url) }
+    it ('should require authentication (API)')    { post(:create, @params.merge(:format=>:json)) ; should respond_with(401) }
+    it ('should verify parameters include task')  { post(:create, @params.except(:task), as_creator) ; should respond_with(400) }
+    it ('should require task to have a title')    { post(:create, { :task=>@params.except(:title), :format=>:json }, as_creator) ; should respond_with(422) }
     it ('should create new task')                 { new_task!.title.should == 'expenses' }
     it ('should set task creator to authenticated person')    { new_task!.in_role(:creator).first.should == Person.creator }
     it ('should set task supervisor to authenticated person') { new_task!.in_role(:supervisor).first.should == Person.creator }
-    it ('should return status 201 Created')       { post(:create, @params.merge(:format=>:json), as_creator).should respond_with(201) }
-    it ('should return location of new task')     { post(:create, @params.merge(:format=>:json), as_creator).should respond_with('Location'=>task_url(controller.send(:task))) }
-    it ('should redirect to new task (HTML)')     { post(:create, @params.merge(:format=>:html), as_creator).should redirect_to(task_url(controller.send(:task))) }
+    it ('should return status 201 Created')       { post(:create, @params.merge(:format=>:json), as_creator) ; should respond_with(201) }
+    it ('should return location of new task')     { post(:create, @params.merge(:format=>:json), as_creator) ; response.headers['Location'].should == task_url(controller.send(:task)) }
+    it ('should redirect to new task (HTML)')     { post(:create, @params.merge(:format=>:html), as_creator) ; should redirect_to(task_url(controller.send(:task))) }
     it ('should render new task (JSON)')          { parse(:json, post(:create, @params.merge(:format=>:json), as_creator))['task']['title'].should == 'expenses' }
     it ('should render new task (XML)')           { parse(:xml, post(:create, @params.merge(:format=>:xml), as_creator))['task']['title'].should == 'expenses' }
     it ('should accept stakeholders as role/name pairs') { new_task!(:stakeholders=>[{'role'=>'owner', 'person'=>Person.owner.to_param}]).owner.should == Person.owner }
@@ -54,10 +54,10 @@ describe TasksController do
     before { @params = { :id=>@task.id } }
 
     it { should route(:get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1') }
-    it ('should require authentication (HTML)')   { get(:show, @params).should redirect_to(session_url) }
-    it ('should require authentication (JSON)')   { get(:show, @params.merge(:format=>:json)).should respond_with(401) }
-    it ('should reject unauthorized requests')    { get(:show, @params.merge(:format=>:json), as_other).should respond_with(404) }
-    it ('should render task (HTML)')              { get(:show, @params.merge(:format=>:html), as_creator).should respond_with('tasks/show.html.erb') }
+    it ('should require authentication (HTML)')   { get(:show, @params) ; should redirect_to(session_url) }
+    it ('should require authentication (JSON)')   { get(:show, @params.merge(:format=>:json)) ; should respond_with(401) }
+    it ('should reject unauthorized requests')    { get(:show, @params.merge(:format=>:json), as_other) ; should respond_with(404) }
+    it ('should render task (HTML)')              { get(:show, @params.merge(:format=>:html), as_creator) ; should render_template('tasks/show.html.erb') }
     it ('should render task (JSON)')              { parse(:json, get(:show, @params.merge(:format=>:json), as_creator)).should include('task') }
     it ('should render task (XML)')               { parse(:xml, get(:show, @params.merge(:format=>:xml), as_creator)).should include('task') }
   end
@@ -69,11 +69,11 @@ describe TasksController do
     before { @params = { :id=>@task.id, :task=>{ 'priority'=>1, 'stakeholders'=>@stakeholders } } }
 
     it { should route(:put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1') }
-    it ('should require authentication (HTML)')   { put(:update, @params).should redirect_to(session_url) }
-    it ('should require authentication (JSON)')   { put(:update, @params.merge(:format=>:json)).should respond_with(401) }
-    it ('should reject unauthorized requests')    { put(:update, @params.merge(:format=>:json), as_creator).should respond_with(422) }
-    it ('should verify parameters include task')  { put(:update, @params.except(:task), as_supervisor).should respond_with(400) }
-    it ('should redirect back to task (HTML)')    { put(:update, @params.merge(:format=>:html), as_supervisor).should redirect_to(task_url(@task)) }
+    it ('should require authentication (HTML)')   { put(:update, @params) ; should redirect_to(session_url) }
+    it ('should require authentication (JSON)')   { put(:update, @params.merge(:format=>:json)) ; should respond_with(401) }
+    it ('should reject unauthorized requests')    { put(:update, @params.merge(:format=>:json), as_creator) ; should respond_with(422) }
+    it ('should verify parameters include task')  { put(:update, @params.except(:task), as_supervisor) ; should respond_with(400) }
+    it ('should redirect back to task (HTML)')    { put(:update, @params.merge(:format=>:html), as_supervisor) ; should redirect_to(task_url(@task)) }
     it ('should render task (JSON)')              { parse(:json, put(:update, @params.merge(:format=>:json), as_supervisor)).should include('task') }
     it ('should render task (XML)')               { parse(:xml, put(:update, @params.merge(:format=>:xml), as_supervisor)).should include('task') }
     it ('should modify task')                     { lambda { put(:update, @params, as_supervisor) }.should change { Task.find(@task).priority }.to(1) }
@@ -89,16 +89,16 @@ describe TasksController do
     before { @tasks = [Task.make(:title=>'expenses'), Task.make(:title=>'tps report')] }
 
     it { should route(:get, '/tasks', :controller=>'tasks', :action=>'index') }
-    it ('should require authentication (HTML)')   { get(:index).should redirect_to(session_url) }
-    it ('should require authentication (JSON)')   { get(:index, :format=>:json).should respond_with(401) }
-    it ('should render tasks (HTML)')             { get(:index, { :format=>:html }, as_creator).should respond_with('tasks/index.html.erb') }
-    it ('should render tasks (JSON)')             { parse(:json, get(:index, { :format=>:json }, as_creator)).should include('task_list') }
-    it ('should render tasks (XML)')              { parse(:xml, get(:index, { :format=>:xml }, as_creator)).should include('task_list') }
+    it ('should require authentication (HTML)')         { get(:index) ; should redirect_to(session_url) }
+    it ('should require authentication (JSON)')         { get(:index, :format=>:json) ; should respond_with(401) }
+    it ('should render tasks (HTML)')                   { get(:index, { :format=>:html }, as_creator).should render_template('tasks/index.html.erb') }
+    it ('should render tasks (JSON)')                   { parse(:json, get(:index, { :format=>:json }, as_creator)).should include('task_list') }
+    it ('should render tasks (XML)')                    { parse(:xml, get(:index, { :format=>:xml }, as_creator)).should include('task_list') }
     it  'should render tasks (Atom)'
     it  'should render tasks (iCal)'
     it ('should render tasks for authenticated person') { rendered.proxy_owner.should == Person.creator }
-    it ('should render pending tasks')            { rendered.proxy_scope.proxy_options.should == Task.pending.proxy_options }
-    it ('should load tasks with stakeholders')    { rendered.proxy_options.should == Task.with_stakeholders.proxy_options }
+    it ('should render pending tasks')                  { rendered.proxy_scope.proxy_options.should == Task.pending.proxy_options }
+    it ('should load tasks with stakeholders')          { rendered.proxy_options.should == Task.with_stakeholders.proxy_options }
       
     def rendered
       unless @rendered

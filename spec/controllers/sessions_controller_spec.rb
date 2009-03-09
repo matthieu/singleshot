@@ -20,12 +20,13 @@ require File.dirname(__FILE__) + '/helpers'
 describe SessionsController do
   controller_name :sessions
 
-  it { should route('/session', :controller =>'sessions', :action=>'show') }
+  it { should route(:get, '/session', :controller =>'sessions', :action=>'show') }
+  it { should filter_params(:password) }
 
   describe 'get /' do
     before { get :show }
 
-    it { should render(:template=>'sessions/show') }
+    it { should render_template('sessions/show') }
   end
 
 
