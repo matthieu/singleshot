@@ -34,7 +34,7 @@ module Validators #:nodoc:
         def self.validates_email(*attr_names)
           configuration = { :on => :save }
           configuration.update(attr_names.extract_options!)
-          configuration[:with] = /^([^@\s]+)@[-a-z0-9]+(\.[-a-z0-9]+)*$/
+          configuration[:with] = /\A([^@\s]+)@[-a-z0-9]+(\.[-a-z0-9]+)*\z/
           configuration[:message] ||= I18n.translate('active_record.error_messages.invalid_email')
           attr_names << configuration
           validates_format_of *attr_names
