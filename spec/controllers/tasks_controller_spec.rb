@@ -19,7 +19,6 @@ require File.dirname(__FILE__) + '/helpers'
 describe TasksController do
   
   controller_name :tasks
-  before { controller.use_rails_error_handling! }
 
   describe 'create' do
     before { @params = { :task=>{ :title=>'expenses' } } }

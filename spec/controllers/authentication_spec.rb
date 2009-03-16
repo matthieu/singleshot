@@ -29,9 +29,7 @@ class AuthenticationTestController < ApplicationController
   end
 end
 
-describe ApplicationController do
-  controller_name :authentication_test
-  before { controller.use_rails_error_handling! }
+describe AuthenticationTestController do
   before { @person = Person.make(:email=>'me@example.com', :locale=>:tlh, :timezone=>-11) }
 
   describe 'unauthenticated request' do
@@ -75,6 +73,7 @@ describe ApplicationController do
   end
 
   describe 'HTTP Basic authentication' do
+
     describe '(with credentials)' do
       before do
         request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(@person.username, 'secret')
@@ -105,6 +104,8 @@ ActionController::Base.allow_forgery_protection    = true
   end
 
   describe 'access key authentication' do
+    before { rescue_action_in_public! }
+
     describe '(Atom)' do
       before { get :feed, :access_key=>@person.access_key, :format=>:atom }
       it { should respond_with(200) }
@@ -134,6 +135,7 @@ ActionController::Base.allow_forgery_protection    = true
   end
 
   describe 'forgery protection' do
+    before { rescue_action_in_public! }
     before { request.env['CONTENT_TYPE'] = Mime::URL_ENCODED_FORM.to_s }
     it 'should apply when using session authentication' do
       post :index, nil, :authenticated=>@person.id
