@@ -2,8 +2,7 @@
   <head>
     <title>Singleshot<%= " &mdash; #{escape_once(@title)}" if @title %></title>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag 'default', :cache=>true %>
-    <%= stylesheet_link_tag 'print', :media=>'print', :cache=>true %>
+    <%= stylesheet_link_tag :all, :cache=>true %>
     <%= @alternate.map { |mime, url| auto_discovery_link_tag mime.to_sym, url } if @alternate %>
   </head>
   <body>
