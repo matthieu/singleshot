@@ -1,12 +1,12 @@
-<% form_for :session, :url=>session_url, :html=>{ :class=>'login' } do |f| %>
+<% form_for :session, :url=>session_url, :html=>{ :class=>'login' } do %>
   <fieldset>
     <%= content_tag 'p', flash[:error], :class=>'error' if flash[:error] %>
     <dl>
       <dt><%= label_tag 'username', t('session.username.label') %></dt>
-      <dd><%= text_field_tag 'username', nil, :size=>30, :title=>t('session.username.hint'), :class=>'auto_focus' %></dd>
+      <dd><%= text_field_tag 'username', nil, :size=>40, :title=>t('session.username.hint'), :class=>'auto_focus' %></dd>
       <dt><%= label_tag 'password', t('session.password.label') %></dt>
-      <dd><%= password_field_tag 'password', nil, :size=>30, :title=>t('session.password.hint') %></dd>
-      <dd><%= submit_tag t('session.login.button') %></dd>
+      <dd><%= password_field_tag 'password', nil, :size=>40, :title=>t('session.password.hint') %></dd>
+      <dt></dt><dd><%= submit_tag t('session.login.button') %></dd>
     </dl> 
   </fieldset>
 <% end %>
