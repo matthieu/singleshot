@@ -40,7 +40,7 @@ describe Person do
   it { should have_db_column(:identity, :type=>:string) }
   it { should allow_mass_assignment_of(:identity, :allow_nil=>true) }
   it { should validate_uniqueness_of(:identity) }
-  it('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
+  it ('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
 
   it { should have_attribute(:email) }
   it { should have_db_column(:email, :type=>:string) }
@@ -51,7 +51,7 @@ describe Person do
   it { should have_attribute(:fullname) }
   it { should have_db_column(:fullname, :type=>:string) }
   it { should allow_mass_assignment_of(:fullname) }
-  it('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
+  it ('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
 
   it { should have_attribute(:timezone) }
   it { should have_db_column(:timezone, :type=>:integer) }
@@ -124,25 +124,27 @@ describe Person do
     it('should fail if no person identified')     { should_not identify('missing') }
   end
 
-  describe 'tasks' do
-    describe 'create' do
+  describe '.tasks' do
+
+    describe '.create' do
       before  { @bob = Person.named('bob') }
       subject { @bob.tasks.create(:title=>'foo') }
 
+      it('should save task')                                { subject.should == Task.last }
       it('should return new task, modified_by person')      { subject.modified_by.should == @bob }
       it('should associate task with person as creator')    { subject.in_role(:creator).should == [@bob] }
       it('should associate task with person as supervisor') { subject.in_role(:supervisor).should == [@bob] }
-      it('should attempt to save task')                     { subject.should == Task.last }
+      it('should associate task with person as owner')      { subject.in_role(:owner).should == [@bob] }
     end
 
-    describe 'create!' do
+    describe '.create!' do
       before  { @bob = Person.named('bob') }
 
       it('should return task if new task created')        { @bob.tasks.create!(:title=>'foo').should be_kind_of(Task) }
       it('should raise error unless task created')        { lambda { @bob.tasks.create! }.should raise_error }
     end
 
-    describe 'find' do
+    describe '.find' do
       before  do
         @bob = Person.named('bob')
         2.times do

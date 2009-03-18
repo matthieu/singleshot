@@ -157,6 +157,7 @@ class Person < ActiveRecord::Base
       Task.new attributes do |task|
         task.stakeholders.build :role=>:creator, :person=>proxy_owner if task.in_role(:creator).empty?
         task.stakeholders.build :role=>:supervisor, :person=>proxy_owner if task.in_role(:supervisor).empty?
+        task.stakeholders.build :role=>:owner, :person=>proxy_owner if task.in_role(:owner).empty?
       end
     end
 
