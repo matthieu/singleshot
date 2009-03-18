@@ -17,8 +17,10 @@
 
 
 $(function() {
-  $('input[title]').each(function() { $(this).watermark(this.title) })
+  $('input[title]').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
   $('input.auto_focus').each(function() { $(this).focus() ; return false })
+  $.datepicker.setDefaults({ numberOfMonths: 2, showButtonPanel: true, dateFormat: $.datepicker.RSS });
+  $('input.date').datepicker();
 })
 
 
@@ -27,5 +29,26 @@ var Singleshot = {
     var to = window.location.href;
     if (top.location != to)
       top.location = to;
+  },
+
+  populateForm: function(form, data, prefix) {
+    var form = $(form);
+    prefix = prefix || 'task'
+    for (key in data) {
+      var value = data[key];
+      var input = form.find('input[name=' + prefix + '[' + key + ']]');
+      if (value instanceof Date) {
+        input.datepicker('setDate', value);
+      } else if (value instanceof Object) {
+        populateForm(form, prefix + '[' + key + ']', value)
+      } else {
+        switch(input.attr('type')) {
+          case 'radio':
+            input.attr('checked', value.toString() == input.val())
+          default:
+            input.val(value)
+        }
+      }
+    }
   }
 }

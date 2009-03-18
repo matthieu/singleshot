@@ -48,7 +48,7 @@
 				if(o.cls) { l.addClass(o.cls); };
 				if(o.css) { l.css(o.css); };
 				
-				l.css({position:"absolute",left:".3em",display:"inline",cursor:"text"});
+				l.css({position:"absolute",left:"4pt",display:"inline",cursor:"text"});
 				if(!o.el.is("textarea")) { l.css({top:($.browser.mozilla)?"0px" : ".1em"}); };
 				
 				if(!o.cls && !o.css) {
