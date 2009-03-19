@@ -17,8 +17,15 @@
 
 
 $(function() {
+  // Form fields watermakr and auto focus.
   $('input[title]').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
-  $('input.auto_focus').each(function() { $(this).focus() ; return false })
+  $('input.auto_focus:first').focus();
+  // Sparkline bars.
+  $('.sparkline.bar').each(function() {
+    var values = $($(this).text().split(',')).each(function() { parseInt(this, 10) });
+    $(this).show().sparkline(values, { height:'1em', chartRangeMin:0, type: 'bar', barColor: '#8fafff' });
+  });
+  // Form datepicked control.
   $.datepicker.setDefaults({ numberOfMonths: 2, showButtonPanel: true, dateFormat: $.datepicker.RSS });
   $('input.date').datepicker();
 })

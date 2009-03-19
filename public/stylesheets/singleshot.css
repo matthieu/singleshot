@@ -390,9 +390,11 @@ div.right {
 }
 
 /* Nothing semantic about this one, but the sparklines seem to not display properly any other way */
-.right-shifted-sparkline {
-  margin: 2em 3.6em -4em 0;
+.right-shifted {
+  margin: 2em 3.6em -3.2em 0;
   text-align: right;
+}
+.sparkline {
 }
 
 

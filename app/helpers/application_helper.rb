@@ -18,12 +18,10 @@
 module ApplicationHelper
 
   # Renders bar sparkline. First argument are data points, second argument are options:
-  # * id -- ID to use for element (default to 'sparkline')
   # * title -- Title to show when hovering over element
   def bar_sparkline(datum, options = {})
-    id = options[:id] || 'sparkline'
-    content_tag('div', content_tag('span', t('sparkline.loading'), :id=>id, :title=>options[:title]), :class=>'right-shifted-sparkline') <<
-      javascript_tag("$('##{id}').sparkline([#{datum.join(',')}], {type:'bar', barColor: '#8fafff'})")
+    content_tag('div', content_tag('span', datum.join(','), :title=>options[:title]),
+                :class=>'sparkline bar right-shifted', :style=>'display:none')
   end
 
 

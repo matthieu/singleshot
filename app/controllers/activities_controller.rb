@@ -21,8 +21,8 @@ class ActivitiesController < ApplicationController #:nodoc:
   def index
     @title = t('activity.index.title')
     @subtitle = t('activity.index.subtitle')
-    @activities = Activity.for(authenticated).paginate(:page=>params['page'], :per_page=>50)
-    @datapoints = lambda { Activity.since(Date.today - 1.month).group_by(&:date).map { |date, entries| entries.size } }
+    @activities = Activity.visible_to(authenticated).paginate(:page=>params['page'], :per_page=>50)
+    @datapoints = lambda { Activity.visible_to(authenticated).since(Date.today - 1.month).datapoints.map(&:last) }
     respond_with presenting(:activities, @activities)
   end
 
