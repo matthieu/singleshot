@@ -78,13 +78,13 @@ end
 
 
 Stakeholder.blueprint do
-  person { Person.make }
+  person { Person.named('owner') }
   role   { 'owner' }
   task   { Task.make }
 end
 
 Activity.blueprint do
-  person { Person.make }
+  person { Person.named('creator') }
   name   { 'created' }
   task   { Task.make }
 end
