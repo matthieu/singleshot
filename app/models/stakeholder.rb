@@ -61,8 +61,4 @@ class Stakeholder < ActiveRecord::Base
   validates_presence_of :role
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
 
-  def to_hash
-    { 'role'=>role.to_s, 'person'=>person.to_param }
-  end
-
 end

@@ -37,9 +37,9 @@ describe Stakeholder do
   it { should have_attribute(:role) }
   it { should have_db_column(:role, :type=>:string) }
   it { should validate_presence_of(:role) }
-  it { should validate_inclusion_of(:role, :in=>[:creator, :owner]) }
-  it { should validate_inclusion_of(:role, :in=>[:potential_owner, :excluded_owner, :past_owner]) }
-  it { should validate_inclusion_of(:role, :in=>[:supervisor, :observer]) }
+  it { should validate_inclusion_of(:role, :in=>['creator', 'owner']) }
+  it { should validate_inclusion_of(:role, :in=>['potential_owner', 'excluded_owner', 'past_owner']) }
+  it { should validate_inclusion_of(:role, :in=>['supervisor', 'observer']) }
   it { should have_readonly_attributes(:task, :role, :person) }
   it { should have_attribute(:created_at) }
   it { should have_db_column(:created_at, :type=>:datetime) }

@@ -32,6 +32,7 @@ class Activity < ActiveRecord::Base
 
   # Activity associated with a task.
   belongs_to :task
+  validates_presence_of :task
 
   # Activity associated with a person.
   belongs_to :person
@@ -48,15 +49,10 @@ class Activity < ActiveRecord::Base
 
   # Date activity was created at.
   def date
-    created_at.to_date
+    @date ||= created_at.to_date
   end
 
-  after_save do |activity|
-    activity.task.webhooks.select do |hook|
-      hook.send_notification if hook.event == activity.name.to_s
-    end
-  end
-
+=begin
   # Returns activities from all tasks associated with this stakeholder.
   named_scope :for, lambda { |person|
     { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
@@ -65,17 +61,6 @@ class Activity < ActiveRecord::Base
     # ^ Ordering by created_at is imprecise and may return two activities out of owner
     #   (e.g. owns before created).
   }
-=begin
-  # Returns activities for a range of dates (from..to) or from a given date to today.
-  named_scope :during, lambda { |arg|
-    range = case arg
-    when Date, Time; arg.to_time.in_time_zone.beginning_of_day..Time.current.end_of_day
-    when Range;      arg.first.to_time.in_time_zone.beginning_of_day..arg.last.to_time.in_time_zone.end_of_day
-    end
-    { :conditions=>{ :created_at=>range } } }
-
-  # Eager loads all activities and their dependents (task, person).
-  named_scope :with_dependents, :include=>[:task, :person]
 =end
 
   # Returns activities by recently added order.
@@ -83,5 +68,12 @@ class Activity < ActiveRecord::Base
 
   # Return activities created since a given date.
   named_scope :since, lambda { |date| { :conditions=>['created_at >= ?', date] } }
+
+  # TODO: test this!
+  after_save do |activity|
+    activity.task.webhooks.select do |hook|
+      hook.send_notification if hook.event == activity.name.to_s
+    end
+  end
 
 end

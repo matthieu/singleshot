@@ -33,32 +33,27 @@ describe Activity do
 
   it { should belong_to(:person) }
   it { should validate_presence_of(:person) }
-
-  it { should belong_to(:task) }
-
   it { should have_attribute(:name) }
   it { should have_db_column(:name, :type=>:string) }
   it { should validate_presence_of(:name) }
-
+  it { should belong_to(:task) }
+  it { should validate_presence_of(:task) }
   it { should have_attribute(:created_at) }
   it { should have_db_column(:created_at, :type=>:datetime) }
-
   it { should be_readonly }
+  it { should have_named_scope('since(2009)', :conditions=>['created_at >= ?', 2009]) }
 
-  describe 'date' do
+  describe '#date' do
     subject { Activity.make }
 
-    it('should return created_at date') { subject.date.should == subject.created_at.to_date }
+    it('should return created_at as date') { subject.date.should == subject.created_at.to_date }
   end
 
   describe 'default scope' do
-    subject { Activity.send(:scope, :find) }
+    subject { Activity.class_eval { scope(:find) } }
 
     it('should return activities by reverse chronological order') { subject[:order].should == 'activities.created_at desc' }
     it('should only affect selection order') { subject.except(:order).should be_empty }
   end
-
-  it { should have_named_scope('since(2009)', :conditions=>['created_at >= ?', 2009]) }
-  xit { should have_named_scope(:for) }
 
 end

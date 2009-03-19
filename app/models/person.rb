@@ -153,24 +153,24 @@ class Person < ActiveRecord::Base
     # Initialize the task on behalf of its creator. For example:
     #   creator = Person.find(authenticated)
     #   creator.tasks.new(attributes)
-    def new(attributes = {})
+    def new(attributes = {}, &block)
       Task.new attributes do |task|
+        yield task if block_given?
         task.stakeholders.build :role=>:creator, :person=>proxy_owner if task.in_role(:creator).empty?
         task.stakeholders.build :role=>:supervisor, :person=>proxy_owner if task.in_role(:supervisor).empty?
-        task.stakeholders.build :role=>:owner, :person=>proxy_owner if task.in_role(:owner).empty?
       end
     end
 
     # Create the task on behalf of its creator. For example:
     #   creator = Person.find(authenticated)
     #   creator.tasks.create(attributes)
-    def create(attributes = {})
-      self.new(attributes).tap(&:save)
+    def create(attributes = {}, &block)
+      self.new(attributes, &block).tap(&:save)
     end
 
     # Similar to #create but throws RecordNotSaved if it fails to create a new record.
-    def create!(attributes = {})
-      self.new(attributes).tap(&:save!)
+    def create!(attributes = {}, &block)
+      self.new(attributes, &block).tap(&:save!)
     end
     
     # Use this to find a task and update it on behalf of this person. For example:

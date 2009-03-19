@@ -31,8 +31,10 @@ require File.dirname(__FILE__) + '/helpers'
 #  hmac_key    :string(255)
 #
 describe Webhook do
+  subject { Webhook.make }
 
   it { should belong_to(:task) }
+  it { should validate_presence_of(:task) }
 
   it { should have_attribute(:event) }
   it { should have_db_column(:event, :type=>:string) }
@@ -42,7 +44,7 @@ describe Webhook do
   it { should have_db_column(:url, :type=>:string) }
   it { should validate_presence_of(:url) }
 
-  it { should have_attribute(:http_method) } #, :string, :null=>false) }
+  it { should have_attribute(:http_method) }
   it { should have_db_column(:http_method, :type=>:string) }
   it { should validate_presence_of(:http_method) }
   it('should have http_method=post by default') { subject.http_method.should == 'post' }

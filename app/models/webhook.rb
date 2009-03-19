@@ -45,6 +45,7 @@ class Webhook < ActiveRecord::Base
   end
 
   belongs_to :task
+  validates_presence_of :task
  
   attr_accessible :event, :url, :http_method, :enctype, :hmac_key
   validates_presence_of :event, :url, :http_method, :enctype
