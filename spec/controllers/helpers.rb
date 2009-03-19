@@ -30,7 +30,7 @@ module Spec::Helpers #:nodoc:
     #
     # Without arguments, authenticates as 'person'.
     def authenticate(person = Person.named('me'))
-      previous, session[:authenticated] = session[:authenticated], person.id
+      previous, session[:authenticated] = session[:authenticated], person && person.id
       if block_given?
         begin
           yield
@@ -43,6 +43,14 @@ module Spec::Helpers #:nodoc:
 
     def session_for(person)
       { :authenticated=>person.id }
+    end
+
+    def json(entity = response.body)
+      ActiveSupport::JSON.decode(entity)
+    end
+
+    def xml(entity = response.body)
+      Hash.from_xml(entity)
     end
 
 =begin

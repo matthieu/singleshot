@@ -48,7 +48,7 @@ class Stakeholder < ActiveRecord::Base
   ROLES = SINGULAR_ROLES + PLURAL_ROLES
   
   attr_accessible :task, :person, :role
-  attr_readonly :task, :person, :role
+  attr_readable :person, :role
 
   # Stakeholder associated with a task.
   belongs_to :task

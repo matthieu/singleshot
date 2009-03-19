@@ -41,7 +41,7 @@ class Activity < ActiveRecord::Base
   symbolize :name
   validates_presence_of :name
 
-  attr_readable :name, :task, :person, :created_at
+  attr_readable :name, :person, :created_at
 
   def readonly? #:nodoc:
     !new_record?

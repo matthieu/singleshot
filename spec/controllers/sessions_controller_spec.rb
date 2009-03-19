@@ -25,13 +25,13 @@ describe SessionsController do
   it { should route(:delete, '/session', :controller =>'sessions', :action=>'destroy') }
   it { should filter_params(:password) }
 
-  describe 'get /session' do
+  describe 'GET /session' do
     before { get :show }
 
     it { should render_template('sessions/show') }
   end
 
-  describe 'post /session' do
+  describe 'POST /session' do
     before { @person = Person.named('me') }
 
     describe '(no credentials)' do
@@ -69,7 +69,7 @@ describe SessionsController do
 
   end
 
-  describe 'delete /session' do
+  describe 'DELETE /session' do
     before do
       authenticate
       delete :destroy

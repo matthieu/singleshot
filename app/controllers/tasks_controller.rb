@@ -27,8 +27,11 @@ class TasksController < ApplicationController #:nodoc:
 
   def create
     @task = authenticated.tasks.new
-    presenter.update! params[:task]
-    respond_with presenter, :status=>:created, :location=>@task
+    presenter.update! params['task']
+    respond_to do |wants|
+      wants.html { redirect_to tasks_url, :status=>:see_other }
+      wants.any  { respond_with presenter, :status=>:created, :location=>@task }
+    end
   end
 
   def show
@@ -38,8 +41,11 @@ class TasksController < ApplicationController #:nodoc:
   verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
     :render=>{ :text=>'You are not authorized to change this task', :status=>:unauthorized }
   def update
-    presenter.update! params[:task]
-    respond_with presenter, :redirect_to=>@task
+    presenter.update! params['task']
+    respond_to do |wants|
+      wants.html { redirect_to tasks_url, :status=>:see_other }
+      wants.any  { respond_with presenter }
+    end
   end
 
   def completed
@@ -51,7 +57,7 @@ class TasksController < ApplicationController #:nodoc:
 protected
 
   def task
-    @task ||= authenticated.tasks.find(params[:id])
+    @task ||= authenticated.tasks.find(params['id'])
   end
 
   def presenter
