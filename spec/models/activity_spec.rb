@@ -41,7 +41,9 @@ describe Activity do
   it { should have_attribute(:created_at) }
   it { should have_db_column(:created_at, :type=>:datetime) }
   it { should be_readonly }
-  it { should have_named_scope('since(2009)', :conditions=>['created_at >= ?', 2009]) }
+  it { should have_named_scope('since(2009)', :conditions=>['activities.created_at >= ?', 2009]) }
+  it { should have_named_scope("visible_to('john')", :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
+                               :conditions=>{ 'involved.person_id'=>'john' }, :group=>'activities.id') }
 
   describe '#date' do
     subject { Activity.make }
@@ -54,6 +56,26 @@ describe Activity do
 
     it('should return activities by reverse chronological order') { subject[:order].should == 'activities.created_at desc' }
     it('should only affect selection order') { subject.except(:order).should be_empty }
+  end
+
+  describe 'datapoints' do
+    before do
+      # Need one task with no associated activities, otherwise Activity.make spawns more activities.
+      task = Task.make
+      Activity.delete_all
+      { -5=>2, -4=>3, -2=>1, 0=>2 }.each do |day, count|
+        count.times do
+          Activity.create!(:task=>task, :person=>Person.creator, :name=>'created') { |activity| activity.created_at = Time.now + day.days }
+        end
+      end
+    end
+    before { @early = Date.today - 4.days }
+    subject { Activity.since(@early).datapoints }
+
+    it('should return datapoints from first date')          { subject.map(&:first).first.should == @early }
+    it('should return datapoints to today date')            { subject.map(&:first).last.should == Date.today }
+    it('should return datapoints for all days in between')  { subject.map(&:first).inject { |last, this| (last + 1.day).should == this ; this } }
+    it('should return activity count for each day')         { subject.map(&:last).should == [3,0,1,0,2] }
   end
 
 end

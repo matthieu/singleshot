@@ -51,22 +51,23 @@ class Activity < ActiveRecord::Base
     @date ||= created_at.to_date
   end
 
-=begin
-  # Returns activities from all tasks associated with this stakeholder.
-  named_scope :for, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
-      :conditions=>["involved.person_id=?", person.id], :include=>[:task, :person],
-      :group=>'activities.id' }
-    # ^ Ordering by created_at is imprecise and may return two activities out of owner
-    #   (e.g. owns before created).
-  }
-=end
-
   # Returns activities by recently added order.
   default_scope :order=>'activities.created_at desc'
 
   # Return activities created since a given date.
-  named_scope :since, lambda { |date| { :conditions=>['created_at >= ?', date] } }
+  named_scope :since, lambda { |date| { :conditions=>['activities.created_at >= ?', date] } } do
+    # Returns datapoints for plotting activity levels in a graph. The result is an array of date/count pairs,
+    # starting from the earliest day in the collection and all the way to today.
+    def datapoints
+      grouped = group_by(&:date)
+      (last.date..Date.today).map { |date| [date, (grouped[date] || []).size] }
+    end
+  end
+
+  named_scope :visible_to, lambda { |person| {
+    :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
+    :conditions=>{ 'involved.person_id'=>person }, :group=>'activities.id'
+  } }
 
   # TODO: test this!
   after_save do |activity|
