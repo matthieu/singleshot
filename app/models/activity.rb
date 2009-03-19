@@ -38,7 +38,6 @@ class Activity < ActiveRecord::Base
   belongs_to :person
   validates_presence_of :person
   
-  symbolize :name
   validates_presence_of :name
 
   attr_readable :name, :person, :created_at

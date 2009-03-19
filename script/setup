@@ -22,8 +22,7 @@ require 'rubygems/source_info_cache'
 
 
 # The plugins we maintain in vendor/plugins.
-$plugins = 'git://github.com/assaf/presenter.git',
-           'git://github.com/zargony/activerecord_symbolize.git'
+$plugins = 'git://github.com/assaf/presenter.git'
 
 
 def check(message)

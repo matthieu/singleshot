@@ -1,15 +1,8 @@
 --- 
 vendor/plugins/presenter: 
   squashed: true
-  url: git://github.com/assaf/presenter.git
   type: git
+  url: git://github.com/assaf/presenter.git
   revision: 5d40ec18f66f6d0b7e79e054f59e26d3eb622a04
   branch: master
   remote: braid/vendor/plugins/presenter
-vendor/plugins/activerecord_symbolize: 
-  squashed: true
-  url: http://github.com/zargony/activerecord_symbolize.git
-  type: git
-  revision: 2a73ef9028b9dab8c4c703174dca53ffba9d10f4
-  branch: master
-  remote: braid/vendor/plugins/activerecord-symbolize

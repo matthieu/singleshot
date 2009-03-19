@@ -80,13 +80,13 @@ class Populate < ActiveRecord::Migration
     # Completed, cancelled, suspended
     new_task! :potential_owner=>[@me, @bond], :supervisor=>@bond
     advance
-    @bond.tasks.last.update_attributes! :status=>:suspended
+    @bond.tasks.last.update_attributes! :status=>'suspended'
     new_task! :owner=>@me
     advance
-    @me.tasks.last.update_attributes! :status=>:completed
+    @me.tasks.last.update_attributes! :status=>'completed'
     advance
     new_task! :supervisor=>@me
-    @me.tasks.last.update_attributes! :status=>:cancelled
+    @me.tasks.last.update_attributes! :status=>'cancelled'
   end
 
   def self.down
@@ -104,7 +104,7 @@ class Populate < ActiveRecord::Migration
       args[:potential_owner] ||= [@me, @bond]
       [:creator, :potential_owner, :excluded_owner, :supervisor, :observer].select { |role| args.has_key?(role) }.each do |role|
         Array(args[role]).each do |person|
-          task.stakeholders.build :role=>role, :person=>person
+          task.stakeholders.build :role=>role.to_s, :person=>person
         end
       end
     end.save!

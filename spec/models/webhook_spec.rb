@@ -34,7 +34,6 @@ describe Webhook do
   subject { Webhook.make }
 
   it { should belong_to(:task) }
-  it { should validate_presence_of(:task) }
 
   it { should have_attribute(:event) }
   it { should have_db_column(:event, :type=>:string) }

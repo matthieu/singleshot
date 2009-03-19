@@ -27,7 +27,7 @@ end
 
 Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
   Given "the person #{person}"
-  Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_').to_sym, :person=>Person.identify(person)
+  Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_'), :person=>Person.identify(person)
 end
 
 
@@ -39,13 +39,13 @@ When /^(\S*) (\S*) the task "(.*)"$/ do |person, action, title|
   when 'releases'
     task.update_attributes! :owner=>nil
   when 'suspends'
-    task.update_attributes! :status=>:suspended
+    task.update_attributes! :status=>'suspended'
   when 'resumes'
-    task.update_attributes! :status=>:active
+    task.update_attributes! :status=>'active'
   when 'completes'
-    task.update_attributes! :status=>:completed
+    task.update_attributes! :status=>'completed'
   when 'cancels'
-    task.update_attributes! :status=>:cancelled
+    task.update_attributes! :status=>'cancelled'
   else fail "Unknown action #{action}"
   end
 end

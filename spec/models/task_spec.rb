@@ -92,20 +92,20 @@ describe Task do
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
-      it('should return all people in a given role') { subject.associate(:find=>[@foo, @bar], :miss=>@baz).in_role(:find).should == [@foo, @bar] }
+      it('should return all people in a given role') { subject.associate('find'=>[@foo, @bar], 'miss'=>@baz).in_role('find').should == [@foo, @bar] }
     end
 
     describe '#in_role?' do
-      subject { Task.make.associate(:find=>Person.named('foo', 'bar'), :miss=>Person.named('baz')) }
-      it('should identify all people in a given role') { [subject.in_role?(:find, 'foo'), subject.in_role?(:find, 'bar'),
-                                                          subject.in_role?(:miss, 'foo')].should == [true, true, false] }
-      it('should return nil if no identity given')     { subject.in_role?(:find, nil).should be_false }
+      subject { Task.make.associate('find'=>Person.named('foo', 'bar'), 'miss'=>Person.named('baz')) }
+      it('should identify all people in a given role') { [subject.in_role?('find', 'foo'), subject.in_role?('find', 'bar'),
+                                                          subject.in_role?('miss', 'foo')].should == [true, true, false] }
+      it('should return nil if no identity given')     { subject.in_role?('find', nil).should be_false }
     end
 
     describe 'creator' do
       subject { Person.creator }
 
-      it('should not have more than one creator')     { lambda { Task.make.associate! :creator=>[subject, Person.owner] }.
+      it('should not have more than one creator')     { lambda { Task.make.associate! 'creator'=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
       it { should_not able_to_claim_task }
       it { should_not able_to_delegate_task }
@@ -120,7 +120,7 @@ describe Task do
       subject { Task.make }
 
       it('should be nil if no person in this role') { subject.owner.should be_nil }
-      it('should return person in role owner')      { subject.associate(:owner=>Person.owner).owner.should == Person.owner }
+      it('should return person in role owner')      { subject.associate('owner'=>Person.owner).owner.should == Person.owner }
       it('should accept new owner')                 { lambda { subject.owner = Person.owner }.should change(subject, :owner).to(Person.owner) and
                                                       lambda { subject.owner = Person.other }.should change(subject, :owner).to(Person.other) }
     end
@@ -128,9 +128,9 @@ describe Task do
     describe 'owner' do
       subject { Person.owner }
 
-      it('should not have more than one owner')       { lambda { Task.make.associate! :owner=>[subject, Person.owner] }.
+      it('should not have more than one owner')       { lambda { Task.make.associate! 'owner'=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
-      it('should default to single potential owner')  { Task.make.tap { |t| t.associate!(:potential_owner=>subject) }.owner.should == subject }
+      it('should default to single potential owner')  { Task.make.tap { |t| t.associate!('potential_owner'=>subject) }.owner.should == subject }
       it { should able_to_claim_task }
       it { should able_to_delegate_task }
       it { should_not able_to_suspend_task }
@@ -143,7 +143,7 @@ describe Task do
     describe 'past owner' do
       subject { Person.past_owner }
 
-      it('should be previous owner of task')   { subject.should == Task.make.in_role(:past_owner).first }
+      it('should be previous owner of task')   { subject.should == Task.make.in_role('past_owner').first }
       it { should able_to_claim_task }
       it { should_not able_to_delegate_task }
       it { should_not able_to_suspend_task }
@@ -220,11 +220,11 @@ describe Task do
     describe 'available' do
       subject { Task.make }
 
-      it('should be the initial status for new tasks')            { Task.new(:status=>:active).status.should == :available }
-      it { should change_status_to(:active, "with new owner")     { subject.update_attributes! :owner=>Person.owner } }
+      it('should be the initial status for new tasks')            { Task.new(:status=>'active').status.should == 'available' }
+      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>Person.owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to(:completed)                { Person.supervisor.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>:completed } }
+      it { should_not change_status_to('completed')               { Person.supervisor.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>'completed' } }
       it { should offer_potential_owner_to_claim }
       it { should offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -236,14 +236,14 @@ describe Task do
     describe 'active' do
       subject { Task.make_active }
 
-      it('should be status for owned tasks')                  { subject.status.should == :active }
-      it { should change_status_to(:available, "if no owner") { Person.owner.tasks.find(subject).update_attributes :owner=>nil } }
-      it { should_not change_status("with owner change")      { Person.owner.tasks.find(subject).update_attributes :owner=>Person.potential } }
-      it { should change_status_to(:suspended, "if suspended by supervisor")  { Person.supervisor.tasks.find(subject).update_attributes :status=>:suspended } }
-      it { should_not change_status("unless suspended by supervisor")         { Person.owner.tasks.find(subject).update_attributes :status=>:suspended } }
+      it('should be status for owned tasks')                    { subject.status.should == 'active' }
+      it { should change_status_to('available', "if no owner")  { Person.owner.tasks.find(subject).update_attributes :owner=>nil } }
+      it { should_not change_status("with owner change")        { Person.owner.tasks.find(subject).update_attributes :owner=>Person.potential } }
+      it { should change_status_to('suspended', "if suspended by supervisor") { Person.supervisor.tasks.find(subject).update_attributes :status=>'suspended' } }
+      it { should_not change_status("unless suspended by supervisor")         { Person.owner.tasks.find(subject).update_attributes :status=>'suspended' } }
       it { should honor_cancellation_policy }
-      it { should change_status_to(:completed, "when completed by owner")     { Person.owner.tasks.find(subject).update_attributes :status=>:completed } }
-      it { should_not change_status_to(:completed, "unless by owner")         { Person.supervisor.tasks.find(subject).update_attributes :status=>:completed } }
+      it { should change_status_to('completed', "when completed by owner")     { Person.owner.tasks.find(subject).update_attributes :status=>'completed' } }
+      it { should_not change_status_to('completed', "unless by owner")         { Person.supervisor.tasks.find(subject).update_attributes :status=>'completed' } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should_not offer_supervisor_to_resume }
@@ -255,11 +255,11 @@ describe Task do
     describe 'suspended' do
       subject { Task.make_suspended }
 
-      it { should change_status_to(:available, "if resumed and no owner")  { Person.supervisor.tasks.find(subject).update_attributes! :status=>:active } }
-      it { should change_status_to(:active, "if resumed with owner")       { subject.associate! :owner=>Person.owner ; Person.supervisor.tasks.find(subject).update_attributes! :status=>:available } }
-      it { should_not change_status("unless resumed by supervisor")        { Person.owner.tasks.find(subject).update_attributes :status=>:active } }
+      it { should change_status_to('available', "if resumed and no owner")  { Person.supervisor.tasks.find(subject).update_attributes! :status=>'active' } }
+      it { should change_status_to('active', "if resumed with owner")       { subject.associate! 'owner'=>Person.owner ; Person.supervisor.tasks.find(subject).update_attributes! :status=>'available' } }
+      it { should_not change_status("unless resumed by supervisor")        { Person.owner.tasks.find(subject).update_attributes :status=>'active' } }
       it { should honor_cancellation_policy }
-      it { should_not change_status_to(:completed)                         { Person.owner.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>:completed } }
+      it { should_not change_status_to('completed')                         { Person.owner.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>'completed' } }
       it { should_not offer_potential_owner_to_claim }
       it { should_not offer_supervisor_to_suspend }
       it { should offer_supervisor_to_resume }
@@ -299,20 +299,20 @@ describe Task do
     subject { Person.creator.tasks.create!(:title=>'foo') }
 
     it { should be_available }
-    it('should have creator')                     { subject.in_role(:creator).should == [Person.creator] }
-    it('should have creator as supervisor')       { subject.in_role(:supervisor).should == [Person.creator] }
+    it('should have creator')                     { subject.in_role('creator').should == [Person.creator] }
+    it('should have creator as supervisor')       { subject.in_role('supervisor').should == [Person.creator] }
     it('should have no owner')                    { subject.owner.should be_nil }
-    it { should log_activity(Person.creator, :created) }
+    it { should log_activity(Person.creator, 'created') }
   end
 
   describe 'created and delegated' do
     subject { Person.creator.tasks.create!(:title=>'foo', :owner=>Person.owner) }
 
     it { should be_active }
-    it('should have creator') { subject.in_role(:creator).should == [Person.creator] }
+    it('should have creator') { subject.in_role('creator').should == [Person.creator] }
     it('should have owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.creator, :created) }
-    it { should log_activity(Person.owner, :claimed) }
+    it { should log_activity(Person.creator, 'created') }
+    it { should log_activity(Person.owner, 'claimed') }
   end
 
   describe 'owner claiming' do
@@ -324,7 +324,7 @@ describe Task do
 
     it { should be_active }
     it('should have owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.owner, :claimed) }
+    it { should log_activity(Person.owner, 'claimed') }
   end
 
   describe 'owner delegating' do
@@ -336,8 +336,8 @@ describe Task do
 
     it { should be_active }
     it('should have new owner') { subject.owner.should == Person.potential }
-    it { should log_activity(Person.owner, :delegated) }
-    it { should log_activity(Person.potential, :claimed) }
+    it { should log_activity(Person.owner, 'delegated') }
+    it { should log_activity(Person.potential, 'claimed') }
   end
 
   describe 'supervisor delegating' do
@@ -349,8 +349,8 @@ describe Task do
 
     it { should be_active }
     it('should have new owner') { subject.owner.should == Person.potential }
-    it { should log_activity(Person.supervisor, :delegated) }
-    it { should log_activity(Person.potential, :claimed) }
+    it { should log_activity(Person.supervisor, 'delegated') }
+    it { should log_activity(Person.potential, 'claimed') }
   end
 
   describe 'owner releasing' do
@@ -362,56 +362,56 @@ describe Task do
 
     it { should be_available }
     it('should have no owner') { subject.owner.should be_nil }
-    it { should log_activity(Person.owner, :released) }
+    it { should log_activity(Person.owner, 'released') }
   end
 
   describe 'supervisor suspending' do
     subject { Task.make_active }
     before do
-      Person.supervisor.tasks.find(subject).update_attributes! :status=>:suspended
+      Person.supervisor.tasks.find(subject).update_attributes! :status=>'suspended'
       subject.reload
     end
 
     it { should be_suspended }
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, :suspended) }
+    it { should log_activity(Person.supervisor, 'suspended') }
   end
 
   describe 'supervisor resuming' do
     subject { Task.make_active }
     before do
-      Person.supervisor.tasks.find(subject).update_attributes! :status=>:suspended
-      Person.supervisor.tasks.find(subject).update_attributes! :status=>:active
+      Person.supervisor.tasks.find(subject).update_attributes! :status=>'suspended'
+      Person.supervisor.tasks.find(subject).update_attributes! :status=>'active'
       subject.reload
     end
 
     it { should be_active }
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, :resumed) }
+    it { should log_activity(Person.supervisor, 'resumed') }
   end
 
   describe 'supervisor cancelling' do
     subject { Task.make_active }
     before do
-      Person.supervisor.tasks.find(subject).update_attributes! :status=>:cancelled
+      Person.supervisor.tasks.find(subject).update_attributes! :status=>'cancelled'
       subject.reload
     end
 
     it { should be_cancelled }
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, :cancelled) }
+    it { should log_activity(Person.supervisor, 'cancelled') }
   end
 
   describe 'owner completing' do
     subject { Task.make_active }
     before do
-      Person.owner.tasks.find(subject).update_attributes! :status=>:completed
+      Person.owner.tasks.find(subject).update_attributes! :status=>'completed'
       subject.reload
     end
 
     it { should be_completed }
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.owner, :completed) }
+    it { should log_activity(Person.owner, 'completed') }
   end
 
   describe 'supervisor modifying' do
@@ -421,7 +421,7 @@ describe Task do
       subject.reload
     end
 
-    it { should log_activity(Person.supervisor, :modified) }
+    it { should log_activity(Person.supervisor, 'modified') }
   end
 
 
@@ -463,8 +463,8 @@ describe Task do
 
   # -- Query scopes --
 
-  it { should have_named_scope(:completed, :conditions=>"tasks.status = 'completed'", :order=>'tasks.updated_at desc') }
-  it { should have_named_scope(:cancelled, :conditions=>"tasks.status = 'cancelled'", :order=>'tasks.updated_at desc') }
+  it { should have_named_scope('completed', :conditions=>"tasks.status = 'completed'", :order=>'tasks.updated_at desc') }
+  it { should have_named_scope('cancelled', :conditions=>"tasks.status = 'cancelled'", :order=>'tasks.updated_at desc') }
 
 
   # Expecting the subject to change status after executing the block. Uses the reason argument
@@ -506,7 +506,7 @@ describe Task do
   def honor_cancellation_policy
     simple_matcher "honor cancellation policy" do |given, matcher|
       matcher.failure_message = "expected status to change to cancelled, but did not change"
-      Person.supervisor.tasks.find(given).update_attributes :status=>:cancelled
+      Person.supervisor.tasks.find(given).update_attributes :status=>'cancelled'
     end
   end
 
@@ -542,8 +542,8 @@ describe Task do
   def able_to_suspend_task
     simple_matcher "be offered/able to suspend task" do |given|
       task = Task.make
-      fail unless subject.can_suspend?(task) == subject.tasks.find(task).update_attributes(:status=>:suspended)
-      task.reload.status == :suspended
+      fail unless subject.can_suspend?(task) == subject.tasks.find(task).update_attributes(:status=>'suspended')
+      task.reload.status == 'suspended'
     end
   end
 
@@ -556,8 +556,8 @@ describe Task do
   def able_to_resume_task
     simple_matcher "be offered/able to resume task" do |given|
       task = Task.make_suspended
-      fail unless subject.can_resume?(task) == subject.tasks.find(task).update_attributes(:status=>:available)
-      task.reload.status == :available
+      fail unless subject.can_resume?(task) == subject.tasks.find(task).update_attributes(:status=>'available')
+      task.reload.status == 'available'
     end
   end
 
@@ -570,8 +570,8 @@ describe Task do
   def able_to_cancel_task
     simple_matcher "be offered/able to cancel task" do |given, matcher|
       task = Task.make
-      fail unless subject.can_cancel?(task) == subject.tasks.find(task).update_attributes(:status=>:cancelled)
-      task.reload.status == :cancelled
+      fail unless subject.can_cancel?(task) == subject.tasks.find(task).update_attributes(:status=>'cancelled')
+      task.reload.status == 'cancelled'
     end
   end
 
@@ -584,8 +584,8 @@ describe Task do
   def able_to_complete_task
     simple_matcher "be offered/able to complete task" do |given, matcher|
       task = Task.make_active
-      fail unless subject.can_complete?(task) == subject.tasks.find(task).update_attributes(:status=>:completed)
-      task.reload.status == :completed
+      fail unless subject.can_complete?(task) == subject.tasks.find(task).update_attributes(:status=>'completed')
+      task.reload.status == 'completed'
     end
   end
 
@@ -605,8 +605,8 @@ describe Task do
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
       all = { :title=>'new title', :priority=>5, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
-              :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>:observer),
-                              Stakeholder.new(:person=>Person.supervisor, :role=>:supervisor)] }
+              :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>'observer'),
+                              Stakeholder.new(:person=>Person.supervisor, :role=>'supervisor')] }
       changed = all.select { |attr, value| subject.tasks.find(Task.make_active).update_attributes(attr=>value) rescue false }.map(&:first)
       case attrs.first
       when nil, :any
@@ -625,7 +625,7 @@ describe Task do
 
   # Expecting a new activity to show up after yielding to block, matching task (subject), person and name.
   # For example:
-  #   it { should log_activity(Person.owner, :completed) { Person.owner.tasks(id).update_attributes :status=>:completed } }
+  #   it { should log_activity(Person.owner, 'completed') { Person.owner.tasks(id).update_attributes :status=>'completed' } }
   def log_activity(person, name)
     simple_matcher "log activity '#{person.to_param} #{name}'" do |given, matcher|
       if block_given?

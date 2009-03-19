@@ -53,18 +53,13 @@ module Spec::Helpers #:nodoc:
       Hash.from_xml(entity)
     end
 
-=begin
-    # Returns the currently authenticated person.
-    def authenticated
-      Person.find(session[:authenticated]) if session[:authenticated] 
-    end
-
-    # Returns true if the previous request was authenticated and authorized.
-    def authorized?
-      !(response.redirected_to == session_url || response.code == '401')
-    end
-=end
   end
 end
 
-Spec::Runner.configure { |config| config.include Spec::Helpers::Controllers, :type=>:controller }
+Spec::Runner.configure do |config|
+  config.include Spec::Helpers::Controllers, :type=>:controller
+  config.after :each do
+    I18n.locale = nil 
+    Time.zone = nil
+  end
+end

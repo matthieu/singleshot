@@ -30,7 +30,7 @@ class AuthenticationTestController < ApplicationController
 end
 
 describe AuthenticationTestController do
-  before { @person = Person.make(:email=>'me@example.com', :locale=>:tlh, :timezone=>-11) }
+  before { @person = Person.make(:email=>'me@example.com', :locale=>'tlh', :timezone=>-11) }
 
   describe 'unauthenticated request' do
     describe '(HTML)' do

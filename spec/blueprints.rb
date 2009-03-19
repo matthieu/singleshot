@@ -32,7 +32,7 @@ class Person #:nodoc:
 
 
     # Convenient methods for roles, so owner() returns owner, and so forth.
-    [:creator, :owner, :supervisor, :potential, :excluded, :past_owner, :observer, :other].each do |role|
+    ['creator', 'owner', 'supervisor', 'potential', 'excluded', 'past_owner', 'observer', 'other'].each do |role|
       define_method(role) { Person.named(role.to_s) }
     end
   end
@@ -41,16 +41,16 @@ end
 
 Task.blueprint do
   title        { 'Spec me' }
-  status       { :available }
-  object.associate :creator=>Person.creator, :supervisor=>Person.supervisor,
-    :potential_owner=>[Person.owner, Person.potential, Person.past_owner],
-    :past_owner=>Person.past_owner, :excluded_owner=>Person.excluded, :observer=>Person.observer
-  object.owner ||= Person.owner if object.status == :active || object.status == :completed
+  status       { 'available' }
+  object.associate 'creator'=>Person.creator, 'supervisor'=>Person.supervisor,
+    'potential_owner'=>[Person.owner, Person.potential, Person.past_owner],
+    'past_owner'=>Person.past_owner, 'excluded_owner'=>Person.excluded, 'observer'=>Person.observer
+  object.owner ||= Person.owner if object.status == 'active' || object.status == 'completed'
 end
 
 class Task
   class << self
-    [:active, :suspended, :cancelled, :completed].each do |status|
+    ['active', 'suspended', 'cancelled', 'completed'].each do |status|
       define_method("make_#{status}") { Task.make :status=>status }
     end
   end
@@ -79,13 +79,13 @@ end
 
 Stakeholder.blueprint do
   person { Person.make }
-  role   { :owner }
+  role   { 'owner' }
   task   { Task.make }
 end
 
 Activity.blueprint do
   person { Person.make }
-  name   { :created }
+  name   { 'created' }
   task   { Task.make }
 end
 

@@ -46,7 +46,7 @@ class Task < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
-    self[:status] = :available
+    self[:status] = 'available'
     self[:priority] ||= DEFAULT_PRIORITY
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
@@ -132,26 +132,26 @@ class Task < ActiveRecord::Base
     :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
 
   def stakeholders_with_supervisor_access=(list)
-    raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?(:supervisor, modified_by)
+    raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?('supervisor', modified_by)
     self.stakeholders_without_supervisor_access = list
   end
   alias_method_chain :stakeholders=, :supervisor_access
 
   # Return all people associate with the specified role. For example:
-  #   task.in_role(:observer)
+  #   task.in_role('observer')
   def in_role(role)
     stakeholders.select { |sh| sh.role == role }.map(&:person)
   end
 
   # Return all people associated with the specified roles. For example:
-  #   task.in_roles(:owner, :potential)
+  #   task.in_roles('owner', 'potential')
   def in_roles(*roles)
     stakeholders.select { |sh| roles.include?(sh.role) }.map(&:person).uniq
   end
 
   # Return true if a person is associated with this task in a particular role. For example:
-  #   task.in_role?(:owner, john)
-  #   task.in_role?(:owner, "john.smith")
+  #   task.in_role?('owner', john)
+  #   task.in_role?('owner', "john.smith")
   def in_role?(role, identity)
     return false unless identity
     person = Person.identify(identity)
@@ -159,41 +159,41 @@ class Task < ActiveRecord::Base
   end
 
   def owner
-    in_role(:owner).first
+    in_role('owner').first
   end
 
   def owner=(person)
     person = Person.identify(person) if person
     unless person == owner
-      stakeholders.delete stakeholders.select { |sh| sh.role == :owner }
-      stakeholders.build :person=>person, :role=>:owner if person
+      stakeholders.delete stakeholders.select { |sh| sh.role == 'owner' }
+      stakeholders.build :person=>person, :role=>'owner' if person
     end
   end
 
   def stakeholders_before_add(sh)
     case sh.role
-    when :creator
-      errors.add :stakeholders, "Task cannot have two creators" unless in_role(:creator).empty?
-    when :owner
+    when 'creator'
+      errors.add :stakeholders, "Task cannot have two creators" unless in_role('creator').empty?
+    when 'owner'
       changed_attributes['owner'] ||= nil
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if in_role?(:excluded_owner, sh.person)
-      errors.add :stakeholders, "Task cannot have two owners" unless in_role(:owner).empty?
-    when :potential_owner
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if in_role?(:excluded_owner, sh.person)
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if in_role?('excluded_owner', sh.person)
+      errors.add :stakeholders, "Task cannot have two owners" unless in_role('owner').empty?
+    when 'potential_owner'
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if in_role?('excluded_owner', sh.person)
     end
     raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
 
   def stakeholders_before_remove(sh)
-    changed_attributes['owner'] = sh.person if sh.role == :owner
+    changed_attributes['owner'] = sh.person if sh.role == 'owner'
   end
 
   private :stakeholders_before_add, :stakeholders_before_remove
 
   before_save do |task|
     past_owner, owner = task.changes['owner']
-    task.stakeholders.build :role=>:potential_owner, :person=>owner if owner && !task.in_role?(:potential_owner, owner)
-    task.stakeholders.build :role=>:past_owner, :person=>past_owner if past_owner && !task.in_role?(:past_owner, past_owner)
+    task.stakeholders.build :role=>'potential_owner', :person=>owner if owner && !task.in_role?('potential_owner', owner)
+    task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.in_role?('past_owner', past_owner)
   end
 
 =begin
@@ -300,30 +300,30 @@ class Task < ActiveRecord::Base
   # * suspended -- Task is suspended.
   # * completed -- Task has completed.
   # * cancelled -- Task was cancelled.
-  STATUSES = [:available, :active, :suspended, :completed, :cancelled]
+  STATUSES = ['available', 'active', 'suspended', 'completed', 'cancelled']
 
-  symbolize :status, :in=>STATUSES
+  validates_inclusion_of :status, :in=>STATUSES
 
   # Check method for each status (active?, completed?, etc).
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
 
   before_validation do |task|
     case task.status
-    when :available
+    when 'available'
       # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
-      if !task.owner && (potential = task.in_role(:potential_owner)) && potential.size == 1
+      if !task.owner && (potential = task.in_role('potential_owner')) && potential.size == 1
         task.owner = potential.first
       end
       # Assigned task becomes active.
-      task.status = :active if task.owner
-    when :active
+      task.status = 'active' if task.owner
+    when 'active'
       # Unassigned task becomes available.
-      task.status = :available unless task.owner
+      task.status = 'available' unless task.owner
     end
   end
 
   def readonly? # :nodoc:
-    [:completed, :cancelled].include?(status_was)
+    ['completed', 'cancelled'].include?(status_was)
   end
 
 
@@ -332,36 +332,36 @@ class Task < ActiveRecord::Base
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at desc', :dependent=>:delete_all
 
   before_create do |task|
-    creator = task.in_role(:creator).first
+    creator = task.in_role('creator').first
     task.modified_by ||= creator
-    task.activities.build :name=>:created, :person=>creator  if creator
-    task.activities.build :name=>:claimed, :person=>task.owner if task.owner
+    task.activities.build :name=>'created', :person=>creator  if creator
+    task.activities.build :name=>'claimed', :person=>task.owner if task.owner
   end
 
   before_update do |task|
     past_owner, owner = task.changes['owner']
     if owner
-      task.activities.build :name=>:delegated, :person=>task.modified_by  if task.modified_by && task.modified_by != owner
-      task.activities.build :name=>:claimed, :person=>owner
+      task.activities.build :name=>'delegated', :person=>task.modified_by  if task.modified_by && task.modified_by != owner
+      task.activities.build :name=>'claimed', :person=>owner
     else
-      task.activities.build :name=>:released, :person=>past_owner
+      task.activities.build :name=>'released', :person=>past_owner
     end
 
     if task.status_changed?
       case task.status
-      when :active, :available
-        task.activities.build :name=>:resumed, :person=>task.modified_by if task.status_was == 'suspended' && task.modified_by
-      when :suspended
-        task.activities.build :name=>:suspended, :person=>task.modified_by if task.modified_by
-      when :completed
-        task.activities.build :name=>:completed, :person=>task.owner
-      when :cancelled
-        task.activities.build :name=>:cancelled, :person=>task.modified_by if task.modified_by
+      when 'active', 'available'
+        task.activities.build :name=>'resumed', :person=>task.modified_by if task.status_was == 'suspended' && task.modified_by
+      when 'suspended'
+        task.activities.build :name=>'suspended', :person=>task.modified_by if task.modified_by
+      when 'completed'
+        task.activities.build :name=>'completed', :person=>task.owner
+      when 'cancelled'
+        task.activities.build :name=>'cancelled', :person=>task.modified_by if task.modified_by
       end
     end
   
     changed = task.changed - ['status', 'owner']
-    task.activities.build :name=>:modified, :person=>task.modified_by unless changed.empty?
+    task.activities.build :name=>'modified', :person=>task.modified_by unless changed.empty?
   end
 
 
@@ -378,11 +378,11 @@ class Task < ActiveRecord::Base
   # Returns true if this person can own the task. Potential owners and supervisors can own the task,
   # excluded owners cannot (even if they appear in the other list).
   def can_own?(person)
-    (in_role?(:potential_owner, person) || in_role?(:supervisor, person)) && !in_role?(:excluded_owner, person)
+    (in_role?('potential_owner', person) || in_role?('supervisor', person)) && !in_role?('excluded_owner', person)
   end
 
   validate_on_update do |task|
-    by_supervisor = task.in_role?(:supervisor, task.modified_by)
+    by_supervisor = task.in_role?('supervisor', task.modified_by)
     past_owner, owner = task.changes['owner']
     if past_owner != owner
       if owner
@@ -400,13 +400,13 @@ class Task < ActiveRecord::Base
       end
 
       case task.status
-      when :available, :active
+      when 'available', 'active'
         task.errors.add :status, "Only supervisor is allowed to resume this task" if task.status_was == 'suspended' && !by_supervisor
-      when :suspended
+      when 'suspended'
         task.errors.add :status, "Only supervisor is allowed to suspend this task" unless by_supervisor
-      when :completed
+      when 'completed'
         task.errors.add :status, "Only owner can complete task" unless task.owner == task.modified_by
-      when :cancelled
+      when 'cancelled'
         task.errors.add :status, "Only supervisor allowed to cancel this task" unless by_supervisor
       end
     end
@@ -551,24 +551,6 @@ class Task < ActiveRecord::Base
   def completed_on
     # TODO: should be attribute
   end
-
-  def complete!(data = nil)
-    self.status = :completed
-    self.data = data if data
-    # TODO: Update outcome, observers
-    save!
-  end
-
-  def cancel!
-    if reserved?
-      destroy
-    else
-      self.status = :cancelled
-      # TODO: Update outcome, observers
-      save!
-    end
-  end
-
 
 
   # --- Access control ---

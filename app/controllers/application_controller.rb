@@ -70,8 +70,10 @@ protected
         end
       end
     end
-    I18n.locale = @authenticated && @authenticated.locale
-    Time.zone = @authenticated && @authenticated.timezone
+    if @authenticated
+      I18n.locale = @authenticated.locale.to_sym if @authenticated.locale
+      Time.zone = @authenticated.timezone
+    end
   end
 
 end

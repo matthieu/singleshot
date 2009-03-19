@@ -78,7 +78,6 @@ class Person < ActiveRecord::Base
 
 
   attr_accessible :identity, :fullname, :email, :locale, :timezone, :password
-  symbolize :locale
 
   # Returns an identifier suitable for use with Person.resolve.
   def to_param
@@ -156,8 +155,8 @@ class Person < ActiveRecord::Base
     def new(attributes = {}, &block)
       Task.new attributes do |task|
         yield task if block_given?
-        task.stakeholders.build :role=>:creator, :person=>proxy_owner if task.in_role(:creator).empty?
-        task.stakeholders.build :role=>:supervisor, :person=>proxy_owner if task.in_role(:supervisor).empty?
+        task.stakeholders.build :role=>'creator', :person=>proxy_owner if task.in_role('creator').empty?
+        task.stakeholders.build :role=>'supervisor', :person=>proxy_owner if task.in_role('supervisor').empty?
       end
     end
 
@@ -175,7 +174,7 @@ class Person < ActiveRecord::Base
     
     # Use this to find a task and update it on behalf of this person. For example:
     #   task = owner.tasks.find(task_id)
-    #   task.update_attributes :status=>:completed
+    #   task.update_attributes :status=>'completed'
     def find(*args)
       super.tap do |found|
         Array(found).each do |task|
@@ -195,32 +194,32 @@ class Person < ActiveRecord::Base
 
   # Returns true if this person can delegate the task. Offered to current owner and supervisor.
   def can_delegate?(task, person = nil)
-    (task.owner == self || task.in_role?(:supervisor, self)) && (person.nil? || task.can_own?(person))
+    (task.owner == self || task.in_role?('supervisor', self)) && (person.nil? || task.can_own?(person))
   end
 
   # Returns true if this person can suspend the task.
   def can_suspend?(task)
-    task.available? && task.in_role?(:supervisor, self)
+    task.available? && task.in_role?('supervisor', self)
   end
 
   # Returns true if this person can resume the task.
   def can_resume?(task)
-    task.suspended? && task.in_role?(:supervisor, self)
+    task.suspended? && task.in_role?('supervisor', self)
   end
 
   # Returns true if this person can cancel the task.
   def can_cancel?(task)
-    !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
+    !task.completed? && !task.cancelled? && task.in_role?('supervisor', self)
   end
 
   # Returns true if this person can complete the task. Must be owner of an active task.
   def can_complete?(task)
-    task.active? && task.in_role?(:owner, self)
+    task.active? && task.in_role?('owner', self)
   end
 
   # Returns true if this person can change various task attributes.
   def can_change?(task)
-    !task.completed? && !task.cancelled? && task.in_role?(:supervisor, self)
+    !task.completed? && !task.cancelled? && task.in_role?('supervisor', self)
   end
 
 end

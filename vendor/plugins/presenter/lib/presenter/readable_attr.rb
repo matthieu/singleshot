@@ -20,7 +20,7 @@ module Presenter::ReadableAttributes
   end
 
   def to_hash
-    self.class.to_hash_attribute_names.inject Hash.new do |hash, attr|
+    self.class.to_hash_attribute_names.inject({}) do |hash, attr|
       value = send(attr)
       if value.respond_to?(:to_hash)
         value = value.to_hash

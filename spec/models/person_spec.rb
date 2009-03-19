@@ -132,8 +132,8 @@ describe Person do
 
       it('should save task')                                { subject.should == Task.last }
       it('should return new task, modified_by person')      { subject.modified_by.should == @bob }
-      it('should associate task with person as creator')    { subject.in_role(:creator).should == [@bob] }
-      it('should associate task with person as supervisor') { subject.in_role(:supervisor).should == [@bob] }
+      it('should associate task with person as creator')    { subject.in_role('creator').should == [@bob] }
+      it('should associate task with person as supervisor') { subject.in_role('supervisor').should == [@bob] }
     end
 
     describe '.create!' do
