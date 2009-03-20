@@ -5,11 +5,12 @@
      <link rel='stylesheet' href='css/syntax.css' type='text/css'>
   </head>
   <body>
-    <div id='header'><h1>Singleshot</h1></div>
+    <div id='header'><div class='title'>Singleshot</div></div>
     <div id='sidebar'>
       <ol class='toc'>
         <li>Start Here<ol class='toc'>
           <li><a href='index.html'>Welcome</a></li>
+          <li><a href='getting_started.html'>Getting Started</a></li>
         </ol></li>
         <li>Get involved<ol class='toc'>
           <li><a href='contributing.html'>Contributing</a></li>
@@ -17,6 +18,7 @@
       </ol>
     </div>
     <div id='main'>
+      {% if page.title %}<h1>{{ page.title }}</h1>{% endif %}
       {{ content }}
     </div>
     <div id='footer'>

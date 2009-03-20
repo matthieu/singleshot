@@ -1,11 +1,10 @@
 ---
 layout: default
-title: Singleshot
 ---
 
 !images/screenshot.png!
 
-More, soon.
+Check the "Singleshot Google group":http://groups.google.com/group/singleshot for more announcements.
 
 Source code: <a href="http://github.com/intalio/singleshot">http://github.com/intalio/singleshot</a>
 

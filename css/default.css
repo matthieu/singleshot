@@ -33,15 +33,13 @@ h1, h2, h3 {
   letter-spacing: 0.03em;
 }
 h1 {
-  font-size: 2em;
+  font-size: 1.6em;
   margin-top: 0;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #808080;
 }
 h2 {
   font-size: 1.3em;
   padding-bottom: 0.3em;
-  border-bottom: 1px solid #a0a0a0;
 }
 h3 {
   font-size: 1.1em;
@@ -87,11 +85,15 @@ th, thead td {
 
 
 #header {
-  margin: 0 3em 1em 3em;
+  margin: 2em 3em 2em 3em;
   padding: 0;
 }
-#header h1 {
-  border: none;
+#header .title {
+  color: #444;
+  font-size: 2em;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
 }
 
 
@@ -130,9 +132,9 @@ th, thead td {
 #main {
   margin: 0 0 0 3em;
   overflow: hidden;
-  padding-left: 1.2em;
+  padding-left: 1.6em;
 }
-#main h2, #main h3 {
+#main h1, #main h2 {
   padding: 0;
   margin: 1.6em 0 0.6em -0.9em;
 }

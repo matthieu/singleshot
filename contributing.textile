@@ -3,10 +3,12 @@ layout: default
 title: Contributing to Singleshot
 ---
 
-h2. {{ page.title }}
+h2(#lists). Mailing Lists
+
+Come join us on the "Singleshot Google Group":http://groups.google.com/group/singleshot.
 
 
-h3(#specs). Features
+h2(#specs). Features
 
 Singleshot caters to two target audiences: people who use the Singleshot UI to manage their tasks, and developers who write software against the Singleshot API. Some features are there for the benefit of both audiences, some features are specific to one audience or the other. Because of the overlap we use a single design approach to cater to both audiences.
 
@@ -38,7 +40,7 @@ Singelshot uses the following tools/libraries:
 * Remarkable, Machinist and Faker, see "Specs":#specs section for more details.
 
 
-h3(#spec). Specs
+h2(#spec). Specs
 
 Specs deal with lower level design and wider coverage testing. Specs essentially specify how the software should behave, with code to verify that behavior. When specifications and tests are separate, they quickly diverge to where specification says one thing, test and code do something else. If you can't trust the specification document, it becomes useless.
 
@@ -99,3 +101,24 @@ Singelshot uses the following libraries:
 * "Machinist":http://github.com/notahat/machinist/ -- easier way to construct data than fixtures.
 * "Faker":http://faker.rubyforge.org/ -- easily create fake data.
 
+
+h2(#migration). Database Migration
+
+Rails migrations are a great way to progress from one database schema version to another in production.  Each major milestone or release will include a new set of migrations so production database can be updated by running rake db:migrate.
+
+Migrations are not used to move from one schema to another during daily development progress.  The database schema will just change and you'll have to recreate the entire database.
+
+Those changes are recorded in the form of migration, but to update run:
+
+<pre>$ rake db:migrate:reset db:test:clone</pre>
+
+This task will recreate the entire development and test database.  In addition, we use "Annotates Models":http://github.com/ctran/annotate_models/tree/master to, well, annotate the Rails models with the most recent database schema.  So when changing the database schema, follow
+with:
+
+<pre>$ annotate</pre>
+
+Watch the source files for changes, move the schema annotations to their rightful place.
+
+To recreate the dummy data used for development:
+
+<pre>$ rake db:populate</pre>
