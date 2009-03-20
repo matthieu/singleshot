@@ -1,17 +1,14 @@
 body {
   background-color: #fff;
   color: #000;
-  font-family: "DejaVu Sans", Verdana, Helvetica;
-  text-align: center;
-  line-height: 150%;
-  font-size: 12pt;
+  font: 12pt "Helvetica Neue", "Calibri", "DejaVu Sans", "Helvetica", "Verdana";
+  line-height: 1.3em;
 }
 
-a:link, a:visited{
+a:link, a:visited {
   color: #0044b3;
   text-decoration: none;
 }
-
 a:hover{
   text-decoration: underline;
 }
@@ -21,37 +18,31 @@ img {
 }
 
 pre, code {
-  font-family: "DejaVu Sans Mono", "Courier New", "Courier";
-  font-size: 11pt;
+  font: 0.9em "Monaco", "Consolas", "DejaVu Sans Mono", "Courier New", "Courier";
 }
 pre {
-  margin: 0.3em 0 0.3em 0.9em;
-  padding: 0;
-  line-height: 135%;
+  padding: 0.6em 0.6em 0.6em 0.9em;
+  line-height: 1.5em;
   white-space: pre-wrap;       /* css-3 */
   white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
 }
 
 h1, h2, h3 {
   padding: 0;
-  margin: 1.6em 0 0.6em -0.9em;
   line-height: 1.25em;
   letter-spacing: 0.03em;
 }
-
 h1 {
   font-size: 2em;
   margin-top: 0;
   padding-bottom: 0.3em;
   border-bottom: 1px solid #808080;
 }
-
 h2 {
   font-size: 1.3em;
   padding-bottom: 0.3em;
   border-bottom: 1px solid #a0a0a0;
 }
-
 h3 {
   font-size: 1.1em;
 }
@@ -67,7 +58,6 @@ blockquote {
 ul { 
   list-style-type: disc;
 }
-
 ul ul {
   list-style-type: disc;
   padding-left: 1em;
@@ -78,14 +68,12 @@ table {
   width: 100%;
   margin: 0.3em 0 0.3em 0;
 }
-
 th, td {
   padding: 0.3em 0.5em 0.3em 0.5em;
   border-bottom: 1px solid #D8D8D8;
   vertical-align: top;
   background-color: #FFFFFF;
 }
-
 th, thead td {
   border-bottom: none;
   background-color: #669966;
@@ -94,70 +82,71 @@ th, thead td {
 }
 
 
-#wrap{
-  margin: 1em auto 2em auto;
-  text-align: left;
-  width: 65em;
+#header, #main, #footer, #sidebar {
 }
 
 
 #header {
-  margin: 0 0 1em 0;
+  margin: 0 3em 1em 3em;
+  padding: 0;
+}
+#header h1 {
   border: none;
 }
 
-#header .tagline {
+
+#sidebar {
   float: right;
-  font-size: 1.5em;
-  font-weight: bold;
-  position: relative;
-  bottom: 4.5em;
-}
-
-
-#pages { /* Parent Wrapper for inside boxes */
-/*  display: inline; */ /* IE Hack */
   width: 12em;
-  float: left;
-  text-align: left;
-  margin-right: 2em;
-  font-family: "DejaVu Sans", Verdana, Helvetica;
-  font-size: 11pt;
-  text-align: right;
-  border-right: 1px solid #ccc;
-  padding-right: 2em;
-}
-#pages ol {
-  list-style: none;
+  margin: 0 3em 0 2em;
   padding: 0;
-  margin: 0;
 }
-#pages ol li {
+#sidebar ol {
+  list-style: none;
+  margin:  0 0 0 0;
+  padding: 0;
+}
+#sidebar ol li {
   padding: 0.3em 0 0.6em 0em;
   color: #669966;
   font-weight: bold; 
 }
-#pages ol li ol {
+#sidebar ol li ol {
   margin-top: 0.3em;
   padding: 0.3em 0 0.9em 0.9em;
 }
-#pages ol li ol li {
+#sidebar ol li ol li {
   padding: 0.3em 0 0.3em 0em;
 }
-#pages ol li a  {
+#sidebar ol li a  {
   font-weight: normal;
 }
-#pages form {
+#sidebar form {
   margin-top: 2em;
   padding: 0.3em 0 0.5em 0.5em;
 }
 
 
-#content { /* Parent Wrapper for inside boxes */
-/*  display: inline; *//* IE Hack */
-  width: 44em;
-  margin-left: 0.3em;
-  margin-bottom: 5em;
+#main {
+  margin: 0 0 0 3em;
+  overflow: hidden;
+  padding-left: 1.2em;
+}
+#main h2, #main h3 {
+  padding: 0;
+  margin: 1.6em 0 0.6em -0.9em;
+}
+
+#footer {
+  color: #888;
+  border-top: 1px solid #ccc;
+  margin: 2em 3em 3em 3em;
+  padding: 0;
+  clear: both;
+}
+#footer p {
+  font-size: 0.9em;
+  margin: 0;
 }
 
 ol.toc {
@@ -175,37 +164,10 @@ ol.toc li ol.toc {
 }
 
 
-#content p.tip, #content p.note {
+p.tip, p.note {
   margin: 0.9em 0 0 0;
   padding: 0 0 2em 4em;
 }
-#content p.tip { background: url("../images/tip.png") 0 0 no-repeat; }
-#content p.note { background: url("../images/note.png") 0 0 no-repeat; }
+p.tip { background: url("../images/tip.png") 0 0 no-repeat; }
+p.note { background: url("../images/note.png") 0 0 no-repeat; }
  
-#content .footnote {
-  margin-top: 2.5em;
-}
-#content .footnote {
-  padding-top: 1.5em;
-  border-top: 1px solid #ccc;
-}
-#content .footnote + .footnote {
-  margin-top: 0.5em;
-  padding-top: 0;
-  border: none;
-}
-#content .footnote sup { font-weight: bold; }
-
-#content .footnote-links dt { font-weight: bold; }
-#content .footnote-links dt:after { content: ": " }
-#content .footnote-links dd { }
-
-
-#footer {
-  color: #888;
-  border-top: 1px solid #ccc;
-  font-size: 0.9em;
-  padding: 0.3em;
-  margin: 2em 0 3em 0em;
-  clear: both;
-}
