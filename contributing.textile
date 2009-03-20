@@ -1,0 +1,101 @@
+---
+layout: default
+title: Contributing to Singleshot
+---
+
+h2. {{ page.title }}
+
+
+h3(#specs). Features
+
+Singleshot caters to two target audiences: people who use the Singleshot UI to manage their tasks, and developers who write software against the Singleshot API. Some features are there for the benefit of both audiences, some features are specific to one audience or the other. Because of the overlap we use a single design approach to cater to both audiences.
+
+We use features to define deliverables and to write acceptance testing. A feature has two aspects. One is a textual description of a use case scenario, that we can agree on to develop and deliver. The other is a set of steps that execute the scenario and verify the software, which can be executed during acceptance testing.
+
+For example, a feature definition for activity stream would contain:
+
+<pre>
+Scenario: log shows owner creating and claiming task
+  Given the task "expenses" created by scott and assigned to scott
+  Then the activity log shows the entries
+    """
+    scott created expenses
+    scott claimed expenses
+    """
+</pre>
+
+When run, it is bound to two steps. The first step creates the task "expenses" and assigns it to Scott. The second step compares the activity log to the enumerated activities. Running the test verifies that the code indeed delivers this feature.
+
+Features run at the same level of integration tests, so they exercise all aspects of the code including database access and networking. However, features work better when they deal with high level, specific scenarios. Features do not provide complete coverage, trying to cover all variances defeats their purpose as effective documentation/communication tool. Features also don't work well for testing implementation details, or for troubleshooting. For these, we use "Specs":#specs.
+
+Features are found in the @features@ directory. You can run them all, or individually, using the @rake features@ task.
+
+Singelshot uses the following tools/libraries:
+
+* "Cucumber":http://cukes.info/ -- for BDD framework for writing features.
+* "RSpec":http://rspec.info/ -- BDD framework for writing specs, which can be used from features.
+* "Webrat":http://gitrdoc.com/brynary/webrat/ -- easy way to simulate a Web browser.
+* Remarkable, Machinist and Faker, see "Specs":#specs section for more details.
+
+
+h3(#spec). Specs
+
+Specs deal with lower level design and wider coverage testing. Specs essentially specify how the software should behave, with code to verify that behavior. When specifications and tests are separate, they quickly diverge to where specification says one thing, test and code do something else. If you can't trust the specification document, it becomes useless.
+
+Specs fix that problem by combining detail specification with code that verifies the behavior, so changing one leads to changing the other. Specs are generally low level and deal with design details (for high level, see "Features":#features above). Specs do not replace user documentation, architecture documents, document format and wire protocol specification, etc.
+
+Let's try a simple example. Here we specify that @Task@ provides the attribute @title@, and further than this attribute is required, does not have to be unique, and can be mass assigned:
+
+<pre>
+describe Task do
+  it { should have_attribute(:title) }
+  it { should allow_mass_assignment_of(:title) }
+  it { should validate_presence_of(:title) }
+  it { should_not validate_uniqueness_of(:title) }
+end
+</pre>
+
+A good practice to follow is to pick one functional unit and write out all the spec expectations for it. At this point you have committed in writing a specification. It is not yet executable (or verifiable), but you'll find that writing out specs in blocks helps you organize the work day and makes it easier to deal with interruptions.
+
+<pre>
+it 'should add person as task creator'
+it 'should add person as task supervisor'
+</pre>
+
+Once you have the spec expectations, fill them out with executable (and verifiable) expectations. This step takes longer, but if you're working from a completed set of specs, it's easy to break the workload into chunks and not get lost by interruptions. You can then run the specs, watch them fail, and proceed to the last step: writing the code to implement the specified behavior.
+
+<pre>
+it 'should add person as task creator' do
+  task.in_role('owner').first.should == subject
+end
+it 'should add person as task supervisor' do
+  task.in_role('supervisor').first.should == subject
+end
+</pre>
+
+We all make mistakes. Since specs act as unit tests, they help you identify mistakes in the code, but mistakes can appear in both code and the specs themselves. For example, @it { subject.priority == 3 }@ will always pass (hint: missing @should@) regardless of the priority set by the code. The easiest way to catch errors like this:
+
+# First, write the spec.
+# Run the spec. If the spec doesn't fail, fix the spec.
+# Next, write the code.
+# Run the spec. If the spec fails, fix the code.
+
+In some cases you can crank out a lot of specs in a very short period of time. Occasionally you will encounter specs that are hard to implement, sometimes much more complex than the code they specify. When it gets frustrating, score yourself a win by writing some code to pass against already written specs, or by side-tracking to writing easier specs.
+
+A few things to watch for (and avoid) when writing specs:
+
+# Specs are at the same level as unit tests. Whitebox testing is allowed, blackbox testing is preferred.
+# Specs are also a form of documentation. Writing a spec is equivalent to adding a sentence to your spec document. Consider how that sentence works out with the rest of the document. Is it easy to understand in context? Is it easy to search and locate?
+# Mocks make specs fragile and hard to change. Mocks are also a necessary devil, so use but treat with care.
+# Write your specs around observable behavior. For example, don't spec private methods directly. Don't spec control flows but rather input combinations that lead to executing these control flows.
+# Once in a while, take the time to read the spec document (@spec -f s@).
+
+You can use @rake@ tasks or the @spec@ command to run individual specs, collections (e.g. all model specs) or the entire suite of specs. It is always faster to run individual tests when developing code, but make sure to run the entire suite on occasion. Check out @rake -T@ to find all the spec tasks available.
+
+Singelshot uses the following libraries:
+
+* "RSpec":http://rspec.info/ -- the RSpec BDD framework.
+* "Remarkable":http://github.com/carlosbrando/remarkable/ -- matchers for ActiveRecord and controllers.
+* "Machinist":http://github.com/notahat/machinist/ -- easier way to construct data than fixtures.
+* "Faker":http://faker.rubyforge.org/ -- easily create fake data.
+
