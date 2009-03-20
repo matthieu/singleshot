@@ -7,3 +7,4 @@ vendor
 doc/app
 failed
 db/development_structure.sql
+_site

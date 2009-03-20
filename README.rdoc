@@ -16,6 +16,11 @@ To get the latest copy use one of the following:
 
   git clone git://github.com/intalio/singleshot.git
 
+You will need MySQL. The file config/databases.yml contains the connection
+configurations for the development, test and production environment. You can
+either setup MySQL accounts and databases based on this file, or change it to
+pick different database/account.
+
 To setup you development environment, specifically installing all the necessary
 dependencies and setting up the development and test databases, run the script
 script/setup:
@@ -27,48 +32,10 @@ This will also create a default account using your user name and the password
 
 To get started:
 
-  ./script server
+  ruby script/server
 
 Point your browser to http://localhost:3000 and login with your user name and
 password.
-
-
-== Setting up the database
-
-The database is configured in config/databases.yml.  The development and test
-database is set to use SQLite3, and the SQLite3 drive is installed when running
-script/setup.  For production, you should consider using something else (the
-default configuration is MySQL).
-
-
-== Migrations
-
-Rails migrations are a great way to progress from one database schema version
-to another in production.  Each major milestone or release will include a new
-set of migrations so production database can be updated by running rake
-db:migrate.
-
-Migrations are not used to move from one schema to another during daily
-development progress.  The database schema will just change and you'll have to
-recreate the entire database.
-
-Those changes are recorded in the form of migration, but to update run:
-
-  rake db:migrate:reset db:test:clone
-
-This task will recreate the entire development and test database.  In addition,
-we uses the Annotates Models gem to, well, annotate the Rails models with the
-most recent database schema.  So when changing the database schema, follow
-with:
-
-  /usr/bin/annotate 
-
-Watch the source files for changes, move the schema annotations to their
-rightful place.
-
-To recreate the dummy data used for development:
-
-  rake db:populate
 
 
 == LICENSE
