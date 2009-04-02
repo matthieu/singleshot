@@ -427,6 +427,15 @@ describe Task do
   it { should_not allow_mass_assignment_of(:activities) }
 
 
+  # -- Presentation --
+
+  it { should have_one(:form, :dependent=>:delete) }
+  it 'should allow setting form using Hash' do
+    subject.update_attributes! :form=>{ :url=>'http://example.com' }
+    subject.form(true).url.should == 'http://example.com'
+  end
+
+
   # -- Data --
 
   it { should have_attribute(:data) }

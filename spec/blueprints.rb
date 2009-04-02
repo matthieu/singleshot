@@ -94,3 +94,7 @@ Webhook.blueprint do
   event  { 'completed' }
   url    { 'http://example.com/completed' }
 end
+
+Form.blueprint do
+  task   { Task.make }
+end

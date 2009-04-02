@@ -369,6 +369,16 @@ class Task < ActiveRecord::Base
   end
 
 
+  # -- Presentation --
+
+  has_one :form, :dependent=>:delete
+
+  def form_with_hash_typecase=(form)
+    self.build_form form
+  end
+  alias_method_chain :form=, :hash_typecase
+
+
   # -- Webhooks --
  
   has_many :webhooks, :dependent=>:delete_all
@@ -436,14 +446,6 @@ class Task < ActiveRecord::Base
       end
     end
   end
-
-
-  has_one :form, :dependent=>:delete
-
-  def form_with_hash_typecase=(form)
-    self.form_without_hash_typecase = Form.new(form)
-  end
-  alias_method_chain :form=, :hash_typecase
 
 
 
