@@ -51,18 +51,11 @@ class CreateTasks < ActiveRecord::Migration
       t.datetime    :created_at,  :null => false
     end
 
-    create_table :forms do |t|
-      t.belongs_to  :task,        :null => false
-      t.string      :url
-      t.text        :html
-      t.datetime    :created_at,  :null => false
-    end
   end
 
   def self.down
     drop_table :activities
     drop_table :stakeholders
-    drop_table :forms
     drop_table :tasks
   end
 end

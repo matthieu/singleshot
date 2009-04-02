@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+require File.dirname(__FILE__) + '/helpers'
+
+
 # == Schema Information
 # Schema version: 20090402190432
 #
@@ -23,7 +26,12 @@
 #  task_id :integer(4)      not null
 #  url     :string(255)
 #  html    :text
-#
-class Form < ActiveRecord::Base
-  belongs_to :task
+describe Form do
+  it { should belong_to(:task) }
+
+  it { should have_attribute(:url) }
+  it { should have_db_column(:url, :type=>:string) }
+
+  it { should have_attribute(:html) }
+  it { should have_db_column(:html, :type=>:text) }
 end

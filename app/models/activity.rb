@@ -18,13 +18,13 @@
 # when updating at task.
 #
 # == Schema Information
-# Schema version: 20090206215123
+# Schema version: 20090402190432
 #
 # Table name: activities
 #
-#  id         :integer         not null, primary key
-#  person_id  :integer         not null
-#  task_id    :integer         not null
+#  id         :integer(4)      not null, primary key
+#  person_id  :integer(4)      not null
+#  task_id    :integer(4)      not null
 #  name       :string(255)     not null
 #  created_at :datetime        not null
 #

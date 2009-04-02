@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090206215123) do
+ActiveRecord::Schema.define(:version => 20090402190432) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id",  :null => false
@@ -19,10 +19,9 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
   end
 
   create_table "forms", :force => true do |t|
-    t.integer  "task_id",    :null => false
-    t.string   "url"
-    t.text     "html"
-    t.datetime "created_at", :null => false
+    t.integer "task_id", :null => false
+    t.string  "url"
+    t.text    "html"
   end
 
   create_table "people", :force => true do |t|
@@ -52,22 +51,18 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
   add_index "stakeholders", ["person_id", "task_id", "role"], :name => "index_stakeholders_on_person_id_and_task_id_and_role", :unique => true
 
   create_table "tasks", :force => true do |t|
-    t.string   "status",                           :null => false
-    t.string   "title",                            :null => false
+    t.string   "status",                     :null => false
+    t.string   "title",                      :null => false
     t.string   "description"
-    t.string   "language",           :limit => 5
-    t.integer  "priority",           :limit => 1,  :null => false
+    t.string   "language",     :limit => 5
+    t.integer  "priority",     :limit => 1,  :null => false
     t.date     "due_on"
     t.date     "start_on"
     t.string   "cancellation"
-    t.boolean  "perform_integrated"
-    t.boolean  "view_integrated"
-    t.string   "perform_url"
-    t.string   "view_url"
-    t.text     "data",                             :null => false
+    t.text     "data",                       :null => false
     t.string   "hooks"
-    t.string   "access_key",         :limit => 32, :null => false
-    t.integer  "version",                          :null => false
+    t.string   "access_key",   :limit => 32, :null => false
+    t.integer  "version",                    :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end

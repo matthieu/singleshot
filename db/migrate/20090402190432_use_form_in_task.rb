@@ -14,16 +14,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# == Schema Information
-# Schema version: 20090402190432
-#
-# Table name: forms
-#
-#  id      :integer(4)      not null, primary key
-#  task_id :integer(4)      not null
-#  url     :string(255)
-#  html    :text
-#
-class Form < ActiveRecord::Base
-  belongs_to :task
+class UseFormInTask < ActiveRecord::Migration
+  def self.up
+    create_table :forms do |t|
+      t.belongs_to  :task,        :null => false
+      t.string      :url
+      t.text        :html
+    end
+
+    change_table :tasks do |t|
+      # New way of using forms from task does not require these fields.
+      t.remove :perform_integrated
+      t.remove :view_integrated
+      t.remove :perform_url
+      t.remove :view_url
+    end
+  end
+
+  def self.down
+    drop_table :forms
+  end
 end

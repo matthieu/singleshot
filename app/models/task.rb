@@ -18,29 +18,25 @@ require 'openssl'
 
 
 # == Schema Information
-# Schema version: 20090206215123
+# Schema version: 20090402190432
 #
 # Table name: tasks
 #
-#  id                 :integer         not null, primary key
-#  status             :string(255)     not null
-#  title              :string(255)     not null
-#  description        :string(255)
-#  language           :string(5)
-#  priority           :integer(1)      not null
-#  due_on             :date
-#  start_on           :date
-#  cancellation       :string(255)
-#  perform_integrated :boolean
-#  view_integrated    :boolean
-#  perform_url        :string(255)
-#  view_url           :string(255)
-#  data               :text            not null
-#  hooks              :string(255)
-#  access_key         :string(32)      not null
-#  version            :integer         not null
-#  created_at         :datetime
-#  updated_at         :datetime
+#  id           :integer(4)      not null, primary key
+#  status       :string(255)     not null
+#  title        :string(255)     not null
+#  description  :string(255)
+#  language     :string(5)
+#  priority     :integer(1)      not null
+#  due_on       :date
+#  start_on     :date
+#  cancellation :string(255)
+#  data         :text            default(""), not null
+#  hooks        :string(255)
+#  access_key   :string(32)      not null
+#  version      :integer(4)      not null
+#  created_at   :datetime
+#  updated_at   :datetime
 #
 class Task < ActiveRecord::Base
 
@@ -463,108 +459,6 @@ class Task < ActiveRecord::Base
     SHA1.hexdigest("#{id}:#{version}")
   end
 
-
-  # -- View and perform ---
-
-  # Some tasks are performed offline, for example, calling a customer.  Other
-  # tasks performed onlined, in which case we would like to render that UI
-  # component as part of the task view.
-  #
-  # There are two possible views for each task.  One view, presented to the
-  # task owner for performing the task, the other view presented to everyone
-  # else and only provides details about the task.
-  #
-  # Some UIs are integrated with the task manager: they obtain the task state
-  # and update it upon completion.  Other UIs require that the user mark the
-  # task upon completion.
-  #
-  # Tasks that do not have a UI representation (e.g. offline tasks) should use
-  # the task description as the most adequate representation.  Calling
-  # #render_url on these tasks returns nil.
-  #
-  # Tasks that do have a UI representation should use #perform_url when
-  # performing the task, and #details_url for anyone else viewing the task.
-  # However, offline tasks can just use #details_url for both, and UIs that
-  # must not be accessible to anyone but the owner should use #perform_url
-  # only, with description presented to everyone else.
-  #
-  # The method #render_url returns either #perform_url or #details_url to the
-  # owner, and #details_url (or nil) to anyone else.
-  #
-  # UIs that integrate with the taske manager (#integrated_ui) will need
-  # additional query parameters in the URL, those are passed to render_for
-  # using an argument/block.  UIs that are not integrated should provide the
-  # user with other means for marking the task as completed
-  # (#use_completion_button?).
-  class Rendering
-
-    MAPPING = %w{perform_url details_url integrated_ui}.map { |name| [name, name] }
-    attr_reader :perform_url, :details_url, :integrated_ui
-
-    def initialize(perform_url, details_url, integrated_ui)
-      @perform_url, @details_url = perform_url, details_url
-      @integrated_ui = (perform_url && integrated_ui) || false
-    end
-
-    # True if rendering a button for user to mark task as completed.
-    def use_completion_button?
-      !perform_url || !integrated_ui
-    end
-
-    # Returns most suitable URL for rendering the task.
-    #
-    # Returns nil if there is no suitable URL for rendering the task,
-    # otherwise, returns perform_url or details_url.  If the integrated_ui
-    # option is available, passes query parameters to the rendered URL.  Query
-    # parameters are passed as last argument or returned from the block.
-    def render_url(perform, params = {})
-      url = perform && perform_url || details_url
-      return url unless integrated_ui && url
-      params = yield if block_given?
-      uri = URI(url)
-      uri.query = CGI.parse(uri.query || '').update(params).to_query
-      uri.to_s
-    end
-
-  end
-
-  composed_of :rendering, :class_name=>Rendering.to_s, :mapping=>Rendering::MAPPING do |hash|
-    Rendering.new(hash[:perform_url], hash[:details_url], hash[:integrated_ui])
-  end
-
-  validates_url :perform_url, :allow_nil=>true
-  validates_url :details_url, :allow_nil=>true
-
-
-  belongs_to :context
-
-
-  # --- Completion and cancellation ---
-
-  validates_url :outcome_url, :if=>:outcome_url
-
-  # Supported formats for updating the outcome resource.
-  OUTCOME_MIME_TYPES = [Mime::JSON, Mime::XML]
-
-  before_validation { |task| task.outcome_type = nil unless task.outcome_url }
-  before_validation { |task| task.outcome_type ||= Mime::XML if task.outcome_url }
-  validates_inclusion_of :outcome_type, :in=>OUTCOME_MIME_TYPES, :if=>:outcome_url,
-    :message=>"Supported MIME types are #{OUTCOME_MIME_TYPES.to_sentence}"
-
-  # Sets the outcome content type.
-  def outcome_type=(mime_type)
-    self[:outcome_type] = case mime_type
-      when Mime::Type;     mime_type.to_s
-      when /^\w+\/\w+$/;   mime_type.downcase
-      when Symbol, String; Mime::EXTENSION_LOOKUP[mime_type.to_s.downcase].to_s
-      when nil;            nil
-      else raise ArgumentError, 'Unsupported MIME type #{mime_type}'
-    end
-  end
-
-  def completed_on
-    # TODO: should be attribute
-  end
 
 
   # --- Access control ---
