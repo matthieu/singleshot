@@ -47,6 +47,7 @@ describe Person do
   it { should allow_mass_assignment_of(:email) }
   it { should validate_presence_of(:email, :message=>"I need a valid e-mail address.") }
   it { should validate_uniqueness_of(:email) }
+  it { should validate_email(:email) }
 
   it { should have_attribute(:fullname) }
   it { should have_db_column(:fullname, :type=>:string) }

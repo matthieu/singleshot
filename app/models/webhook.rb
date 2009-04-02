@@ -48,6 +48,7 @@ class Webhook < ActiveRecord::Base
  
   attr_accessible :event, :url, :http_method, :enctype, :hmac_key
   validates_presence_of :event, :url, :http_method, :enctype
+  validates_url :url, :allow_nil=>true
 
   require 'net/http'
   require 'uri'

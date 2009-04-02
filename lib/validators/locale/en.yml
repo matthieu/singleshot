@@ -13,18 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-module Validators #:nodoc
-end
 
-require File.dirname(__FILE__) + '/validators/url'
-require File.dirname(__FILE__) + '/validators/email'
-I18n.load_path << File.dirname(__FILE__) + '/validators/locale/en.yml'
-
-ActiveRecord::Base.class_eval do
-  include Validators::Url, Validators::Email
-end
-if defined?(Spec::Matchers)
-  Spec::Rails::Example::ModelExampleGroup.module_eval do
-    include Validators::Url::Matchers, Validators::Email::Matchers
-  end
-end
+en:
+  activerecord:
+    errors:
+      messages:
+        invalid_url: "Not a valid URL"
+        invalid_email: "Not a valid e-mail address"

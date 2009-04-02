@@ -42,6 +42,7 @@ describe Webhook do
   it { should have_attribute(:url) }
   it { should have_db_column(:url, :type=>:string) }
   it { should validate_presence_of(:url) }
+  it { should validate_url }
 
   it { should have_attribute(:http_method) }
   it { should have_db_column(:http_method, :type=>:string) }

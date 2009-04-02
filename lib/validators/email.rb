@@ -14,34 +14,56 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-module Validators #:nodoc:
+module Validators::Email #:nodoc:
+   
+  def self.included(base) #:nodoc:
+    base.extend ClassMethods
+  end
+
   # Validates that each attribute looks like a valid e-mail address.  Does not check that the
   # e-mail address makes sense, only that it is more likely to be an e-mail address than a phone number.
   #
   # For example:
   #   validates_email :email
-  module Email
-   
-    # Included in ActiveRecord::Base.
-    def self.included(mod)
-      I18n.backend.store_translations 'en-US',
-        { :active_record => { :error_messages => { :invalid_email => "is not a valid email address" } } }
-  
-      mod.class_eval do
+  module ClassMethods
 
-        # Validates that each attribute looks like a valid e-mail address.  Does not check that the
-        # e-mail address makes sense, only that it is more likely to be an e-mail address than a phone number.
-        def self.validates_email(*attr_names)
-          configuration = { :on => :save }
-          configuration.update(attr_names.extract_options!)
-          configuration[:with] = /\A([^@\s]+)@[-a-z0-9]+(\.[-a-z0-9]+)*\z/
-          configuration[:message] ||= I18n.translate('active_record.error_messages.invalid_email')
-          attr_names << configuration
-          validates_format_of *attr_names
-        end
-
-      end
+    # Validates that each attribute looks like a valid e-mail address.  Does not check that the
+    # e-mail address makes sense, only that it is more likely to be an e-mail address than a phone number.
+    def validates_email(*attr_names)
+      configuration = { :on => :save }
+      configuration.update(attr_names.extract_options!)
+      configuration[:with] = /\A([^@\s]+)@[-a-z0-9]+(\.[-a-z0-9]+)*\z/
+      configuration[:message] ||= :invalid_email
+      attr_names << configuration
+      validates_format_of *attr_names
     end
 
   end
+
+  if defined?(Spec::Matchers)
+    # RSpec validation expectation. Expects validation on all named attributes,
+    # or <code>:email</code> if no attribute named. For example:
+    #   it { should validate_email }
+    module Matchers
+      Spec::Matchers.create :validate_email do |*attrs|
+        attrs = [:email] if attrs.empty?
+        match do |subject|
+          values = %w{example.com john-example.com john@example.com john@example@com}
+          validated = values.map { |value|
+            attrs.all? { |attr|
+              old = subject.send(attr)
+              begin
+                subject.send "#{attr}=", value
+                subject.valid? || !subject.errors.on(attr)
+              ensure
+                subject.send "#{attr}=", old
+              end
+            }
+          }
+          validated == [false, false, true, false]
+        end
+      end
+    end
+  end
+
 end

@@ -26,4 +26,6 @@
 #
 class Form < ActiveRecord::Base
   belongs_to :task
+  attr_accessible :url, :html
+  validates_url :url, :allow_nil=>true
 end
