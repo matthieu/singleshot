@@ -26,10 +26,11 @@
       </dl>
       <div class='actions'><%= task_actions(@task) %></div>
     </div>
-  <% if iframe_url %>
+  <% if @task.form && @task.form.url %>
     <iframe id='task_frame' src='<%= iframe_url %>'></iframe>
+  <% elsif @task.form && @task.form.html %>
+    <iframe id='task_frame' src='<%= form_url(@task) %>'></iframe>
   <% else %>
     <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
   <% end %>
-  <iframe id='task_frame' src='<%= form_url(@task) %>'></iframe>
 <% end %>
