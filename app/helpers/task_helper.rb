@@ -29,7 +29,7 @@ module TaskHelper
       vitals = [ 'Created ' + abbr_time(task.created_at, relative_time(task.created_at), :class=>'published') ]
       vitals.first << ' by ' + link_to_person(task.creator, :rel=>'creator') if task.creator
       vitals << 'assigned to ' + link_to_person(task.owner, :rel=>'owner') if task.owner
-      vitals << 'high priority' if task.high_priority?
+      #vitals << 'high priority' if task.high_priority?
       vitals << 'due ' + abbr_date(task.due_on, relative_date(task.due_on)) if task.due_on
       vitals.to_sentence
     when 'active'

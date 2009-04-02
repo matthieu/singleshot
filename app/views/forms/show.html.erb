@@ -1,0 +1,5 @@
+<% form_tag url_for, :method=>:put, :class=>'form' do %>
+  <%= Liquid::Template.parse(task.form.html).render(task.to_hash) %>
+  <button name='status' value='completed'>Done</button>
+  <button>Save</button>
+<% end %>

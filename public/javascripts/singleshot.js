@@ -28,6 +28,27 @@ $(function() {
   // Form datepicked control.
   $.datepicker.setDefaults({ numberOfMonths: 2, showButtonPanel: true, dateFormat: $.datepicker.RSS });
   $('input.date').datepicker();
+
+  // Expand/collapse options in task view.
+  $('#more_options').click(function(event) {
+    var target = $('#details')
+    if (target.is(':visible')) {
+      target.slideUp(500)
+      $(this).text($(this).data('original'))
+    } else {
+      $(this).data('original', this.innerHTML)
+      $(this).text($(this).attr('expanded'))
+      target.slideDown(500)
+    }
+    return false;
+  });
+
+
+  // Adjust iframe to fit window on creation and whenever browser window is resized.
+  // Used in task view.
+  $('#task_frame').each(function() {
+    $(window).bind('resize load', function() { console.log(this) ; $(this).height(window.innerHeight - this.offsetTop) })
+  });
 })
 
 

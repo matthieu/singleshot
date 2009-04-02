@@ -18,6 +18,13 @@ ActiveRecord::Schema.define(:version => 20090206215123) do
     t.datetime "created_at", :null => false
   end
 
+  create_table "forms", :force => true do |t|
+    t.integer  "task_id",    :null => false
+    t.string   "url"
+    t.text     "html"
+    t.datetime "created_at", :null => false
+  end
+
   create_table "people", :force => true do |t|
     t.string   "identity",                 :null => false
     t.string   "fullname",                 :null => false

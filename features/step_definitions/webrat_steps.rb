@@ -86,6 +86,13 @@ When /^I attach the file at "(.*)" to "(.*)" $/ do |path, field|
   attach_file(field, path)
 end
 
+When /^I choose the frame "(.*)"$/ do |id|
+  frame = Webrat::XML.xpath_search(current_dom, ".//iframe|frame").
+    find { |elem| Webrat::XML.attribute(elem, 'id') == id }
+  fail "Did not find frame/iframe with ID #{id}" unless frame
+  visit Webrat::XML.attribute(frame, 'src')
+end
+
 Then /^I should see "(.*)"$/ do |text|
   response.body.should =~ /#{text}/m
 end
@@ -96,4 +103,8 @@ end
 
 Then /^the "(.*)" checkbox should be checked$/ do |label|
   field_labeled(label).should be_checked
+end
+
+Then /^I should be viewing (.*)$/ do |path|
+  current_url.should == path_to(path)
 end

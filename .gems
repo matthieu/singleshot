@@ -6,6 +6,8 @@ mislav-will_paginate:
   version:  2.3
   source: http://gems.github.com
   lib: will_paginate
+liquid:
+  version:  2.0
 annotate:
   version:  2.0
   lib:      false
@@ -17,10 +19,10 @@ notahat-machinist:
   source:   http://gems.github.com
   lib:      false
 rspec-rails:
-  version:  1.2
+  version:  1.2.2
   lib:      false
 cucumber:
-  version:  0.2
+  version:  0.2.3
   lib:      false
 carlosbrando-remarkable:
   version:  2.3

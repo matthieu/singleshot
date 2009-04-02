@@ -14,43 +14,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require 'rack'
+class FormsController < ApplicationController #:nodoc:
 
-Given /^I am authenticated$/ do
-  Given "I am authenticated as me"
-end
+  layout false
 
-Given /^I am authenticated as (.*)$/ do |person|
-  Given "the person #{person}"
-  basic_auth person, 'secret'
-end
-
-When /^I login/ do
-  Given "the person me"
-  basic_auth 'me', 'secret'
-end
-
-class RackApp
-  def self.instance
-    @instance ||= new
+  def show
   end
 
-  def self.start
-    Thread.new do
-      Rack::Handler::WEBrick.run instance, :Port=>1234, :Logger=>WEBrick::Log.new(nil, WEBrick::Log::ERROR)
-    end
+  def update
+    task.update_attributes! :status=>params['status'] || task.status, :data=>params['task']
+    redirect_to task.completed? ? root_url : :back
   end
 
-  def initialize
-    @requests = []
+private
+
+  helper_method :task
+  def task
+    @task ||= authenticated.tasks.find(params[:id], :include=>:stakeholders)
   end
 
-  attr_reader :requests
-
-  def call(env)
-    requests << { :url=>env['REQUEST_URI'], :method=>env['REQUEST_METHOD'], :enctype=>env['CONTENT_TYPE'] }
-    [ '200', {}, 'OK' ]
-  end
 end
-
-RackApp.start

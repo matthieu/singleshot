@@ -28,6 +28,7 @@ ActionController::Routing::Routes.draw do |map|
   map.search '/search', :controller=>'tasks', :action=>'search'
   map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
 
+  map.resources 'forms'
   map.resources 'activities'
   
   map.root :controller=>'tasks', :action=>'index'

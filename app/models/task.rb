@@ -51,8 +51,8 @@ class Task < ActiveRecord::Base
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :status, :data, :webhooks
-  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :status, :data,
+  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :form, :data, :webhooks
+  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :data,
                   :version, :created_at, :updated_at
 
   # -- Descriptive --
@@ -170,6 +170,14 @@ class Task < ActiveRecord::Base
     end
   end
 
+  def creator
+    in_role('creator').first
+  end
+
+  def creator=(person)
+    stakeholders.build :person=>Person.identify(person), :role=>'creator' if person
+  end
+
   def stakeholders_before_add(sh)
     case sh.role
     when 'creator'
@@ -239,17 +247,17 @@ class Task < ActiveRecord::Base
 
   ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
                          'observer'=>'observers', 'admin'=>'admins' }
-
+=end
   # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
   # * {plural}            -- Returns people associated with this role.
   # * {singular}?(person) -- Returns true if person associated with this role.
   # * {plural}= people    -- Assocaites people with this role.
   Stakeholder::PLURAL_ROLES.each do |role|
-    accessor = ACCESSOR_FROM_ROLE[role]
-    define_method(accessor) { in_role(role) }
-    define_method("#{accessor.singularize}?") { |identity| in_role?(role, identity) }
-    define_method("#{accessor}=") { |identities| set_role role, identities }
+    define_method(role.pluralize) { in_role(role) }
+    define_method("#{role}?") { |identity| in_role?(role, identity) }
+    define_method("#{role.pluralize}=") { |identities| set_role role, identities }
   end
+=begin
 
   # Returns true if person is a stakeholder in this task: any role except excluded owners list.
   def stakeholder?(person)
@@ -434,7 +442,13 @@ class Task < ActiveRecord::Base
   end
 
 
-  
+  has_one :form, :dependent=>:delete
+
+  def form_with_hash_typecase=(form)
+    self.form_without_hash_typecase = Form.new(form)
+  end
+  alias_method_chain :form=, :hash_typecase
+
 
 
 

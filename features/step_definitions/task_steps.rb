@@ -14,6 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+Given /^this task$/ do |task|
+  Given "the person me"
+  Person.find_by_fullname('me').tasks.create! YAML.load(task)
+end
+
 Given /^the task "(.*)" created by (\S*)$/ do |title, person|
   Given "the person #{person}"
   Person.identify(person).tasks.create!(:title=>title)
@@ -30,8 +35,14 @@ Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
   Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_'), :person=>Person.identify(person)
 end
 
+When /I view the task "(.*)"$/ do |title|
+  Given "I am authenticated"
+  http_accept :html
+  request_page task_url(Task.find_by_title(title)), :get, nil
+end
 
-When /^(\S*) (\S*) the task "(.*)"$/ do |person, action, title|
+
+When /^(\S*) (claims|releases|suspends|resumes|completes|cancels) the task "(.*)"$/ do |person, action, title|
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})
   case action
   when 'claims'
@@ -57,4 +68,13 @@ end
 When /^(.*) delegates the task "(.*)" to (.*)$/ do |person, title, new_owner|
   Given "the person #{new_owner}"
   Person.identify(person).tasks.find(:first, :conditions=>{:title=>title}).update_attributes! :owner=>Person.identify(new_owner)
+end
+
+
+Then /^the task "([^\"]*)" should be (.*)$/ do |title, status|
+  Task.find_by_title(title).status.should == status
+end
+
+Then /^the task "([^\"]*)" data should have (.*)="([^\"]*)"$/ do |title, name, value|
+  Task.find_by_title(title).data[name].should == value
 end
