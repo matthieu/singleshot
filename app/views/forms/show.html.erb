@@ -1,5 +1,14 @@
-<% form_tag url_for, :method=>:put, :class=>'form' do %>
-  <%= Liquid::Template.parse(task.form.html).render(task.to_hash) %>
-  <button name='status' value='completed'>Done</button>
-  <button>Save</button>
-<% end %>
+<html>
+  <head>
+    <%= javascript_include_tag :all, :cache=>true %>
+    <%= stylesheet_link_tag :all, :cache=>true %>
+  </head>
+  <body>
+    <% form_tag url_for, :method=>:put, :id=>'task', :class=>authenticated.can_complete?(task) ? 'enabled' : 'disabled' do %>
+      <%= sanitize(Liquid::Template.parse(task.form.html).render(task.to_hash), :tags=>self.class.sanitized_allowed_tags + %w{fieldset input legend select table td textarea th tr}) %>
+    <div class='actions'>
+      <button name='status' value='completed' title='Complete and return to the task list'>Done</button>
+      <button title='Save and continue later'>Save</button>
+    </div>
+  <% end %>
+</html>

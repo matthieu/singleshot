@@ -96,13 +96,26 @@ class Populate < ActiveRecord::Migration
     Person.delete_all
   end
 
+  FORM = <<-HTML
+<fieldset><legend>Contact</legend>
+  <p>{{ owner.fullname }}, please update your contact info:</p>
+  <dl>
+    <dt>Phone:</dt><dd><input name='data[phone]' size='40' type='text'></dd>
+    <dt>Address:</dt><dd><textarea name='data[address]' cols='40' rows='4'></textarea></dd>
+    <dt>E-mail:</dt><dd><input name='data[email]' size='40' type='text'></dd>
+    <dt>D.O.B:</dt><dd><input name='data[dob]' type='text' class='date'></dd>
+  </dl>
+</fieldset>
+  HTML
+
   def self.new_task!(args = {})
     advance
     args[:title] ||= Faker::Lorem.sentence
     args[:description] ||= Faker::Lorem.paragraphs(3).join("\n\n")
+    args[:form] ||= { :html=>FORM }
     Task.new args do |task|
       args[:potential_owner] ||= [@me, @bond]
-      [:creator, :potential_owner, :excluded_owner, :supervisor, :observer].select { |role| args.has_key?(role) }.each do |role|
+      [:potential_owner, :excluded_owner, :supervisor, :observer].select { |role| args.has_key?(role) }.each do |role|
         Array(args[role]).each do |person|
           task.stakeholders.build :role=>role.to_s, :person=>person
         end

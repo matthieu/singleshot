@@ -43,12 +43,14 @@ $(function() {
     return false;
   });
 
-
   // Adjust iframe to fit window on creation and whenever browser window is resized.
-  // Used in task view.
   $('#task_frame').each(function() {
-    $(window).bind('resize load', function() { console.log(this) ; $(this).height(window.innerHeight - this.offsetTop) })
+    var frame = $(this);
+    $(window).bind('resize load', function() {
+      frame.height(window.innerHeight - frame.offset().top) })
   });
+  // Form controls disabled for everyone but owner.
+  $('form#task.disabled').find('input, select, textarea, button').attr('disabled', true);
 })
 
 

@@ -6,7 +6,6 @@ body {
   background-color: #fff;
   margin: 0;
   padding: 0;
-  width: 100%;
 }
 
 h1 {
@@ -42,7 +41,7 @@ input[type=text]:focus, input[type=password]:focus, select:focus {
   border: 1px solid #444;
 }
 input[type=text][disabled], select[disabled] {
-  border: none;
+  border: 1px solid #ccc;
 }
 option {
 }
@@ -59,7 +58,8 @@ form.button-to, form.button-to div {
 fieldset {
   border: 1pt solid #ccc;
   padding: 1.6em;
-  -webkit-box-shadow: 8px 8px 16px #ccc;
+  margin: 1em;
+  -webkit-box-shadow: 4px 4px 8px #ccc;
 }
 fieldset legend {
   color: #888;
@@ -350,6 +350,12 @@ div.task iframe {
   margin: 4em 0 0 0;
   background: #fff;
 }
+
+
+form#task { }
+form#task div.actions { margin: 1em; }
+form#task div.actions button { margin-right: 1em; }
+
 
 
 /** Navigation **/
