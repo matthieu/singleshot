@@ -22,7 +22,7 @@ class FormsController < ApplicationController #:nodoc:
   end
 
   def update
-    task.update_attributes! :status=>params['status'] || task.status, :data=>params['task']
+    task.update_attributes! :status=>params['status'] || task.status, :data=>params['data']
     redirect_to task.completed? ? root_url : :back
   end
 

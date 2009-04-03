@@ -9,9 +9,9 @@ Features: Using forms to peform the task
       owner: me
       form:
         html: "{{ creator.fullname }} requested leave of absence.
-               <label><input type='radio' name='task[accept]' value='true'> Accept</label>
-               <label><input type='radio' name='task[accept]' value='false'> Deny</label>
-               Comment:<textarea name='task[comment]'></textarea>"
+               <label><input type='radio' name='data[accept]' value='true'> Accept</label>
+               <label><input type='radio' name='data[accept]' value='false'> Deny</label>
+               Comment: <textarea name='data[comment]'></textarea>"
       """
 
   Scenario: See task form with relevant details
@@ -24,8 +24,8 @@ Features: Using forms to peform the task
     When I login
     And I view the task "absence request"
     And I choose the frame "task_frame"
-    And I choose "task[accept]"
-    And I fill in "task[comment]" with "enjoy"
+    And I choose "data[accept]"
+    And I fill in "data[comment]" with "enjoy"
     And I press "Done"
     Then I should be viewing the home page
     And the task "absence request" should be completed
@@ -36,8 +36,8 @@ Features: Using forms to peform the task
     When I login
     And I view the task "absence request"
     And I choose the frame "task_frame"
-    And I choose "task[accept]"
-    And I fill in "task[comment]" with "enjoy"
+    And I choose "data[accept]"
+    And I fill in "data[comment]" with "enjoy"
     And I press "Save"
     Then the task "absence request" should be active
     And the task "absence request" data should have accept="true"
