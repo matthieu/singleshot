@@ -18,9 +18,6 @@
 require File.dirname(__FILE__) + '/../config/boot'
 require 'rake'
 verbose false
-#require 'rubygems'
-#require 'yaml'
-#require 'rubygems/source_info_cache'
 
 
 def check(message)
@@ -44,13 +41,11 @@ def gem_install(name, options)
 end
 
 
-# If running on previous version of Rails, upgrades to the most recent one.
-gem_install 'rails', 'version'=>Rails::GemBoot.gem_version
-$gems_rake_task = true
 # We need to install all dependency Gems for the current environment.
 # Some missing Gems don't allow rake gems:install to run successfully,
 # so we get around it by safe loading environment.rb and running gem
 # install outselves.
+$gems_rake_task = true
 require "#{RAILS_ROOT}/config/environment"
 Rails.configuration.gems.each do |gem|
   gem_install gem.name, :version=>gem.requirement.to_s
