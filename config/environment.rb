@@ -16,6 +16,11 @@ Rails::Initializer.run do |config|
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
   # Specify gems that this application depends on and have them installed with rake gems:install
+  if RUBY_VERSION >= '1.9.0'
+    # TODO: find the MySQL gem that works with 1.9.1.
+  else
+    config.gem 'mysql', :version=>'~>2.7'
+  end
   config.gem 'mislav-will_paginate', :version=>'2.3', :lib=>'will_paginate'
   config.gem 'liquid', :version=>'2.0'
 
