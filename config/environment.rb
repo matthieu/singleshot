@@ -16,13 +16,16 @@ Rails::Initializer.run do |config|
   # config.load_paths += %W( #{RAILS_ROOT}/extras )
 
   # Specify gems that this application depends on and have them installed with rake gems:install
-  if RUBY_VERSION >= '1.9.0'
+  if RUBY_PLATFORM[/java/]
+    config.gem 'activerecord-jdbcmysql-adapter',  :version=>'~>0.9', :lib=>false
+    config.gem 'jruby-openssl',                   :version=>'0.4', :lib=>false
+  elsif RUBY_VERSION >= '1.9.0'
     # TODO: find the MySQL gem that works with 1.9.1.
   else
-    config.gem 'mysql', :version=>'~>2.7'
+    config.gem 'mysql', :version=>'~>2.7', :lib=>false
   end
-  config.gem 'mislav-will_paginate', :version=>'2.3', :lib=>'will_paginate'
-  config.gem 'liquid', :version=>'2.0'
+  config.gem 'mislav-will_paginate',  :version=>'2.3', :lib=>'will_paginate'
+  config.gem 'liquid',                :version=>'2.0'
 
   # Only load the plugins named here, in the order given (default is alphabetical).
   # :all can be used as a placeholder for all plugins not explicitly named
