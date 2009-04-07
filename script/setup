@@ -40,7 +40,7 @@ def gem_install(name, options)
   dep = Gem::Dependency.new(name, options[:version] || '>= 0')
   if Gem::SourceIndex.from_installed_gems.search(dep).empty?
     check "Installing #{name} ..." do
-      args = ['-S', 'gem', 'install', name, '-v', options['version']]
+      args = ['-S', 'gem', 'install', name, '-v', options['version'].to_s]
       args << '--source' << 'http://gems.rubyforge.org' # Always.
       args << '--source' << options['source'] if options['source']
       args << '--no-ri' << '--no-rdoc' << '--format-executable'

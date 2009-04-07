@@ -24,6 +24,9 @@ rspec-rails:
 cucumber:
   version:  0.2.3
   lib:      false
+webrat:
+  version:  0.4.3
+  lib:      false
 carlosbrando-remarkable:
   version:  2.3
   lib:      remarkable
