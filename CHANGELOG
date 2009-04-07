@@ -1,3 +1,5 @@
+* Tested with JRuby 1.1.6 using the JRuby MySQL ActiveRecord Adapter.
+* Tested with Ruby 1.9 using the 2.8.1 (from source) MySQL driver.
 * CSRF (forgery protection) disabled when using HTTP Basic authentication.
 This allows the wonders of curl during development, but may pose a security issue.
 * Switched to using MySQL instead of SQLite. There are some noticable
