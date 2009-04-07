@@ -80,7 +80,7 @@ describe Person do
   it { should_not validate_presence_of(:password) }
   it('should store salt as part of password')             { salt.should =~ /^[0-9a-f]{10}$/ }
   it('should store hexdigest as part of password')        { crypt.should =~ /^[0-9a-f]{40}$/ }
-  it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, "secret") }
+  it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, salt, "secret") }
   it('should be <= 64 digits in crypt form')              { subject.password.size.should <= 64 }
   it('should not have same crypt for two people')         { Person.named('alice', 'bob', 'mary').map(&:password).uniq.size.should be(3) }
   it('should authenticate the right password')            { should authenticate('secret') }

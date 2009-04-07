@@ -469,7 +469,7 @@ class Task < ActiveRecord::Base
   # The token is validated by calling #authorize.  The token is only valid
   # if the person is a stakeholder in the task, and based on their role.
   def token_for(person)
-    OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, access_key, person.to_param)
+    OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, access_key, person.to_param)
   end
 
   # Returns the person authorized to access this task based on the token returned

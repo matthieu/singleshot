@@ -115,7 +115,7 @@ class Person < ActiveRecord::Base
   def password=(value)
     return super if value.nil?
     salt = ActiveSupport::SecureRandom.hex(5)
-    crypt = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, value)
+    crypt = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, salt, value)
     super "#{salt}::#{crypt}"
   end
 
@@ -123,7 +123,7 @@ class Person < ActiveRecord::Base
   def authenticated?(against)
     return false unless password
     salt, crypt = password.split('::')
-    crypt == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA.new, salt, against)
+    crypt == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, salt, against)
   end
 
   # Sets a new password for this person and returns the password in clear text.
