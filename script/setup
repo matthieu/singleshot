@@ -15,91 +15,90 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require 'rubygems'
+require File.dirname(__FILE__) + '/../config/boot'
 require 'rake'
-require 'yaml'
-require 'rubygems/source_info_cache'
-
-
-# The plugins we maintain in vendor/plugins.
-$plugins = 'git://github.com/assaf/presenter.git'
+verbose false
+#require 'rubygems'
+#require 'yaml'
+#require 'rubygems/source_info_cache'
 
 
 def check(message)
-  message = message[0, Rake.application.dynamic_width - 9]
+  message = message[0, 70]
   puts "## %s ...\n" % message
   yield
   puts
 end
 
 def rake(*args)
-  ruby "-S rake --silent #{args.map { |arg| arg.inspect }.join(' ')}"
+  ruby '-S', 'rake', '--silent', *args
 end
 
 def gem_install(name, options)
   dep = Gem::Dependency.new(name, options[:version] || '>= 0')
   if Gem::SourceIndex.from_installed_gems.search(dep).empty?
     check "Installing #{name} ..." do
-      args = ['-S', 'gem', 'install', name, '-v', options['version'].to_s]
-      args << '--source' << 'http://gems.rubyforge.org' # Always.
-      args << '--source' << options['source'] if options['source']
-      args << '--no-ri' << '--no-rdoc' << '--format-executable'
-      ruby *args
+      ruby *%W{-S gem install #{name} -v #{options[:version].to_s} --source http://gems.rubyforge.org --source http://gems.github.com}
     end
   end
 end
 
 
-namespace 'setup' do
+# If running on previous version of Rails, upgrades to the most recent one.
+gem_install 'rails', 'version'=>Rails::GemBoot.gem_version
+$gems_rake_task = true
+# We need to install all dependency Gems for the current environment.
+# Some missing Gems don't allow rake gems:install to run successfully,
+# so we get around it by safe loading environment.rb and running gem
+# install outselves.
+require "#{RAILS_ROOT}/config/environment"
+Rails.configuration.gems.each do |gem|
+  gem_install gem.name, :version=>gem.requirement.to_s
+end
 
-  task 'run'=>['dependencies', 'files', 'database'] do
-    Rake::Task['setup:have_fun'].invoke
-  end
-
-  task 'dependencies' do
-    # Install Rails 2.3.1 (RC2).
-    gem_install 'rails', 'version'=>'2.3.1', 'source'=>'http://gems.rubyonrails.org'
-
-    # Install all (incl. development and test) Gem dependencies.
-    YAML.load_file('.gems').each do |name, options|
-      gem_install name, options
-    end
-
-    check "Installing/updating plugins" do
-      $plugins.each do |url|
-        name, path = url.pathmap('%n'), url.pathmap('vendor/plugins/%n')
-        if Dir["#{path}/*"].empty?
-          sh "braid add -p #{url.inspect}"
-          fail "Plugin #{name} not installed! (looked for it in #{path})" if Dir["#{path}/*"].empty?
-        else
-          sh "braid update #{path}"
-        end
-      end
+# The plugins we maintain in vendor/plugins.
+=begin
+$plugins = 'git://github.com/assaf/presenter.git'
+check "Installing/updating plugins" do
+  $plugins.each do |url|
+    name, path = url.pathmap('%n'), url.pathmap('vendor/plugins/%n')
+    if Dir["#{path}/*"].empty?
+      sh "braid add -p #{url.inspect}"
+      fail "Plugin #{name} not installed! (looked for it in #{path})" if Dir["#{path}/*"].empty?
+    else
+      sh "braid update #{path}"
     end
   end
+end
+=end
 
-  task 'files' do
-    check("Creating new secret key in secret.key") { rake 'secret.key' }
-  end
 
-  task 'database' do
-    check "Creating a new database" do
-      db = YAML.load_file("config/database.yml")['development']
-      p "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
-      rake "db:create"
-    end
-    check("Running all migrations against the new database") { rake "db:migrate:reset" }
-    check("Populating development database with mock data")  { rake "db:populate" }
-    check "Creating a clone test database" do
-      db = YAML.load_file("config/database.yml")['development']
-      p "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
-      rake "db:test:clone"
-    end
-  end
+# The secret.key is not so secret if you check it from public Git repo,
+# so we have to create one when installing Singleshot.
+check "Creating new secret key in secret.key" do
+  rake 'secret.key'
+end
 
-  task 'have_fun' do
-    puts <<-TEXT
 
+check "Creating a new database" do
+  db = YAML.load_file("config/database.yml")['development']
+  puts "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
+  rake "db:create"
+end
+check "Running all migrations against the new database" do
+  rake "db:migrate:reset"
+end
+check "Populating development database with mock data" do
+  rake "db:populate"
+end
+check "Creating a clone test database" do
+  db = YAML.load_file("config/database.yml")['development']
+  p "I'm going to create the databse #{db['database']} (#{db['adapter']}) using the account #{db['username']}, password #{db['password']}"
+  rake "db:test:clone"
+end
+
+
+puts <<TEXT
 Done!
 
 
@@ -121,9 +120,4 @@ Next, open http://localhost:3000 in your browser and login with
   password:  secret
 
 Have fun!
-
-    TEXT
-  end
-end
-
-Rake::Task['setup:run'].invoke
+TEXT

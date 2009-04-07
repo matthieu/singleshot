@@ -23,16 +23,3 @@ file 'secret.key' do |task|
   end
   puts "Generated new secret in #{task.name}"
 end
-
-
-task 'setup' do
-  puts <<-TEXT
-    rake setup was a nice idea, but suffered from the classical bootstrapping issue (aka catch-22).
-    So instead, the new way to setup Singleshot is to run:
-      ruby ./script/setup
-
-    Like this ...  
-
-  TEXT
-  ruby "setup.rb"
-end
