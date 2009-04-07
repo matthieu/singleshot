@@ -23,7 +23,7 @@ I18n.load_path << File.dirname(__FILE__) + '/validators/locale/en.yml'
 ActiveRecord::Base.class_eval do
   include Validators::Url, Validators::Email
 end
-if defined?(Spec::Matchers)
+if defined?(Spec::Rails::Example)
   Spec::Rails::Example::ModelExampleGroup.module_eval do
     include Validators::Url::Matchers, Validators::Email::Matchers
   end
