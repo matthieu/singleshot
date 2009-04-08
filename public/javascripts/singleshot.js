@@ -17,7 +17,7 @@
 
 
 $(function() {
-  // Form fields watermakr and auto focus.
+  // Form fields watermark and auto focus.
   $('input[title]').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
   $('input.auto_focus:first').focus();
   // Sparkline bars.
@@ -46,8 +46,7 @@ $(function() {
   // Adjust iframe to fit window on creation and whenever browser window is resized.
   $('#task_frame').each(function() {
     var frame = $(this);
-    $(window).bind('resize load', function() {
-      frame.height(window.innerHeight - frame.offset().top) })
+    $(window).bind('resize load', function() { frame.height(window.innerHeight - frame.offset().top) })
   });
   // Form controls disabled for everyone but owner.
   $('form#task.disabled').find('input, select, textarea, button').attr('disabled', true);
