@@ -42,12 +42,23 @@ $(function() {
     }
     return false;
   });
+  $('a.dropdown').click(function(e) {
+    var target = $($(this).attr('href'));
+    var highlight = $(this).parent();
+    if (target.is(':visible')) {
+      target.slideUp(250, function() { highlight.removeClass('active') });
+    } else {
+      highlight.addClass('active');
+      target.slideDown(250);
+    }
+  });
 
   // Adjust iframe to fit window on creation and whenever browser window is resized.
   $('#task_frame').each(function() {
     var frame = $(this);
     $(window).bind('resize load', function() { frame.height(window.innerHeight - frame.offset().top) })
   });
+
   // Form controls disabled for everyone but owner.
   $('form#task.disabled').find('input, select, textarea, button').attr('disabled', true);
 })

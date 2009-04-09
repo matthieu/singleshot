@@ -35,7 +35,7 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def show
-    respond_with presenter, :action=>'show', :layout=>'head'
+    respond_with presenter, :action=>'show', :layout=>false
   end
 
   verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },

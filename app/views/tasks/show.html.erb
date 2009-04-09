@@ -1,44 +1,56 @@
+<html>
+  <head>
+    <title>Singleshot<%= " &mdash; #{escape_once(@title)}" if @title %></title>
+    <%= javascript_include_tag :all, :cache=>true %>
+    <%= stylesheet_link_tag 'common', 'task', :cache=>true %>
+    <%= @alternate.map { |mime, url| auto_discovery_link_tag mime.to_sym, url } if @alternate %>
+  </head>
+  <body>
 <%
   performing = authenticated.can_complete?(@task)
   iframe_url = @task.rendering.render_url(performing) { { 'task_url'=>task_for_person_url(@task, authenticated) } } rescue nil
 %>
-<div id='task_header'>
+<div id='header'>
   <ol class='sections'>
     <li class='back'><%= link_to "Tasks list", tasks_url, :title=>'Back to your tasks list' %></li>
-    <li class='title'><%= h(@task.title) %></li>
+    <li class='title'><span><%= h(@task.title * 5) %></span> <%= link_to 'more', '#details', :class=>'dropdown' %></li>
     <li class='actions'></li>
   </ol>
+
+
 <!--
-  <div class='actions'>
     <%= quick_actions(@task) %>
     <%= link_to 'More options &raquo;', '#details', :id=>'more_options', :title=>'Click to reveal task details and more options',
                 :expanded=>'Less options &laquo;' %>
-    <%= button_to 'Completed', task_url(@task), :title=>'Click when task completed' if performing && false %>
-  </div>
-  <ul class='tabs'><li><%= link_to truncate(@task.title, :length=>50), '#', :class=>'current', :title=>truncate(strip_tags(@task.description), :length=>250) %></li><li><%= link_to '➠ Inbox', tasks_url, :title=>'Return to tasks list' %></li></ul>
+  
   <-- p class='info'><%= task_vitals(@task) %></p ->
   <div id='details' style='display:none'>
-    <dl>
-      <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) if iframe_url %>
-      <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
-      <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on).humanize) if @task.due_on %>
-      <dt>Recent activity</dt>
-      <dd>
-      <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', task_url(@task, :format=>:atom), :rel=>'alternate', :title=>'Subscribe to see changes to this task') %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', task_url(@task, :format=>:ics), :rel=>'alternate', :title=>'Add this task to your calendar') %></ul>
-        <%= render :file=>'activities/_activities', :locals=>{ :today=>Date.current, :activities=>@task.activities } %>
-      </dd>
-    </dl>
     <div class='actions'><%= task_actions(@task) %></div>
--->
-  </div>
+    -->
+
+
 </div>
-<div id='task_shadow'></div>
-<div id='task_content'>
+<div id='shadow'></div>
+<div id='details' class='dropdown'>
+  <dl>
+    <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(@task.description))) if iframe_url %>
+    <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][@task.priority - 1] %></dd>
+    <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(@task.due_on).humanize) if @task.due_on %>
+    <dt>Recent activity</dt>
+    <dd>
+    <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', task_url(@task, :format=>:atom), :rel=>'alternate', :title=>'Subscribe to see changes to this task') %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', task_url(@task, :format=>:ics), :rel=>'alternate', :title=>'Add this task to your calendar') %></ul>
+      <%= render :file=>'activities/_activities', :locals=>{ :today=>Date.current, :activities=>@task.activities } %>
+    </dd>
+  </dl>
+</div>
+<div id='content'>
 <% if @task.form && @task.form.url %>
-  <iframe id='task_frame' src='<%= iframe_url %>'></iframe>
+  <iframe id='frame' src='<%= iframe_url %>'></iframe>
 <% elsif @task.form && @task.form.html %>
-  <iframe id='task_frame' src='<%= form_url(@task) %>'></iframe>
+  <iframe id='frame' src='<%= form_url(@task) %>'></iframe>
 <% else %>
   <div class='description'><%= sanitize(simple_format(@task.description)) %></div>
 <% end %>
 </div>
+  </body>
+</html>

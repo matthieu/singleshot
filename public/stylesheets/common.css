@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: white;
+  color: black;
+  font-family: "Helvetica", "DejaVu Sans", "Verdana";
+}
+a {
+  text-decoration: none;
+  color: blue;
+}
+a:hover {
+  color: red;
+}
