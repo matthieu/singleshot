@@ -419,8 +419,7 @@ form.login dt {
   overflow: hidden;
   z-index: 1000;
   background-color: white;
-  border-top: 2px solid #f1f1f1;
-  border-bottom: 1px solid #878787;
+  border-top: 1px solid #8A8A8A;
   margin-bottom: 10px;
   min-width: 60em;
 }
@@ -450,3 +449,20 @@ form.login dt {
   background: #fff;
   border: none;
 }
+
+#task_header ol.sections {
+  list-style: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+#task_header ol.sections li {
+  display: table-cell;
+  min-width: 10em;
+  margin: 0;
+  height: 2em;
+  padding: 0.3em 1em 0.6em 1em;
+}
+#task_header ol.sections li+li { width: 100%; border-left: 1px solid #8A8A8A; }
+#task_header ol.sections li+li+li { margin-right: 2em; }
+#task_header ol.sections li.title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 20em; }
