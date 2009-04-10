@@ -30,62 +30,6 @@ a:hover {
 
 /** Forms and controls **/
 
-input[type=text], input[type=password], select {
-  padding: 0.3em;
-  border: 1px solid #888;
-}
-input[type=text]:hover, input[type=password]:hover, select:hover {
-  border: 1px solid #444;
-}
-input[type=text]:focus, input[type=password]:focus, select:focus {
-  border: 1px solid #444;
-}
-input[type=text][disabled], select[disabled] {
-  border: 1px solid #ccc;
-}
-option {
-}
-optgroup {
-  margin-bottom: 0.3em;
-  padding-bottom: 0.3em;
-  border-bottom: 1px solid #ccc;
-}
-
-form.button-to, form.button-to div {
-  display: inline;
-}
-
-fieldset {
-  border: 1pt solid #ccc;
-  padding: 1.6em;
-  margin: 1em;
-  -webkit-box-shadow: 4px 4px 8px #ccc;
-}
-fieldset legend {
-  color: #888;
-}
-form dl {
-  margin: 0 0 1em 0;
-}
-form dl dt {
-  margin: 0.3em 0 0.9em 0;
-  float: left;
-  width: 10em;
-}
-form dl dd {
-  margin: 0 0 0.9em 0;
-}
-form dl dd input[type=radio] {
-  margin: 0.3em 0 0.6em 0.3em;
-}
-input, button, label.watermark {
-  margin: 0.1em;
-  font: 1em "Lucida Grande", "Helevetica", "Verdana";
-}
-label.watermark {
-  color: #888;
-  left: 3pt;
-}
 
 /*
 form div.fieldWithErrors {

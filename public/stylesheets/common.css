@@ -3,12 +3,36 @@ body {
   padding: 0;
   background-color: white;
   color: black;
-  font-family: "Helvetica", "DejaVu Sans", "Verdana";
+  font: 11pt "Helvetica", "DejaVu Sans", "Verdana";
 }
-a {
-  text-decoration: none;
-  color: blue;
+
+a { text-decoration: none; color: blue; }
+a:hover { color: red; }
+a img { border: none; }
+
+/** Form controls **/
+
+fieldset { border: 1pt solid #bbb; padding: 1.6em; margin: 1em; }
+fieldset legend { color: #bbb; }
+
+button, input[type=submit] {
+  border: 1px solid #bbb;
+  font-size: 10pt;
+  background: url('/images/button-bg.png');
+  padding: 2px 12px 2px 12px;
 }
-a:hover {
-  color: red;
-}
+button:hover, input[type=submit]:hover,
+button:focus, input[type=submit]:focus { border: 1px solid #8a8a8a; }
+
+input[type=text], input[type=password], textarea, select { padding: 0.3em; border: 1px solid #bbb; }
+input[type=text]:hover, input[type=password]:hover, textarea:hover, select:hover,
+input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus { border: 1px solid #8a8a8a; }
+input[type=text][disabled], select[disabled] { border: 1px solid #ccc; }
+label.watermark { color: #bbb; left: 3pt; }
+
+optgroup { margin-bottom: 0.3em; padding-bottom: 0.3em; border-bottom: 1px solid #ccc; }
+
+form dl { margin: 0 0 1em 0; }
+form dl dt { margin: 0.3em 0 0.9em 0; float: left; width: 10em; }
+form dl dd { margin: 0 0 0.9em 0; }
+form dl dd input[type=radio] { margin: 0.3em 0 0.6em 0.3em; }

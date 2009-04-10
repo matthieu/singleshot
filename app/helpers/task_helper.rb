@@ -16,13 +16,6 @@
 
 module TaskHelper
 
-  def quick_actions(task)
-    [ authenticated.can_change?(task) && button_to('Manage', edit_task_url(task), :method=>:get, :title=>'Manage this task'),
-      authenticated.can_claim?(task) && button_to('Claim', task_url(task, 'task[owner]'=>authenticated),
-                                                                          :method=>:put, :title=>'Claim task')
-    ].select { |action| action }.join(' ')
-  end
-
   def task_vitals(task)
     case task.status
     when 'ready', 'active'

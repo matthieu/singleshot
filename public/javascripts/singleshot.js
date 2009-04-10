@@ -18,7 +18,7 @@
 
 $(function() {
   // Form fields watermark and auto focus.
-  $('input[title]').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
+  $('input[type=text], input[type=password], textarea').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
   $('input.auto_focus:first').focus();
   // Sparkline bars.
   $('.sparkline.bar').each(function() {
@@ -30,18 +30,6 @@ $(function() {
   $('input.date').datepicker();
 
   // Expand/collapse options in task view.
-  $('#more_options').click(function(event) {
-    var target = $('#details')
-    if (target.is(':visible')) {
-      target.slideUp(500)
-      $(this).text($(this).data('original'))
-    } else {
-      $(this).data('original', this.innerHTML)
-      $(this).text($(this).attr('expanded'))
-      target.slideDown(500)
-    }
-    return false;
-  });
   $('a.dropdown').click(function(e) {
     var target = $($(this).attr('href'));
     var highlight = $(this).parent();
@@ -51,6 +39,8 @@ $(function() {
       highlight.addClass('active');
       target.slideDown(250);
     }
+    $(this).blur();
+    return false;
   });
 
   // Adjust iframe to fit window on creation and whenever browser window is resized.

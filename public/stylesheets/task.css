@@ -12,6 +12,47 @@
   min-width: 60em;
   line-height: 1.6em;
 }
+
+
+#header ol.sections {
+  list-style: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+#header ol.sections li {
+  display: block;
+  float: left;
+  width: 7em;
+  margin: 0;
+  height: 2em;
+  line-height: 2em;
+  padding: 1px 1em 1px 1em;
+}
+#header ol.sections li.logo {
+  text-align: center;
+  padding-top: 1px;
+}
+#header ol.sections li.title {
+  border-left: 1px solid #8a8a8a;
+  border-right: 1px solid #8a8a8a;
+  width: 40em;
+  overflow: hidden;
+}
+#header ol.sections li.title span {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  overflow: hidden;
+  margin-right: 4em;
+}
+#header ol.sections li.title.active { background-color: #d8d8d8; }
+#header ol.sections a.dropdown {
+  position: relative;
+  float: right;
+  margin-top: -2em;
+}
+
 #shadow {
   position: absolute;
   background: url('/images/shadow.png');
@@ -23,6 +64,22 @@
   float: left;
   min-width: 60em;
 }
+div.dropdown {
+  display: none;
+  position: absolute;
+  left: 9em;
+  top: 2em;
+  z-index: 2000;
+  width: 40em;
+  padding: 0.3em 1em 0.6em 1em;
+  background-color: white;
+  border-left: 1px solid #8A8A8A;
+  border-right: 1px solid #8A8A8A;
+  border-bottom: 1px solid #8A8A8A;
+  -moz-box-shadow: #888 4px 4px 4px; 
+  -webkit-box-shadow: 4px 4px 4px #888;
+}
+
 #content {
   position: relative;
   width: 100%;
@@ -39,55 +96,3 @@
   background: #fff;
   border: none;
 }
-
-#header ol.sections {
-  list-style: none;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-#header ol.sections li {
-  display: block;
-  float: left;
-  width: 10em;
-  margin: 0;
-  height: 2em;
-  padding: 0.3em 1em 0.6em 1em;
-}
-#header ol.sections li.title {
-  border-left: 1px solid #8a8a8a;
-  border-right: 1px solid #8a8a8a;
-  width: 40em;
-  overflow: hidden;
-}
-
-#header li.title span {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  overflow: hidden;
-  margin-right: 4em;
-}
-#header a.dropdown {
-  position: relative;
-  float: right;
-  margin-top: -1.6em;
-}
-#header li.active {
-  background-color: #d8d8d8;
-}
-div.dropdown {
-  display: none;
-  position: absolute;
-  left: 12em;
-  top: 2em;
-  z-index: 2000;
-  width: 40em;
-  padding: 0.3em 1em 0.6em 1em;
-  background-color: white;
-  border-left: 1px solid #8A8A8A;
-  border-right: 1px solid #8A8A8A;
-  border-bottom: 1px solid #8A8A8A;
-  -webkit-box-shadow: 4px 4px 4px #888;
-}
-
