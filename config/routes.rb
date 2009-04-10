@@ -19,12 +19,13 @@ ActionController::Routing::Routes.draw do |map|
   map.resource 'session'
   map.resources 'tasks', :collection=>{ 'completed'=>:get, 'following'=>:get, 'complete_redirect'=>:get },
     :member=>['activities'] do |tasks|
-    map.connect '/tasks/:id', :controller=>'tasks', :action=>'complete', :conditions=>{ :method=>:post }
     tasks.with_options :controller=>'task_for' do |opts|
       opts.connect 'for/:person_id', :action=>'update', :conditions=>{ :method=>:put }
       opts.for_person 'for/:person_id', :action=>'show'
     end
   end
+  map.connect '/tasks/:id', :controller=>'tasks', :action=>'update', :conditions=>{ :method=>:post }
+
   map.search '/search', :controller=>'tasks', :action=>'search'
   map.open_search '/search/osd', :controller=>'tasks', :action=>'opensearch'
 
