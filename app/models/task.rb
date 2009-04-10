@@ -47,7 +47,7 @@ class Task < ActiveRecord::Base
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :form, :data, :webhooks
+  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :form, :data, :webhooks, :potential_owners, :supervisors
   attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :data,
                   :version, :created_at, :updated_at
 
@@ -251,7 +251,13 @@ class Task < ActiveRecord::Base
   Stakeholder::PLURAL_ROLES.each do |role|
     define_method(role.pluralize) { in_role(role) }
     define_method("#{role}?") { |identity| in_role?(role, identity) }
-    define_method("#{role.pluralize}=") { |identities| set_role role, identities }
+    define_method "#{role.pluralize}=" do |identities|
+      people = Person.identify(Array(identities))
+      stakeholders.delete stakeholders.select { |sh| sh.role == role }
+      people.each do |person|
+        stakeholders.build :person=>person, :role=>role
+      end
+    end
   end
 =begin
 

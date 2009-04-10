@@ -44,7 +44,7 @@ class TasksController < ApplicationController #:nodoc:
     presenter.update! params['task']
     respond_to do |wants|
       wants.html do
-        redirect_to (task.completed? || task.cancelled?) ? tasks_url : :back
+        redirect_to((task.completed? || task.cancelled?) ? tasks_url : :back)
       end
       wants.any  { respond_with presenter }
     end

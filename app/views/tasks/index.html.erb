@@ -9,7 +9,7 @@
   <tbody>
     <% for task in @tasks %>
       <% content_tag_for 'tr', task, :class=>'hentry' + (task.over_due? ? ' overdue' : '') do %>
-        <td class='entry-title'><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), 250) %></td>
+        <td class='entry-title'><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), :length=>250) %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
         <td><%= sparkline_tag [task.deadline], :type=>:deadline, :title=>"Due #{relative_date(task.due_on).titleize}" if task.due_on %></td>
         <td><%= abbr_time task.created_at, age(task.created_at, false), :class=>'published' %></td>
