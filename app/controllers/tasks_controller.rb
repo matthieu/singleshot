@@ -43,7 +43,9 @@ class TasksController < ApplicationController #:nodoc:
   def update
     presenter.update! params['task']
     respond_to do |wants|
-      wants.html { redirect_to tasks_url, :status=>:see_other }
+      wants.html do
+        redirect_to (task.completed? || task.cancelled?) ? tasks_url : :back
+      end
       wants.any  { respond_with presenter }
     end
   end
@@ -56,6 +58,7 @@ class TasksController < ApplicationController #:nodoc:
 
 protected
 
+  helper_method :task
   def task
     @task ||= authenticated.tasks.find(params['id'])
   end
