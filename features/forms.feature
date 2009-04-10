@@ -2,9 +2,10 @@ Features: Using forms to peform the task
 
   Background:
     Given the person scott
+    And the person me
     And this task
       """
-      title: "absence request"
+      title: "Absence request"
       creator: scott
       owner: me
       form:
@@ -16,14 +17,14 @@ Features: Using forms to peform the task
 
   Scenario: See task form with relevant details
     When I login
-    And I view the task "absence request"
-    And I choose the frame "task_frame"
+    And I view the task "Absence request"
+    And I choose the frame "frame"
     Then I should see "Scott requested leave of absence"
 
   Scenario: Fill in task form and complete task
     When I login
-    And I view the task "absence request"
-    And I choose the frame "task_frame"
+    And I view the task "Absence request"
+    And I choose the frame "frame"
     And I choose "data[accept]"
     And I fill in "data[comment]" with "enjoy"
     And I press "Done"
@@ -34,11 +35,11 @@ Features: Using forms to peform the task
 
   Scenario: Fill in task form and save for later
     When I login
-    And I view the task "absence request"
-    And I choose the frame "task_frame"
+    And I view the task "Absence request"
+    And I choose the frame "frame"
     And I choose "data[accept]"
     And I fill in "data[comment]" with "enjoy"
     And I press "Save"
-    Then the task "absence request" should be active
-    And the task "absence request" data should have accept="true"
-    And the task "absence request" data should have comment="enjoy"
+    Then the task "Absence request" should be active
+    And the task "Absence request" data should have accept="true"
+    And the task "Absence request" data should have comment="enjoy"
