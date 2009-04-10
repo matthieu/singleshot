@@ -15,8 +15,7 @@
 
 
 Given /^this task$/ do |task|
-  Given "the person me"
-  Person.find_by_fullname('me').tasks.create! YAML.load(task)
+  Task.create! YAML.load(task)
 end
 
 Given /^the task "(.*)" created by (\S*)$/ do |title, person|
@@ -71,10 +70,15 @@ When /^(.*) delegates the task "(.*)" to (.*)$/ do |person, title, new_owner|
 end
 
 
-Then /^the task "([^\"]*)" should be (.*)$/ do |title, status|
+Then /^the task "([^\"]*)" should be (\S+)$/ do |title, status|
   Task.find_by_title(title).status.should == status
 end
 
 Then /^the task "([^\"]*)" data should have (.*)="([^\"]*)"$/ do |title, name, value|
   Task.find_by_title(title).data[name].should == value
+end
+
+Then /^the task "([^\"]*)" should be owned by (.*)$/ do |title, name|
+  owner = name[/no one/] ? nil : Person.identify(name)
+  Task.find_by_title(title).owner.should == owner
 end
