@@ -32,14 +32,12 @@
     </dd>
   </dl>
 </div>
-<div id='content'>
 <% if task.form && task.form.url %>
   <iframe id='frame' src='<%= iframe_url %>'></iframe>
 <% elsif task.form && task.form.html %>
-  <iframe id='frame' src='<%= form_url(task) %>'></iframe>
+  <iframe id='frame' noresize='noresize' src='<%= form_url(task) %>'></iframe>
 <% else %>
   <div class='description'><%= sanitize(simple_format(task.description)) %></div>
 <% end %>
-</div>
   </body>
 </html>

@@ -1,22 +1,21 @@
+body { overflow: hidden; }
 #header {
   position: absolute;
   top: 0;
   left: 0;
   height: 2em;
   width: 100%;
-  overflow: hidden;
   z-index: 1000;
   background-color: white;
   border-top: 1px solid #8A8A8A;
   margin-bottom: 10px;
-  min-width: 60em;
-  line-height: 1.6em;
+  line-height: 2em;
 }
 
 
 #header ol.sections {
   list-style: none;
-  width: 100%;
+  width: 60em;
   padding: 0;
   margin: 0;
 }
@@ -26,7 +25,6 @@
   width: 7em;
   margin: 0;
   height: 2em;
-  line-height: 2em;
   padding: 1px 1em 1px 1em;
 }
 #header ol.sections li.logo {
@@ -62,7 +60,6 @@
   height: 13px;
   z-index: 999;
   float: left;
-  min-width: 60em;
 }
 div.dropdown {
   display: none;
@@ -72,6 +69,7 @@ div.dropdown {
   z-index: 2000;
   width: 40em;
   padding: 0.3em 1em 0.6em 1em;
+  margin-left: -2px;
   background-color: white;
   border-left: 1px solid #8A8A8A;
   border-right: 1px solid #8A8A8A;
@@ -80,19 +78,15 @@ div.dropdown {
   -webkit-box-shadow: 4px 4px 4px #888;
 }
 
-#content {
-  position: relative;
-  width: 100%;
+#frame {
+  display: inline;
+  position: absolute;
   top: 2em;
   left: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0 auto 0 auto;
-  min-width: 60em;
-}
-#content #frame {
-  width: 100%;
   height: 100%;
-  background: #fff;
+  width: 100%;
   border: none;
+  padding-bottom: 2em;
+  z-index: 10;
+  -webkit-box-sizing: border-box;
 }
