@@ -20,9 +20,9 @@ require File.dirname(__FILE__) + '/helpers'
 describe SessionsController do
   controller_name :sessions
 
-  it { should route(:get, '/session', :controller =>'sessions', :action=>'show') }
-  it { should route(:post, '/session', :controller =>'sessions', :action=>'create') }
-  it { should route(:delete, '/session', :controller =>'sessions', :action=>'destroy') }
+  it { should route(:get, '/session', :controller =>'session', :action=>'show') }
+  it { should route(:post, '/session', :controller =>'session', :action=>'create') }
+  it { should route(:delete, '/session', :controller =>'session', :action=>'destroy') }
   it { should filter_params(:password) }
 
   describe 'GET /session' do

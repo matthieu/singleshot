@@ -18,8 +18,6 @@
       <%= button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :confirm=>'Are you sure?', :title=>'Cancel task') if authenticated.can_cancel?(task) %>
     </li>
   </ol>
-</div>
-<div id='shadow'></div>
 <div id='details' class='dropdown'>
   <dl>
     <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(task.description))) if iframe_url %>
@@ -32,6 +30,8 @@
     </dd>
   </dl>
 </div>
+</div>
+<div id='shadow'></div>
 <% if task.form && task.form.url %>
   <iframe id='frame' src='<%= iframe_url %>'></iframe>
 <% elsif task.form && task.form.html %>

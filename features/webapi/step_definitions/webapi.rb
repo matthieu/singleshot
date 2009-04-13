@@ -25,11 +25,6 @@ Given /^I am authenticated as (.*)$/ do |person|
   basic_auth person, 'secret'
 end
 
-When /^I login/ do
-  Given "the person me"
-  basic_auth 'me', 'secret'
-end
-
 class RackApp
   def self.instance
     @instance ||= new
@@ -53,4 +48,4 @@ class RackApp
   end
 end
 
-RackApp.start
+#RackApp.start

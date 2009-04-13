@@ -9,7 +9,7 @@ Features: Task view
     And the person scott
 
   Scenario: Claim task
-    Given this task
+    Given the task
       """
       title: "Absence request"
       potential_owners:
@@ -17,14 +17,14 @@ Features: Task view
       - me
       """
     When I login
-    And I view the task "Absence request"
+    And I go to the task "Absence request"
     And I press "Claim"
-    Then I should be viewing the task "Absence request"
+    Then I should be on the task "Absence request"
     And the task "Absence request" should be active
     And the task "Absence request" should be owned by me
 
   Scenario: Cancel task
-    Given this task
+    Given the task
       """
       title: "Absence request"
       owner: me
@@ -33,7 +33,7 @@ Features: Task view
       - me
       """
     When I login
-    And I view the task "Absence request"
+    And I go to the task "Absence request"
     And I press "Cancel"
-    Then I should be viewing the tasks list
+    Then I should be on the tasks list
     And the task "Absence request" should be cancelled

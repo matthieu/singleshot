@@ -1,7 +1,7 @@
 <html>
   <head>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag 'common', :cache=>true %>
+    <%= stylesheet_link_tag 'common', 'jquery-ui', :cache=>true %>
   </head>
   <body>
     <% form_tag url_for, :method=>:put, :id=>'task', :class=>authenticated.can_complete?(task) ? 'enabled' : 'disabled' do %>

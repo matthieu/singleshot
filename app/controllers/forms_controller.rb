@@ -23,7 +23,11 @@ class FormsController < ApplicationController #:nodoc:
 
   def update
     task.update_attributes! :status=>params['status'] || task.status, :data=>params['data']
-    redirect_to task.completed? ? root_url : :back
+    if task.completed? || task.cancelled?
+      render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(root_path)}')</script>"
+    else
+      redirect_to :back
+    end
   end
 
 private

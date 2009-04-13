@@ -17,29 +17,30 @@ Features: Using forms to peform the task
 
   Scenario: See task form with relevant details
     When I login
-    And I view the task "Absence request"
-    And I choose the frame "frame"
+    And I go to the task "Absence request"
+    And I am on the frame "frame"
     Then I should see "Scott requested leave of absence"
-
-  Scenario: Fill in task form and complete task
-    When I login
-    And I view the task "Absence request"
-    And I choose the frame "frame"
-    And I choose "data[accept]"
-    And I fill in "data[comment]" with "enjoy"
-    And I press "Done"
-    Then I should be viewing the home page
-    And the task "absence request" should be completed
-    And the task "absence request" data should have accept="true"
-    And the task "absence request" data should have comment="enjoy"
 
   Scenario: Fill in task form and save for later
     When I login
-    And I view the task "Absence request"
-    And I choose the frame "frame"
+    And I go to the task "Absence request"
+    And I am on the frame "frame"
     And I choose "data[accept]"
     And I fill in "data[comment]" with "enjoy"
     And I press "Save"
-    Then the task "Absence request" should be active
+    Then I should be on the form for "Absence request"
+    And the task "Absence request" should be active
     And the task "Absence request" data should have accept="true"
     And the task "Absence request" data should have comment="enjoy"
+
+  Scenario: Fill in task form and complete task
+    When I login
+    And I go to the task "Absence request"
+    And I am on the frame "frame"
+    And I choose "data[accept]"
+    And I fill in "data[comment]" with "enjoy"
+    And I press "Done"
+    Then I should see be redirected with a script to the homepage
+    And the task "absence request" should be completed
+    And the task "absence request" data should have accept="true"
+    And the task "absence request" data should have comment="enjoy"

@@ -17,3 +17,8 @@
 Given /^the person (.*)$/ do |name|
   Person.identify(name) rescue Person.create!(:email=>"#{name}@example.com", :password=>'secret')
 end
+
+When /^I login/ do
+  Given "the person me"
+  basic_auth 'me', 'secret'
+end

@@ -24,8 +24,8 @@ config.action_mailer.raise_delivery_errors = false
 
 config.gem 'annotate',                  :version=>'2.0', :lib=>false
 config.gem 'faker',                     :version=>'0.3.1', :lib=>false
-config.gem 'notahat-machinist',         :version=>'0.3.1', :lib=>false
 config.gem 'rspec-rails',               :version=>'1.2.2', :lib=>false
+config.gem 'notahat-machinist',         :version=>'0.3.1', :lib=>false
 config.gem 'cucumber',                  :version=>'0.2.3', :lib=>false
 config.gem 'webrat',                    :version=>'0.4.4', :lib=>false
 config.gem 'carlosbrando-remarkable',   :version=>'2.3',   :lib=>false

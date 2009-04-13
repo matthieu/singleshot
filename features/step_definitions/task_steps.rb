@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^this task$/ do |task|
+Given /^the task$/ do |task|
   Task.create! YAML.load(task)
 end
 
@@ -32,12 +32,6 @@ end
 Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
   Given "the person #{person}"
   Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_'), :person=>Person.identify(person)
-end
-
-When /I view the task "(.*)"$/ do |title|
-  Given "I am authenticated"
-  http_accept :html
-  request_page task_url(Task.find_by_title(title)), :get, nil
 end
 
 
@@ -81,4 +75,8 @@ end
 Then /^the task "([^\"]*)" should be owned by (.*)$/ do |title, name|
   owner = name[/no one/] ? nil : Person.identify(name)
   Task.find_by_title(title).owner.should == owner
+end
+
+Then /^I should see be redirected with a script to (.*)$/ do |page|
+  response.should have_tag('script', "top.window.location.replace('#{path_to(page)}')")
 end
