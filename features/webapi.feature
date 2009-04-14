@@ -1,8 +1,4 @@
-Feature: Creating task using API
-
-  In order to write applications to use Singleshot
-  As a developer of these applications
-  I want a Web API that allows me to create, monitor and manage tasks.
+Feature: WebAPI
 
   Scenario: creating a new task
     Given I am authenticated as scott
@@ -63,3 +59,10 @@ Feature: Creating task using API
       """
     Then the response task creator should be alice
     Then the response task owner should be bob
+
+
+  Scenario: viewing a task as JSON object
+    Given I am authenticated as scott
+    Given the task "expenses" created by scott and assigned to scott
+    When I request json representation of the task "expenses"
+

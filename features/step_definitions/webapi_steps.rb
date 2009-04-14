@@ -14,6 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+Given /^I am authenticated$/ do
+  Given "I am authenticated as me"
+end
+
+Given /^I am authenticated as (.*)$/ do |person|
+  Given "the person #{person}"
+  basic_auth person, 'secret'
+end
+
+
 # Example:
 #   When I post this request to create a task
 #     """
@@ -94,6 +104,3 @@ Then /^people associated with the task are$/ do |roles_people|
   actual.should == expecting
 end
 
-Then /^the resource (.*) received (.*) notification$/ do |url, method|
-  RackApp.instance.requests.last.slice(:url, :method) == { :url=>url, :method=>method }
-end
