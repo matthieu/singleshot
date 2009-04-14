@@ -388,6 +388,10 @@ class Task < ActiveRecord::Base
   # -- Webhooks --
  
   has_many :webhooks, :dependent=>:delete_all
+  def webhooks_with_hash_mapping=(hooks)
+    self.webhooks_without_hash_mapping = hooks.map { |hook| Webhook === hook ? hook : Webhook.new(hook) }
+  end
+  alias_method_chain :webhooks=, :hash_mapping
 
 
   # -- Access Control --

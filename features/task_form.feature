@@ -3,7 +3,7 @@ Features: Using forms to peform the task
   Background:
     Given the person scott
     And the person me
-    And this task
+    And the task
       """
       title: "Absence request"
       creator: scott
