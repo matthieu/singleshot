@@ -75,7 +75,7 @@ module Validators::Url #:nodoc:
     #   it { should validate_url }
     #   it { should validate_url(:site_url) }
     module Matchers
-      Spec::Matchers.create :validate_url do |*attrs|
+      Spec::Matchers.define :validate_url do |*attrs|
         attrs = [:url] if attrs.empty?
         match do |subject|
           values = %w{example.com http-example.com http://example.com ftp://example.com}

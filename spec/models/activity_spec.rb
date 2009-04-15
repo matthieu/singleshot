@@ -41,8 +41,8 @@ describe Activity do
   it { should have_attribute(:created_at) }
   it { should have_db_column(:created_at, :type=>:datetime) }
   it { should be_readonly }
-  it { should have_named_scope('since(2009)', :conditions=>['activities.created_at >= ?', 2009]) }
-  it { should have_named_scope("visible_to('john')", :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
+  it { should have_named_scope(:since, :with=>2009, :conditions=>['activities.created_at >= ?', 2009]) }
+  it { should have_named_scope(:visible_to, :with=>'john', :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
                                :conditions=>{ 'involved.person_id'=>'john' }, :group=>'activities.id') }
 
   describe '#date' do

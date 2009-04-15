@@ -1,17 +1,29 @@
+# Maps a static name to a static route.
+#
+# This method is *not* designed to map from a dynamic name to a 
+# dynamic route like <tt>post_comments_path(post)</tt>. For dynamic 
+# routes like this you should *not* rely on #path_to, but write 
+# your own step definitions instead. Example:
+#
+#   Given /I am on the comments page for the "(.+)" post/ |name|
+#     post = Post.find_by_name(name)
+#     visit post_comments_path(post)
+#   end
+#
 module NavigationHelpers
   def path_to(page_name)
     case page_name
-    when /the homepage/i
+    when /the homepage/
       root_path
-    when /the tasks list/i
+    when /the tasks list/
       tasks_path
-    when /activity page/i
+    when /activity page/
       activity_path
-    when /the task "(.*)"/i
+    when /the task "(.*)"/
       task_path(Task.find_by_title($1))
-    when /the form for "(.*)"/i
+    when /the form for "(.*)"/
       form_path(Task.find_by_title($1))
-    when /the frame "(.*)"/i
+    when /the frame "(.*)"/
      frame_id = $1
      frame = Webrat::XML.xpath_search(current_dom, ".//iframe|frame").find { |elem| Webrat::XML.attribute(elem, 'id') == frame_id }
      fail "Did not find frame/iframe with ID #{id}" unless frame
@@ -23,7 +35,4 @@ module NavigationHelpers
   end
 end
 
-World do |world|
-  world.extend NavigationHelpers
-  world
-end
+World(NavigationHelpers)

@@ -45,7 +45,7 @@ module Validators::Email #:nodoc:
     # or <code>:email</code> if no attribute named. For example:
     #   it { should validate_email }
     module Matchers
-      Spec::Matchers.create :validate_email do |*attrs|
+      Spec::Matchers.define :validate_email do |*attrs|
         attrs = [:email] if attrs.empty?
         match do |subject|
           values = %w{example.com john-example.com john@example.com john@example@com}
