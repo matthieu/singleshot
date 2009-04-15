@@ -1,4 +1,4 @@
-<%= today = Date.today %>
+<% today = Date.today %>
 <ol class='activities'> 
   <% for (task, person, published), related in activities.group_by { |activity| [activity.task, activity.person, activity.created_at] } %>
     <% content_tag_for 'li', related.first, :class=>'hentry' do %>

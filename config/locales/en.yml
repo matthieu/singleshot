@@ -15,6 +15,12 @@
 
 
 en:
+  task:
+    show:
+      back:       "Back to your task list"
+      claim:      "Claim task"
+      cancel:     "Cancel task"
+      confirm_cancel: "Are you sure?"
   activity:
     show:
       title: "Activities"
