@@ -29,12 +29,12 @@ require File.dirname(__FILE__) + '/helpers'
 describe Form do
   subject { Form.make }
 
-  it { should belong_to(:task) }
-  it { should have_attribute(:url) }
-  it { should have_db_column(:url, :type=>:string) }
-  it { should validate_url }
-  it { should have_attribute(:html) }
-  it { should have_db_column(:html, :type=>:text) }
-  it { should allow_mass_assignment_of(:url, :html) }
-  it { should_not validate_presence_of(:url, :html) }
+  should_belong_to :task
+  should_have_attribute :url
+  should_have_column :url, :type=>:string
+  should_validate_url
+  should_have_attribute :html
+  should_have_column :html, :type=>:text
+  should_allow_mass_assignment_of :url, :html
+  should_not_validate_presence_of :url, :html
 end

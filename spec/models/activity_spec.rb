@@ -31,19 +31,19 @@ require File.dirname(__FILE__) + '/helpers'
 describe Activity do
   subject { Activity.make }
 
-  it { should belong_to(:person) }
-  it { should validate_presence_of(:person) }
-  it { should have_attribute(:name) }
-  it { should have_db_column(:name, :type=>:string) }
-  it { should validate_presence_of(:name) }
-  it { should belong_to(:task) }
-  it { should validate_presence_of(:task) }
-  it { should have_attribute(:created_at) }
-  it { should have_db_column(:created_at, :type=>:datetime) }
-  it { should be_readonly }
-  it { should have_named_scope(:since, :with=>2009, :conditions=>['activities.created_at >= ?', 2009]) }
-  it { should have_named_scope(:visible_to, :with=>'john', :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
-                               :conditions=>{ 'involved.person_id'=>'john' }, :group=>'activities.id') }
+  should_belong_to :person
+  should_validate_presence_of :person
+  should_have_attribute :name
+  should_have_column :name, :type=>:string
+  should_validate_presence_of :name
+  should_belong_to :task
+  should_validate_presence_of :task
+  should_have_attribute :created_at
+  should_have_column :created_at, :type=>:datetime
+  should_be_readonly
+  should_have_named_scope :since, :with=>2009, :conditions=>['activities.created_at >= ?', 2009]
+  should_have_named_scope :visible_to, :with=>'john', :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
+                               :conditions=>{ 'involved.person_id'=>'john' }, :group=>'activities.id'
 
   describe '#date' do
     subject { Activity.make }

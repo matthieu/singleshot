@@ -36,33 +36,33 @@ require File.dirname(__FILE__) + '/helpers'
 describe Person do
   subject { Person.make }
 
-  it { should have_attribute(:identity) }
-  it { should have_db_column(:identity, :type=>:string) }
-  it { should allow_mass_assignment_of(:identity, :allow_nil=>true) }
-  it { should validate_uniqueness_of(:identity) }
+  should_have_attribute :identity
+  should_have_column :identity, :type=>:string
+  should_allow_mass_assignment_of :identity, :allow_nil=>true
+  should_validate_uniqueness_of :identity
   it ('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
 
-  it { should have_attribute(:email) }
-  it { should have_db_column(:email, :type=>:string) }
-  it { should allow_mass_assignment_of(:email) }
-  it { should validate_presence_of(:email, :message=>"I need a valid e-mail address.") }
-  it { should validate_uniqueness_of(:email) }
-  it { should validate_email(:email) }
+  should_have_attribute :email
+  should_have_column :email, :type=>:string
+  should_allow_mass_assignment_of :email
+  should_validate_presence_of :email, :message=>"I need a valid e-mail address."
+  should_validate_uniqueness_of :email
+  should_validate_email :email
 
-  it { should have_attribute(:fullname) }
-  it { should have_db_column(:fullname, :type=>:string) }
-  it { should allow_mass_assignment_of(:fullname) }
+  should_have_attribute :fullname
+  should_have_column :fullname, :type=>:string
+  should_allow_mass_assignment_of :fullname
   it ('should set fullname from email if unspecified') { subject.valid? ; subject.fullname.should == 'John Smith' }
 
-  it { should have_attribute(:timezone) }
-  it { should have_db_column(:timezone, :type=>:integer) }
-  it { should allow_mass_assignment_of(:timezone) }
-  it { should_not validate_presence_of(:timezone) }
+  should_have_attribute :timezone
+  should_have_column :timezone, :type=>:integer
+  should_allow_mass_assignment_of :timezone
+  should_not_validate_presence_of :timezone
 
-  it { should have_attribute(:locale) }
-  it { should have_db_column(:locale, :type=>:string) }
-  it { should allow_mass_assignment_of(:locale) }
-  it { should_not validate_presence_of(:locale) }
+  should_have_attribute :locale
+  should_have_column :locale, :type=>:string
+  should_allow_mass_assignment_of :locale
+  should_not_validate_presence_of :locale
 
   def salt # return the password's salt
     subject.password.split('::').first
@@ -74,10 +74,10 @@ describe Person do
     simple_matcher("authenticate '#{password}'") { |given| given.authenticated?(password) }
   end
 
-  it { should have_attribute(:password) }
-  it { should have_db_column(:password, :type=>:string) }
-  it { should allow_mass_assignment_of(:password) }
-  it { should_not validate_presence_of(:password) }
+  should_have_attribute :password
+  should_have_column :password, :type=>:string
+  should_allow_mass_assignment_of :password
+  should_not_validate_presence_of :password
   it('should store salt as part of password')             { salt.should =~ /^[0-9a-f]{10}$/ }
   it('should store hexdigest as part of password')        { crypt.should =~ /^[0-9a-f]{40}$/ }
   it('should use HMAC to crypt password')                 { crypt.should == OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA1.new, salt, "secret") }
@@ -87,16 +87,16 @@ describe Person do
   it('should not authenticate the wrong password')        { should_not authenticate('wrong') }
   it('should not authenticate without a password')        { subject[:password] = nil ; should_not authenticate('') }
 
-  it { should have_attribute(:access_key) }
-  it { should have_db_column(:access_key, :type=>:string, :limit=>32) }
-  it { should_not allow_mass_assignment_of(:access_key) }
+  should_have_attribute :access_key
+  should_have_column :access_key, :type=>:string, :limit=>32
+  should_not_allow_mass_assignment_of :access_key
   it('should create secure random access key')            { subject.save ; subject.access_key.should =~ /^[0-9a-f]{32}$/ }
   it('should give each person unique access key')         { Person.named('alice', 'bob', 'mary').map(&:access_key).uniq.size.should be(3) }
 
-  it { should have_attribute(:created_at) }
-  it { should have_db_column(:created_at, :type=>:datetime) }
-  it { should have_attribute(:updated_at) }
-  it { should have_db_column(:updated_at, :type=>:datetime) }
+  should_have_attribute :created_at
+  should_have_column :created_at, :type=>:datetime
+  should_have_attribute :updated_at
+  should_have_column :updated_at, :type=>:datetime
 
   describe '.authenticate' do
     subject { Person.make }

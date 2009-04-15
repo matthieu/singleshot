@@ -44,47 +44,47 @@ describe Task do
 
   # -- Descriptive --
 
-  it { should have_attribute(:title) }
-  it { should have_db_column(:title, :type=>:string) }
-  it { should allow_mass_assignment_of(:title) }
-  it { should_not validate_uniqueness_of(:title) }
-  it { should validate_presence_of(:title) }
+  should_have_attribute :title
+  should_have_column :title, :type=>:string
+  should_allow_mass_assignment_of :title
+  should_not_validate_uniqueness_of :title
+  should_validate_presence_of :title
 
-  it { should have_attribute(:description) }
-  it { should have_db_column(:description, :type=>:string) }
-  it { should allow_mass_assignment_of(:description) }
-  it { should_not validate_uniqueness_of(:description) }
-  it { should_not validate_presence_of(:description) }
+  should_have_attribute :description
+  should_have_column :description, :type=>:string
+  should_allow_mass_assignment_of :description
+  should_not_validate_uniqueness_of :description
+  should_not_validate_presence_of :description
 
-  it { should have_attribute(:language) }
-  it { should have_db_column(:language, :type=>:string, :limit=>5) }
-  it { should allow_mass_assignment_of(:language) }
-  it { should_not validate_presence_of(:language) }
+  should_have_attribute :language
+  should_have_column :language, :type=>:string, :limit=>5
+  should_allow_mass_assignment_of :language
+  should_not_validate_presence_of :language
 
 
   # -- Urgency --
 
-  it { should have_attribute(:priority) }
-  it { should have_db_column(:priority, :type=>:integer, :limit=>1) }
-  it { should allow_mass_assignment_of(:priority) }
+  should_have_attribute :priority
+  should_have_column :priority, :type=>:integer, :limit=>1
+  should_allow_mass_assignment_of :priority
   it('should default to priority 3')          { subject.priority.should == 3 }
-  it { should validate_inclusion_of(:priority, :in=>1..5) }
+  should_validate_inclusion_of :priority, :in=>1..5
 
-  it { should have_attribute(:due_on) }
-  it { should have_db_column(:due_on, :type=>:date) }
-  it { should allow_mass_assignment_of(:due_on) }
+  should_have_attribute :due_on
+  should_have_column :due_on, :type=>:date
+  should_allow_mass_assignment_of :due_on
 
-  it { should have_attribute(:start_on) }
-  it { should have_db_column(:start_on, :type=>:date) }
-  it { should allow_mass_assignment_of(:start_on) }
+  should_have_attribute :start_on
+  should_have_column :start_on, :type=>:date
+  should_allow_mass_assignment_of :start_on
 
 
   # -- Stakeholders --
   describe 'stakeholders' do
 
-    it { should have_many(:stakeholders, :include=>:person, :dependent=>:delete_all) }
-    it { should allow_mass_assignment_of(:stakeholders) }
-    it { should allow_mass_assignment_of(:owner) }
+    should_have_many :stakeholders, :include=>:person, :dependent=>:delete_all
+    should_allow_mass_assignment_of :stakeholders
+    should_allow_mass_assignment_of :owner
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
@@ -103,13 +103,13 @@ describe Task do
 
       it('should not have more than one creator')     { lambda { Task.make.associate! 'creator'=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
-      it { should_not able_to_claim_task }
-      it { should_not able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should_not able_to_change_task }
+      should_not_able_to_claim_task
+      should_not_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_not_able_to_complete_task 
+      should_not_able_to_change_task
     end
 
     describe '#owner' do
@@ -127,74 +127,74 @@ describe Task do
       it('should not have more than one owner')       { lambda { Task.make.associate! 'owner'=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
       it('should default to single potential owner')  { Task.make.tap { |t| t.associate!('potential_owner'=>subject) }.owner.should == subject }
-      it { should able_to_claim_task }
-      it { should able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should able_to_complete_task }
-      it { should able_to_change_task(:data) }
+      should_able_to_claim_task
+      should_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_able_to_complete_task
+      should_able_to_change_task :data
     end
 
     describe 'past owner' do
       subject { Person.past_owner }
 
       it('should be previous owner of task')   { subject.should == Task.make.in_role('past_owner').first }
-      it { should able_to_claim_task }
-      it { should_not able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should_not able_to_change_task }
+      should_able_to_claim_task
+      should_not_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_not_able_to_complete_task
+      should_not_able_to_change_task
     end
 
     describe 'potential owner' do
       subject { Person.potential }
 
-      it { should able_to_claim_task }
-      it { should_not able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should_not able_to_change_task }
+      should_able_to_claim_task
+      should_not_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_not_able_to_complete_task
+      should_not_able_to_change_task
     end
 
     describe 'excluded owner' do
       subject { Person.excluded }
 
-      it { should_not able_to_claim_task }
-      it { should_not able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should_not able_to_change_task }
+      should_not_able_to_claim_task
+      should_not_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_not_able_to_complete_task
+      should_not_able_to_change_task
     end
 
     describe 'supervisor' do
       subject { Person.supervisor }
 
-      it { should able_to_claim_task }
-      it { should able_to_delegate_task }
-      it { should able_to_suspend_task }
-      it { should able_to_resume_task }
-      it { should able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should able_to_change_task(:all) }
+      should_able_to_claim_task
+      should_able_to_delegate_task
+      should_able_to_suspend_task
+      should_able_to_resume_task
+      should_able_to_cancel_task
+      should_not_able_to_complete_task
+      should_able_to_change_task :all
     end
 
     describe 'observer' do
       subject { Person.observer }
 
-      it { should_not able_to_claim_task }
-      it { should_not able_to_delegate_task }
-      it { should_not able_to_suspend_task }
-      it { should_not able_to_resume_task }
-      it { should_not able_to_cancel_task }
-      it { should_not able_to_complete_task }
-      it { should_not able_to_change_task }
+      should_not_able_to_claim_task
+      should_not_able_to_delegate_task
+      should_not_able_to_suspend_task
+      should_not_able_to_resume_task
+      should_not_able_to_cancel_task
+      should_not_able_to_complete_task
+      should_not_able_to_change_task 
     end
 
     describe 'other' do
@@ -208,9 +208,9 @@ describe Task do
   # -- Status --
   describe 'status' do
 
-    it { should have_attribute(:status) }
-    it { should have_db_column(:status, :type=>:string) }
-    it { should allow_mass_assignment_of(:status) }
+    should_have_attribute :status
+    should_have_column :status, :type=>:string
+    should_allow_mass_assignment_of :status
     it('should not allow random values') { subject.status = :random ; subject.should have(1).error_on(:status) }
 
     describe 'available' do
@@ -221,12 +221,12 @@ describe Task do
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
       it { should_not change_status_to('completed')               { Person.supervisor.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>'completed' } }
-      it { should offer_potential_owner_to_claim }
-      it { should offer_supervisor_to_suspend }
-      it { should_not offer_supervisor_to_resume }
-      it { should offer_supervisor_to_cancel }
-      it { should_not offer_owner_to_complete }
-      it { should offer_supervisor_to_change }
+      should_offer_potential_owner_to_claim
+      should_offer_supervisor_to_suspend
+      should_not_offer_supervisor_to_resume
+      should_offer_supervisor_to_cancel
+      should_not_offer_owner_to_complete
+      should_offer_supervisor_to_change
     end
 
     describe 'active' do
@@ -240,12 +240,12 @@ describe Task do
       it { should honor_cancellation_policy }
       it { should change_status_to('completed', "when completed by owner")     { Person.owner.tasks.find(subject).update_attributes :status=>'completed' } }
       it { should_not change_status_to('completed', "unless by owner")         { Person.supervisor.tasks.find(subject).update_attributes :status=>'completed' } }
-      it { should_not offer_potential_owner_to_claim }
-      it { should_not offer_supervisor_to_suspend }
-      it { should_not offer_supervisor_to_resume }
-      it { should offer_supervisor_to_cancel }
-      it { should offer_owner_to_complete }
-      it { should offer_supervisor_to_change }
+      should_not_offer_potential_owner_to_claim
+      should_not_offer_supervisor_to_suspend
+      should_not_offer_supervisor_to_resume
+      should_offer_supervisor_to_cancel
+      should_offer_owner_to_complete
+      should_offer_supervisor_to_change
     end
 
     describe 'suspended' do
@@ -256,36 +256,36 @@ describe Task do
       it { should_not change_status("unless resumed by supervisor")        { Person.owner.tasks.find(subject).update_attributes :status=>'active' } }
       it { should honor_cancellation_policy }
       it { should_not change_status_to('completed')                         { Person.owner.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>'completed' } }
-      it { should_not offer_potential_owner_to_claim }
-      it { should_not offer_supervisor_to_suspend }
-      it { should offer_supervisor_to_resume }
-      it { should offer_supervisor_to_cancel }
-      it { should_not offer_owner_to_complete }
-      it { should offer_supervisor_to_change }
+      should_not_offer_potential_owner_to_claim
+      should_not_offer_supervisor_to_suspend
+      should_offer_supervisor_to_resume
+      should_offer_supervisor_to_cancel
+      should_not_offer_owner_to_complete
+      should_offer_supervisor_to_change
     end
 
     describe 'completed' do
       subject { Task.make_completed }
 
-      it { should be_readonly }
-      it { should_not offer_potential_owner_to_claim }
-      it { should_not offer_supervisor_to_suspend }
-      it { should_not offer_supervisor_to_resume }
-      it { should_not offer_supervisor_to_cancel }
-      it { should_not offer_owner_to_complete }
-      it { should_not offer_supervisor_to_change }
+      should_be_readonly
+      should_not_offer_potential_owner_to_claim
+      should_not_offer_supervisor_to_suspend
+      should_not_offer_supervisor_to_resume
+      should_not_offer_supervisor_to_cancel
+      should_not_offer_owner_to_complete
+      should_not_offer_supervisor_to_change
     end
 
     describe 'cancelled' do
       subject { Task.make_cancelled }
 
-      it { should be_readonly }
-      it { should_not offer_potential_owner_to_claim }
-      it { should_not offer_supervisor_to_suspend }
-      it { should_not offer_supervisor_to_resume }
-      it { should_not offer_supervisor_to_cancel }
-      it { should_not offer_owner_to_complete }
-      it { should_not offer_supervisor_to_change }
+      should_be_readonly
+      should_not_offer_potential_owner_to_claim
+      should_not_offer_supervisor_to_suspend
+      should_not_offer_supervisor_to_resume
+      should_not_offer_supervisor_to_cancel
+      should_not_offer_owner_to_complete
+      should_not_offer_supervisor_to_change
     end
 
   end
@@ -294,21 +294,21 @@ describe Task do
   describe 'newly created' do
     subject { Person.creator.tasks.create!(:title=>'foo') }
 
-    it { should be_available }
+    should_be_available
     it('should have creator')                     { subject.in_role('creator').should == [Person.creator] }
     it('should have creator as supervisor')       { subject.in_role('supervisor').should == [Person.creator] }
     it('should have no owner')                    { subject.owner.should be_nil }
-    it { should log_activity(Person.creator, 'created') }
+    should_log_activity Person.creator, 'created'
   end
 
   describe 'created and delegated' do
     subject { Person.creator.tasks.create!(:title=>'foo', :owner=>Person.owner) }
 
-    it { should be_active }
+    should_be_active
     it('should have creator') { subject.in_role('creator').should == [Person.creator] }
     it('should have owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.creator, 'created') }
-    it { should log_activity(Person.owner, 'claimed') }
+    should_log_activity Person.creator, 'created'
+    should_log_activity Person.owner, 'claimed'
   end
 
   describe 'owner claiming' do
@@ -318,9 +318,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_active }
+    should_be_active
     it('should have owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.owner, 'claimed') }
+    should_log_activity Person.owner, 'claimed'
   end
 
   describe 'owner delegating' do
@@ -330,10 +330,10 @@ describe Task do
       subject.reload
     end
 
-    it { should be_active }
+    should_be_active
     it('should have new owner') { subject.owner.should == Person.potential }
-    it { should log_activity(Person.owner, 'delegated') }
-    it { should log_activity(Person.potential, 'claimed') }
+    should_log_activity Person.owner, 'delegated'
+    should_log_activity Person.potential, 'claimed'
   end
 
   describe 'supervisor delegating' do
@@ -343,10 +343,10 @@ describe Task do
       subject.reload
     end
 
-    it { should be_active }
+    should_be_active
     it('should have new owner') { subject.owner.should == Person.potential }
-    it { should log_activity(Person.supervisor, 'delegated') }
-    it { should log_activity(Person.potential, 'claimed') }
+    should_log_activity Person.supervisor, 'delegated'
+    should_log_activity Person.potential, 'claimed'
   end
 
   describe 'owner releasing' do
@@ -356,9 +356,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_available }
+    should_be_available
     it('should have no owner') { subject.owner.should be_nil }
-    it { should log_activity(Person.owner, 'released') }
+    should_log_activity Person.owner, 'released'
   end
 
   describe 'supervisor suspending' do
@@ -368,9 +368,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_suspended }
+    should_be_suspended
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, 'suspended') }
+    should_log_activity Person.supervisor, 'suspended'
   end
 
   describe 'supervisor resuming' do
@@ -381,9 +381,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_active }
+    should_be_active
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, 'resumed') }
+    should_log_activity Person.supervisor, 'resumed'
   end
 
   describe 'supervisor cancelling' do
@@ -393,9 +393,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_cancelled }
+    should_be_cancelled
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.supervisor, 'cancelled') }
+    should_log_activity Person.supervisor, 'cancelled'
   end
 
   describe 'owner completing' do
@@ -405,9 +405,9 @@ describe Task do
       subject.reload
     end
 
-    it { should be_completed }
+    should_be_completed
     it('should retain owner') { subject.owner.should == Person.owner }
-    it { should log_activity(Person.owner, 'completed') }
+    should_log_activity Person.owner, 'completed'
   end
 
   describe 'supervisor modifying' do
@@ -417,19 +417,19 @@ describe Task do
       subject.reload
     end
 
-    it { should log_activity(Person.supervisor, 'modified') }
+    should_log_activity Person.supervisor, 'modified'
   end
 
 
   # -- Activity --
   
-  it { should have_many(:activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc') }
-  it { should_not allow_mass_assignment_of(:activities) }
+  should_have_many :activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc'
+  should_not_allow_mass_assignment_of :activities
 
 
   # -- Presentation --
 
-  it { should have_one(:form, :dependent=>:delete) }
+  should_have_one :form, :dependent=>:delete
   it 'should allow setting form using Hash' do
     subject.update_attributes! :form=>{ :url=>'http://example.com' }
     subject.form(true).url.should == 'http://example.com'
@@ -438,9 +438,9 @@ describe Task do
 
   # -- Data --
 
-  it { should have_attribute(:data) }
-  it { should have_db_column(:data, :type=>:text) }
-  it { should allow_mass_assignment_of(:data) }
+  should_have_attribute :data
+  should_have_column :data, :type=>:text
+  should_allow_mass_assignment_of :data
   it('should have empty hash as default data')  { subject.data.should == {} }
   it('should allowing assigning nil to data')   { subject.update_attributes :data => nil; subject.data.should == {} }
   it('should validate data is a hash')          { lambda { Person.supervisor.tasks.find(subject).update_attributes! :data=>'string' }.
@@ -451,25 +451,25 @@ describe Task do
 
   # -- Access key --
 
-  it { should have_attribute(:access_key) }
-  it { should have_db_column(:access_key, :type=>:string, :limit=>32) }
-  it { should_not allow_mass_assignment_of(:access_key) }
+  should_have_attribute :access_key
+  should_have_column :access_key, :type=>:string, :limit=>32
+  should_not_allow_mass_assignment_of :access_key
   it('should create hexdigest access key')                { subject.access_key.should =~ /^[0-9a-f]{32}$/ }
   it('should give each task unique access key')           { [Task.make, Task.make, Task.make].map(&:access_key).uniq.size.should be(3) }
 
-  it { should have_attribute(:version) }
-  it { should have_db_column(:version, :type=>:integer) }
+  should_have_attribute :version
+  should_have_column :version, :type=>:integer
   it('should have locking column version') { subject.class.locking_enabled? && subject.class.locking_column == 'version' }
-  it { should have_attribute(:created_at) }
-  it { should have_db_column(:created_at, :type=>:datetime) }
-  it { should have_attribute(:updated_at) }
-  it { should have_db_column(:updated_at, :type=>:datetime) }
+  should_have_attribute :created_at
+  should_have_column :created_at, :type=>:datetime
+  should_have_attribute :updated_at
+  should_have_column :updated_at, :type=>:datetime
 
 
   # -- Query scopes --
 
-  it { should have_named_scope('completed', :conditions=>"tasks.status = 'completed'", :order=>'tasks.updated_at desc') }
-  it { should have_named_scope('cancelled', :conditions=>"tasks.status = 'cancelled'", :order=>'tasks.updated_at desc') }
+  should_have_named_scope 'completed', :conditions=>"tasks.status = 'completed'", :order=>'tasks.updated_at desc'
+  should_have_named_scope 'cancelled', :conditions=>"tasks.status = 'cancelled'", :order=>'tasks.updated_at desc'
 
 
   # Expecting the subject to change status after executing the block. Uses the reason argument

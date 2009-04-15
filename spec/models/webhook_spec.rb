@@ -33,31 +33,31 @@ require File.dirname(__FILE__) + '/helpers'
 describe Webhook do
   subject { Webhook.make }
 
-  it { should belong_to(:task) }
+  should_belong_to :task
 
-  it { should have_attribute(:event) }
-  it { should have_db_column(:event, :type=>:string) }
-  it { should validate_presence_of(:event) }
+  should_have_attribute :event
+  should_have_column :event, :type=>:string
+  should_validate_presence_of :event
 
-  it { should have_attribute(:url) }
-  it { should have_db_column(:url, :type=>:string) }
-  it { should validate_presence_of(:url) }
-  it { should validate_url }
+  should_have_attribute :url
+  should_have_column :url, :type=>:string
+  should_validate_presence_of :url
+  should_validate_url
 
-  it { should have_attribute(:http_method) }
-  it { should have_db_column(:http_method, :type=>:string) }
-  it { should validate_presence_of(:http_method) }
+  should_have_attribute :http_method
+  should_have_column :http_method, :type=>:string
+  should_validate_presence_of :http_method
   it('should have http_method=post by default') { subject.http_method.should == 'post' }
-  it { should allow_mass_assignment_of(:http_method) }
+  should_allow_mass_assignment_of :http_method
 
-  it { should have_attribute(:enctype) }
-  it { should have_db_column(:enctype, :type=>:string) }
-  it { should validate_presence_of(:enctype) }
+  should_have_attribute :enctype
+  should_have_column :enctype, :type=>:string
+  should_validate_presence_of :enctype
   it('should have enctype=url-encoded by default') { subject.enctype.should == Mime::URL_ENCODED_FORM.to_s }
 
-  it { should have_attribute(:hmac_key) }
-  it { should have_db_column(:hmac_key, :type=>:string) }
-  it { should_not validate_presence_of(:hmac_key) }
+  should_have_attribute :hmac_key
+  should_have_column :hmac_key, :type=>:string
+  should_not_validate_presence_of :hmac_key
 
-  it { should allow_mass_assignment_of(:event, :url, :http_method, :enctype, :hmac_key) }
+  should_allow_mass_assignment_of :event, :url, :http_method, :enctype, :hmac_key
 end

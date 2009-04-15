@@ -20,10 +20,10 @@ require File.dirname(__FILE__) + '/helpers'
 describe TasksController do
   controller_name :tasks
 
-  it { should route(:get, '/tasks', :controller=>'tasks', :action=>'index') }
-  it { should route(:post, '/tasks', :controller=>'tasks', :action=>'create') }
-  it { should route(:get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1') }
-  it { should route(:put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1') }
+  should_route :get, '/tasks', :controller=>'tasks', :action=>'index'
+  should_route :post, '/tasks', :controller=>'tasks', :action=>'create'
+  should_route :get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1'
+  should_route :put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1'
 
 
   describe 'GET /tasks' do

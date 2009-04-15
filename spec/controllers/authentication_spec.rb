@@ -35,7 +35,7 @@ describe AuthenticationTestController do
   describe 'unauthenticated request' do
     describe '(HTML)' do
       before { get :index }
-      it('should redirect to login page')         { should redirect_to(session_url) }
+      should_redirect_to { session_path }
       it('should store return URL in session')    { session[:return_url].should == request.url }
       it('should reset I18n locale')              { I18n.locale.should == :en }
       it('should reset TimeZone')                 { Time.zone.utc_offset == 0 }
@@ -43,30 +43,30 @@ describe AuthenticationTestController do
 
     describe '(XML)' do
       before { get :index, :format=>:xml }
-      it { should respond_with(401) }
+      should_respond_with 401
     end
 
     describe '(JSON)' do
       before { get :index, :format=>:json }
-      it { should respond_with(401) }
+      should_respond_with 401
     end
 
     describe '(Atom)' do
       before { get :index, :format=>:atom }
-      it { should respond_with(401) }
+      should_respond_with 401
     end
   end
 
   describe 'session authentication' do
     describe '(invalid session)' do
       before { get :index, nil, :authenticated=>'foo' }
-      it('should redirect to login page')           { should redirect_to(session_url) }
+      should_redirect_to { session_path }
     end
 
     describe '(authenticated)' do
       before { get :index, nil, :authenticated=>@person.id }
-      it { should respond_with(200) }
-      it('should return authentication account')    { controller.send(:authenticated) == @person }
+      should_respond_with 200
+      should_authenticate_account
       it('should set I18n.locale')                  { I18n.locale.should == :tlh }
       it('should set Time.zone')                    { Time.zone.should == ActiveSupport::TimeZone[-11] }
     end
@@ -80,8 +80,8 @@ describe AuthenticationTestController do
         get :index
       end
 
-      it { should respond_with(200) }
-      it('should authenticate account')           { controller.send(:authenticated) == @person }
+      should_respond_with 200
+      should_authenticate_account
     end
 
     describe '(with invalid credentials)' do
@@ -90,7 +90,7 @@ describe AuthenticationTestController do
         get :index
       end
 
-      it { should respond_with(401) }
+      should_respond_with 401
     end
 
     describe '(POST)' do
@@ -108,29 +108,29 @@ ActionController::Base.allow_forgery_protection    = true
 
     describe '(Atom)' do
       before { get :feed, :access_key=>@person.access_key, :format=>:atom }
-      it { should respond_with(200) }
-      it('should authenticate account')           { controller.send(:authenticated) == @person }
+      should_respond_with 200
+      should_authenticate_account
     end
 
     describe '(iCal)' do
       before { get :feed, :access_key=>@person.access_key, :format=>:ics }
-      it { should respond_with(200) }
-      it('should authenticate account')           { controller.send(:authenticated) == @person }
+      should_respond_with 200
+      should_authenticate_account
     end
 
     describe '(HTML)' do
       before { get :feed, :access_key=>@person.access_key, :format=>:html }
-      it('should redirect to login page')         { should redirect_to(session_url) }
+      should_redirect_to { session_path }
     end
 
     describe '(POST)' do
       before { post :feed, :access_key=>'wrong', :format=>:atom }
-      it { should respond_with(405) }
+      should_respond_with 405
     end
 
     describe '(invalid access key)' do
       before { get :feed, :access_key=>'wrong', :format=>:atom }
-      it { should respond_with(403) }
+      should_respond_with 403
     end
   end
 
@@ -145,6 +145,13 @@ ActionController::Base.allow_forgery_protection    = true
       request.env['HTTP_AUTHORIZATION'] = ActionController::HttpAuthentication::Basic.encode_credentials(@person.username, 'secret')
       post :index
       should respond_with(200)
+    end
+  end
+
+
+  def authenticate_account
+    simple_matcher 'authenticate account' do |given|
+      controller.send(:authenticated) == @person
     end
   end
 

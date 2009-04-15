@@ -20,15 +20,15 @@ require File.dirname(__FILE__) + '/helpers'
 describe SessionsController do
   controller_name :sessions
 
-  it { should route(:get, '/session', :controller =>'sessions', :action=>'show') }
-  it { should route(:post, '/session', :controller =>'sessions', :action=>'create') }
-  it { should route(:delete, '/session', :controller =>'sessions', :action=>'destroy') }
-  it { should filter_params(:password) }
+  should_route :get, '/session', :controller =>'sessions', :action=>'show'
+  should_route :post, '/session', :controller =>'sessions', :action=>'create'
+  should_route :delete, '/session', :controller =>'sessions', :action=>'destroy'
+  should_filter_params :password
 
   describe 'GET /session' do
     before { get :show }
 
-    it { should render_template('sessions/show') }
+    should_render_template 'sessions/show'
   end
 
   describe 'POST /session' do
@@ -37,14 +37,14 @@ describe SessionsController do
     describe '(no credentials)' do
       before { post :create }
 
-      it('should redirect back to /session')                  { should redirect_to(session_url) }
+      should_redirect_to { session_path }
       it('should have no authenticated user in session')      { session[:authenticated].should be_nil }
     end
 
     describe '(wrong credentials)' do
       before { post :create, :username=>@person.identity, :password=>'wrong' }
 
-      it('should redirect back to /session')                  { should redirect_to(session_url) }
+      should_redirect_to { session_path }
       it('should have no authenticated user in session')      { session[:authenticated].should be_nil }
       it('should have error message in flash')                { flash[:error].should match(/no account/i) }
     end
@@ -53,7 +53,7 @@ describe SessionsController do
       before { session[:older] = true }
       before { post :create, :username=>@person.identity, :password=>'secret' }
 
-      it('should redirect to root url')                       { should redirect_to(root_url) }
+      should_redirect_to { root_path }
       it('should store authenticated user in session')        { session[:authenticated].should == @person.id }
       it('should reset session to prevent session fixation')  { session[:older].should be_nil } 
       it('should clear flash')                                { flash.should be_empty }
@@ -62,7 +62,7 @@ describe SessionsController do
     describe '(valid credentials and return url)' do
       before { post :create, { :username=>@person.identity, :password=>'secret' }, { :return_url=>'http://return_url' } }
 
-      it('should redirect to return url')                   { should redirect_to('http://return_url') }
+      should_redirect_to { 'http://return_url' }
       it('should clear return url from session')            { session[:return_url].should be_nil }
       it('should store authenticated user in session')      { session[:authenticated].should == @person.id }
     end
@@ -76,7 +76,7 @@ describe SessionsController do
     end
 
     it('should reset session')        { session.should be_empty }
-    it('should redirect to root url') { should redirect_to(root_url) }
+    should_redirect_to { root_path }
   end
 
 end
