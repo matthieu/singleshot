@@ -50,15 +50,18 @@ en:
       resumed:    "{{person}} resumed {{task}}"
       cancelled:  "{{person}} created {{task}}"
       completed:  "{{person}} completed {{task}}"
-  session:
-    login:
-      button:   "Login"
+  sessions:
+    errors:
       nomatch:  "No account with this user name and password."
-    username:
-      label:    "Username:"
-      hint:     "Your username"
-    password:
-      label:    "Password:"
-      hint:     "Your password is case sensitive"
+    show:
+      login:
+        button:   "Login"
+        hint:     ""
+      username:
+        label:    "Username:"
+        hint:     "Your username"
+      password:
+        label:    "Password:"
+        hint:     "Your password is case sensitive"
   sparkline:
     loading: "Loading &hellip;"

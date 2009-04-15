@@ -29,7 +29,7 @@ class SessionsController < ApplicationController #:nodoc:
       session[:authenticated] = person.id
       redirect_to redirect, :status=>:see_other 
     else
-      flash[:error] = t('session.login.nomatch')  unless username.blank?
+      flash[:error] = t('sessions.errors.nomatch')  unless username.blank?
       redirect_to session_url, :status=>:see_other
     end
   end
