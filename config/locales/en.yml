@@ -15,12 +15,28 @@
 
 
 en:
-  task:
+  tasks:
     show:
       back:       "Back to your task list"
-      claim:      "Claim task"
-      cancel:     "Cancel task"
-      confirm_cancel: "Are you sure?"
+      due_on:     "Due on {{date}}"
+      this:       "this task"
+      more:       "more"
+  task:
+    priority:
+      "1":        "High priority"
+      "2":        "Normal priority"
+      "3":        "Low priority"
+    actions:
+      claim:
+        button:   "Claim"
+        title:    "Claim task"
+      cancel:
+        button:   "Cancel"
+        title:    "Cancel task"
+        confirm: "Are you sure?"
+      done:
+        button:   "Done"
+        title:    "Complete task"
   activity:
     show:
       title: "Activities"

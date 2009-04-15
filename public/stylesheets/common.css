@@ -15,23 +15,23 @@ a img { border: none; }
 fieldset { border: 1pt solid #bbb; padding: 1.6em; margin: 1em; }
 fieldset legend { color: #bbb; }
 
-button, input[type=submit] {
-  border: 1px solid #bbb;
-  font-size: 10pt;
-  background: url('/images/button-bg.png');
-  padding: 2px 12px 2px 12px;
-}
-button:hover, input[type=submit]:hover,
-button:focus, input[type=submit]:focus { border: 1px solid #8a8a8a; }
+input, textarea, select, button { border: 1px solid #bbb; }
+input[type=submit], button { border-bottom: 1px solid #888; border-right: 1px solid #888; }
+input:hover, textarea:hover, select:hover, button:hover,
+input:focus, textarea:focus, select:focus, button:focus { border: 1px solid #888; }
+input[type=submit]:hover, button:hover,
+input[type=submit]:focus, button:focus { border-bottom: 1px solid #444; border-right: 1px solid #444; }
+input[disabled], select[disabled], textarea[disabled], button[disabled] { border: 1px solid #ccc; }
+
+button, input[type=submit] { font-size: 10pt; background: url('/images/button-bg.png'); padding: 2px 12px 2px 12px; }
 button:active, input[type=submit]:active {
-  border: 1px solid #8A8A8A;
+  border: 1px solid #444;
+  border-bottom: 1px solid #888;
+  border-right: 1px solid #888;
   background: url('/images/button-bg-active.png');
 }
 
-input[type=text], input[type=password], textarea, select { padding: 0.3em; border: 1px solid #bbb; }
-input[type=text]:hover, input[type=password]:hover, textarea:hover, select:hover,
-input[type=text]:focus, input[type=password]:focus, textarea:focus, select:focus { border: 1px solid #8a8a8a; }
-input[type=text][disabled], select[disabled] { border: 1px solid #ccc; }
+input[type=text], input[type=password], textarea, select { padding: 0.3em; }
 label.watermark { color: #bbb; left: 3pt; }
 
 optgroup { margin-bottom: 0.3em; padding-bottom: 0.3em; border-bottom: 1px solid #ccc; }

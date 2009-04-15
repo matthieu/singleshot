@@ -1,43 +1,41 @@
 <html>
   <head>
-    <title>Singleshot &mdash; <%= escape_once(task.title) %></title>
+    <title>Singleshot &mdash; <%= h task.title %></title>
     <%= javascript_include_tag :all, :cache=>true %>
     <%= stylesheet_link_tag 'common', 'task', :cache=>true %>
   </head>
   <body>
-<%
-  performing = authenticated.can_complete?(task)
-  iframe_url = task.rendering.render_url(performing) { { 'task_url'=>task_for_person_url(task, authenticated) } } rescue nil
-%>
-<div id='header'>
-  <ol class='sections'>
-    <li class='logo'><%= link_to image_tag('singleshot-100-26.png'), tasks_url, :title=>'Back to your tasks list' %></li>
-    <li class='title'><span><%= h(task.title * 5) %></span> <%= link_to 'more', '#details', :class=>'dropdown' %></li>
-    <li class='actions'>
-      <%= button_to('Claim', task_url(task, 'task[owner]'=>authenticated), :title=>'Claim task') if authenticated.can_claim?(task) %>
-      <%= button_to('Cancel', task_url(task, 'task[status]'=>'cancelled'), :confirm=>'Are you sure?', :title=>'Cancel task') if authenticated.can_cancel?(task) %>
-    </li>
-  </ol>
-<div id='details' class='dropdown'>
-  <dl>
-    <%= content_tag('dt', 'Description') + content_tag('dd', sanitize(simple_format(task.description))) if iframe_url %>
-    <dt>Priority</dt><dd><%= ['High', 'Medium', 'Low'][task.priority - 1] %></dd>
-    <%= content_tag('dt', 'Due on') + content_tag('dd', relative_date(task.due_on).humanize) if task.due_on %>
-    <dt>Recent activity</dt>
-    <dd>
-    <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', task_url(task, :format=>:atom), :rel=>'alternate', :title=>'Subscribe to see changes to this task') %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', task_url(task, :format=>:ics), :rel=>'alternate', :title=>'Add this task to your calendar') %></ul>
-      <%= render :file=>'activities/_activities', :locals=>{ :today=>Date.current, :activities=>task.activities } %>
-    </dd>
-  </dl>
-</div>
-</div>
-<div id='shadow'></div>
-<% if task.form && task.form.url %>
-  <iframe id='frame' src='<%= iframe_url %>'></iframe>
-<% elsif task.form && task.form.html %>
-  <iframe id='frame' noresize='noresize' src='<%= form_url(task) %>'></iframe>
-<% else %>
-  <div class='description'><%= sanitize(simple_format(task.description)) %></div>
-<% end %>
+    <% iframe_url = task.form.url ? task.form.url : form_url(task) if task.form %>
+    <div id='header'>
+      <ol class='sections'>
+        <li class='logo'><%= link_to 'Singleshot', tasks_url, :style=>'font: 14pt "Handwriting - Dakota"', :title=>t('.back') %></li>
+        <li class='meta'>
+          <%= content_tag 'span', h(task.title), :title=>"#{task.title}\n\n#{task.description}", :class=>'title' %>
+          <%= link_to t('.more'), '#details', :class=>'dropdown' %>
+        </li>
+        <li class='actions'>
+          <%= button_to t('task.actions.claim.button'), task_url(task, 'task[owner]'=>authenticated), :title=>t('task.actions.claim.title') if authenticated.can_claim?(task) %>
+          <%= button_to t('task.actions.done.button'), task_url(task, 'task[status]'=>'completed'), :title=>t('task.actions.done.title') if iframe_url.nil? && authenticated.can_complete?(task) %>
+          <%= button_to t('task.actions.cancel.button'), task_url(task, 'task[status]'=>'cancelled'), :confirm=>t('task.actions.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(task) %>
+        </li>
+      </ol>
+    </div>
+    <div id='details' class='dropdown'>
+      <div class='description'><%= auto_link(sanitize(simple_format(task.description))) %></div>
+      <hr>
+      <ul class='meta'>
+        <li class='first'><%= t "task.priority.#{task.priority}" %></li>
+        <% task.due_on = Date.today %>
+        <%= content_tag 'li', t('.due_on', :date=>l(task.due_on, :format=>:long)) if task.due_on %>
+      </ul>
+      <ol class='activities'>
+        <% task.activities.each do |activity| %>
+          <li><%= t "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>t('.this') %>
+          <span class='created'><%= time_ago_in_words activity.created_at %><span></li>
+        <% end %>
+      </ol>
+    </div>
+    <div id='shadow'></div>
+    <%= tag 'iframe', :id=>'frame', :noresize=>'noresize', :src=>iframe_url if iframe_url %>
   </body>
 </html>
