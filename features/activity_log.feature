@@ -75,7 +75,7 @@ Feature: activity log
 
   Scenario: log shows supervisor modified task
     Given the task "expenses" created by scott
-    When scott modifies the priority of task "expenses" to 5
+    When scott modifies the priority of task "expenses" to 3
     Then the activity log shows the entries
       """
       scott created expenses

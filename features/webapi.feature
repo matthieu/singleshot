@@ -11,7 +11,7 @@ Feature: WebAPI
     And the response task status should be "available"
     And the response task should have no description
     And the response task should have no language
-    And the response task priority should be 3
+    And the response task priority should be 2
     And the response task should have no due_on
     And the response task should have no start_on
     And the response task data should be {}
