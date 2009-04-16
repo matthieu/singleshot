@@ -59,8 +59,8 @@ class Task < ActiveRecord::Base
 
   # -- Urgency --
  
-  PRIORITY = 1..5 # Priority ranges from 1 to 5, 1 is the highest priority.
-  DEFAULT_PRIORITY = 3 # Default priority is 3.
+  PRIORITY = 1..3 # Priority ranges from 1 to 3, 1 is the highest priority.
+  DEFAULT_PRIORITY = 2 # Default priority is 2.
 
   validates_inclusion_of :priority, :in=>PRIORITY
 
