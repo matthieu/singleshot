@@ -16,10 +16,13 @@
 
 require File.dirname(__FILE__) + '/../helpers'
 
-describe '/sessions' do
+describe '/sessions/show' do
+  before do
+    @controller.allow_forgery_protection = true
+    render '/sessions/show'
+  end
 
   it 'should render login form' do
-    render '/sessions/show'
     response.should have_tag('form.login') do
       with_tag 'form[method=post][action=?]', session_url do
         with_tag 'fieldset' do
@@ -33,35 +36,17 @@ describe '/sessions' do
     end
   end
 
-  it 'should include authenticity token' do
-    @controller.allow_forgery_protection = true
-    render '/sessions/show'
-    response.should have_tag('form.login') do
-      with_tag 'input[name=authenticity_token][type=hidden]'
-    end
-  end
+  should_have_tag 'form.login input[name=username].auto_focus'
+  should_have_tag 'form.login input[name=authenticity_token][type=hidden]'
+  should_not_have_tag 'p.error'
+end
 
-  it 'should render flash error inside login box' do
+describe '/sessions/show with error message' do
+  before do
+    @controller.allow_forgery_protection = true
     flash[:error] = 'Error message'
     render '/sessions/show'
-    response.should have_tag('form.login fieldset') do
-      with_tag 'p.error', 'Error message'
-    end
   end
 
-  it 'should not render empty flash error' do
-    render '/sessions/show'
-    response.should have_tag('form.login fieldset') do
-      without_tag('p.error')
-    end
-  end
-
-  it 'should auto-focus username field' do
-    render '/sessions/show'
-    response.should have_tag('form.login') do
-      with_tag 'input.auto_focus', 1 do |tags|
-        tags.first.attributes['name'].should == 'username'
-      end
-    end
-  end
+  should_have_tag 'form.login fieldset p.error', "Error message"
 end

@@ -67,8 +67,8 @@ describe Task do
   should_have_attribute :priority
   should_have_column :priority, :type=>:integer, :limit=>1
   should_allow_mass_assignment_of :priority
-  it('should default to priority 3')          { subject.priority.should == 3 }
-  should_validate_inclusion_of :priority, :in=>1..5
+  it('should default to priority 2')          { subject.priority.should == 2 }
+  should_validate_inclusion_of :priority, :in=>1..3
 
   should_have_attribute :due_on
   should_have_column :due_on, :type=>:date
@@ -609,7 +609,7 @@ describe Task do
   #   it { should able_to_change_task(:data) }
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
-      all = { :title=>'new title', :priority=>5, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
+      all = { :title=>'new title', :priority=>3, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
               :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>'observer'),
                               Stakeholder.new(:person=>Person.supervisor, :role=>'supervisor')] }
       changed = all.select { |attr, value| subject.tasks.find(Task.make_active).update_attributes(attr=>value) rescue false }.map(&:first)

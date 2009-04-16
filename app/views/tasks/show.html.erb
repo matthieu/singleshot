@@ -8,14 +8,14 @@
     <% iframe_url = task.form.url ? task.form.url : form_url(task) if task.form %>
     <div id='header'>
       <ol class='sections'>
-        <li class='logo'><%= link_to 'Singleshot', tasks_url, :style=>'font: 14pt "Handwriting - Dakota"', :title=>t('.back') %></li>
+        <li class='logo'><%= link_to 'Singleshot', tasks_url, :title=>t('.back') %></li>
         <li class='meta'>
           <%= content_tag 'span', h(task.title), :title=>"#{task.title}\n\n#{task.description}", :class=>'title' %>
           <%= link_to t('.more'), '#details', :class=>'dropdown' %>
         </li>
         <li class='actions'>
           <%= button_to t('task.actions.claim.button'), task_url(task, 'task[owner]'=>authenticated), :title=>t('task.actions.claim.title') if authenticated.can_claim?(task) %>
-          <%= button_to t('task.actions.done.button'), task_url(task, 'task[status]'=>'completed'), :title=>t('task.actions.done.title') if iframe_url.nil? && authenticated.can_complete?(task) %>
+          <%= button_to t('task.actions.done.button'), task_url(task, 'task[status]'=>'completed'), :title=>t('task.actions.done.title') if !iframe_url && authenticated.can_complete?(task) %>
           <%= button_to t('task.actions.cancel.button'), task_url(task, 'task[status]'=>'cancelled'), :confirm=>t('task.actions.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(task) %>
         </li>
       </ol>
@@ -24,14 +24,13 @@
       <div class='description'><%= auto_link(sanitize(simple_format(task.description))) %></div>
       <hr>
       <ul class='meta'>
-        <li class='first'><%= t "task.priority.#{task.priority}" %></li>
-        <% task.due_on = Date.today %>
-        <%= content_tag 'li', t('.due_on', :date=>l(task.due_on, :format=>:long)) if task.due_on %>
+        <%= content_tag 'li', t("task.priority.#{task.priority}"), :class=>"priority priority-#{task.priority}" %>
+        <%= content_tag 'li', t('.due_on', :date=>l(task.due_on, :format=>:long)), :class=>'due_on' if task.due_on %>
       </ul>
       <ol class='activities'>
         <% task.activities.each do |activity| %>
           <li><%= t "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>t('.this') %>
-          <span class='created'><%= time_ago_in_words activity.created_at %><span></li>
+          <span class='created'><%= time_ago_in_words activity.created_at %></span></li>
         <% end %>
       </ol>
     </div>

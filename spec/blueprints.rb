@@ -35,6 +35,10 @@ class Person #:nodoc:
     ['creator', 'owner', 'supervisor', 'potential', 'excluded', 'past_owner', 'observer', 'other'].each do |role|
       define_method(role) { Person.named(role.to_s) }
     end
+
+    def me
+      named(ENV['USER'])
+    end
   end
 end
 
@@ -52,6 +56,10 @@ class Task
   class << self
     ['active', 'suspended', 'cancelled', 'completed'].each do |status|
       define_method("make_#{status}") { Task.make :status=>status }
+    end
+
+    def spec
+      Task.first || Task.make
     end
   end
 
