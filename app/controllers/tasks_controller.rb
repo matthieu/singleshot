@@ -35,6 +35,11 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def show
+    if task.form && !task.form.url.blank?
+	    @iframe_url = task.form.url
+	  elsif task.form && !task.form.html.blank?
+		  @iframe_url = form_url(task)
+		end
     respond_with presenter, :action=>'show', :layout=>false
   end
 

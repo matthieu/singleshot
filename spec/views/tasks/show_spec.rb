@@ -18,11 +18,12 @@ require File.dirname(__FILE__) + '/../helpers'
 
 describe '/tasks/show' do
   before do
-    Task.make :title=>"Absence request", :description=>"Employee wants their leave of absence approved"
+    @task = Task.make :title=>"Absence request", :description=>"Employee wants their leave of absence approved"
     template.stub!(:authenticated).and_return Person.observer
-    template.stub!(:task).and_return(Task.last)
+    template.stub!(:task).and_return @task
   end
   subject { render '/tasks/show' }
+
 
   should_have_tag 'title', "Singleshot &mdash; Absence request"
   should_have_tag 'script[src^=/javascripts/jquery.js]'
@@ -40,17 +41,14 @@ describe '/tasks/show' do
   should_have_tag '#details div.description', "Employee wants their leave of absence approved"
   should_have_tag '#details ul.meta li.priority.priority-2', "Normal priority"
   should_not_have_tag '#details ul.meta li.due_on'
-  should_have_tag '#details ol.activities li a.fn.url + span.created'
+  should_have_tag '#details ol.activities li span.title + span.created'
+  should_have_tag '#details ol.activities li span.title a.fn.url'
   should_have_tag '#details ol.activities li', /Creator created this task/
-
-  # priority (low and high)
-  # due on
-  # activities
-  # frame
+  
 
   describe 'to owner' do
     before do
-      Person.owner.tasks.last.update_attributes! :owner=>Person.owner
+      @task.update_attributes! :owner=>Person.owner
       template.stub!(:authenticated).and_return Person.owner
       render '/tasks/show'
     end
@@ -79,5 +77,68 @@ describe '/tasks/show' do
 
     should_have_tag '#header ol.sections li.actions form input[value=Cancel]'
   end
+  
+  
+  describe 'with low priority task' do
+    before do
+      @task.priority = 3
+      render '/tasks/show'
+    end
+    
+    should_have_tag '#details ul.meta li.priority', "Low priority"
+  end
 
+  describe 'with high priority task' do
+    before do
+      @task.priority = 1
+      render '/tasks/show'
+    end
+    
+    should_have_tag '#details ul.meta li.priority', "High priority"
+  end
+
+  describe 'with due on date' do
+    before do
+      @task.due_on = Date.new(2009,4,19)
+      render '/tasks/show'
+    end
+    
+    should_have_tag '#details ul.meta li.due_on', "Due on April 19, 2009"
+  end
+  
+  
+  describe 'activities' do
+    before do
+      @task.update_attributes! :owner=>Person.owner
+      Person.supervisor.tasks.find(@task).update_attributes! :priority=>1
+      render '/tasks/show'
+    end
+    
+    should_have_tag '#details ol.activities', /Creator created this task/
+    should_have_tag '#details ol.activities', /Owner is owner of this task/
+    should_have_tag '#details ol.activities', /Supervisor modified this task/
+  end
+  
+  
+  describe 'with no form' do
+    before do
+      @task.update_attributes! :owner=>Person.owner, :form=>{}
+      template.stub!(:authenticated).and_return Person.owner
+      render '/tasks/show'
+    end
+    
+    should_not_have_tag 'iframe'
+    should_have_tag '#header ol.sections li.actions form input[value=Done]'
+  end
+  
+  describe 'with form' do
+    before do
+      @task.update_attributes! :owner=>Person.owner, :form=>{ :html=>'<input>'}
+      assigns[:iframe_url] = 'http://localhost'
+      render '/tasks/show'
+    end
+    
+    should_have_tag 'iframe#frame[noresize][src=http://localhost]'
+    should_not_have_tag '#header ol.sections li.actions form input[value=Done]'
+  end
 end

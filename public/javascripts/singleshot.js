@@ -18,8 +18,10 @@
 
 $(function() {
   // Form fields watermark and auto focus.
-  $('input[type=text], input[type=password], textarea').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) })
-  $('input.auto_focus:first').focus();
+  $('input[type=text], input[type=password], textarea').each(function() { $(this).watermark({'cls': 'watermark', 'html': this.title}) });
+  // Form controls disabled for everyone but owner. Do this before setting focus.
+  $('form#task.disabled').find('input, select, textarea, button').attr('disabled', true);
+  $('input.auto_focus, input[type=text], input[type=password], select, textarea').select(':enabled').each(function() { this.focus(); return false });
   // Sparkline bars.
   $('.sparkline.bar').each(function() {
     var values = $($(this).text().split(',')).each(function() { parseInt(this, 10) });
@@ -49,8 +51,6 @@ $(function() {
     //$(window).bind('resize load', function() { frame.height(window.innerHeight - frame.offset().top) })
   });
 
-  // Form controls disabled for everyone but owner.
-  $('form#task.disabled').find('input, select, textarea, button').attr('disabled', true);
 })
 
 
