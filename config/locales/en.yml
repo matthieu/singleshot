@@ -20,7 +20,7 @@ en:
       back:       "Back to your task list"
       due_on:     "Due on {{date}}"
       this:       "this task"
-      more:       "more"
+      more:       "See more task details (description, priority, activity)"
   task:
     priority:
       "1":        "High priority"

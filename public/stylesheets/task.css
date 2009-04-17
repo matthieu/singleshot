@@ -3,13 +3,13 @@ body { overflow: hidden; }
   position: absolute;
   top: 0;
   left: 0;
-  height: 2.3em;
+  height: 2.5em;
   width: 100%;
   z-index: 1000;
-  margin-bottom: 10px;
-  line-height: 2em;
+  line-height: 35px;
   background-color: #005CB8;
   color: #fff;
+  overflow: hidden;
 }
 #header a { color: #fff; }
 #header a:hover { color: #cc0000; }
@@ -19,28 +19,28 @@ body { overflow: hidden; }
   width: 70em;
   padding: 0;
   margin: 0;
+  position: relative;
 }
 #header ol.sections li {
   display: block;
   float: left;
+  height: 100%;
   margin: 0;
-  height: 2.2em;
-  padding: 1px 1em 1px 1em;
+  padding: 0 1em 0 1em;
+  overflow: hidden;
+  border: none;
 }
 #header ol.sections li.logo {
   text-align: center;
-  padding-top: 1px;
-  padding: 0;
   width: 120px;
+  padding: 0;
 }
 #header ol.sections li.meta {
-  border-left: 1px solid #8A8A8A;
-  border-right: 1px solid #8A8A8A;
+  border-left: 1px solid #5C9FCF;
+  border-right: 1px solid #5C9FCF;
   width: 40em;
-  overflow: hidden;
 }
 #header ol.sections li.meta.active {
-  background-color: #E0ECFF;
   background-color: #5C9FCF;
   border-left: 1px solid #8A8A8A;
   border-right: 1px solid #8A8A8A;
@@ -52,22 +52,22 @@ body { overflow: hidden; }
   overflow: hidden;
   margin-right: 4em;
 }
-#header ol.sections li.meta span.creator {
-  display: block;
-  margin-top: -2em;
-}
 #header ol.sections li.meta a.dropdown {
   position: relative;
   float: right;
-  margin-top: -2em;
+  margin-top: -2.5em;
+  width: 3	em;
+  height: 2.5em;
+  text-align: center;
 }
-#header ol.sections li.actions { width: 15em; }
+#header ol.sections li.meta a.dropdown img { margin: 0 auto 0 auto; }
+#header ol.sections li.actions { width: 15em; padding: 0.3em 0 0 1em; }
 #header ol.sections li.actions form, #header ol.sections li.actions form div { display: inline; }
 
 #shadow {
   position: absolute;
   background: url('/images/shadow.png');
-  top: 2.3em;
+  top: 2.5em;
   left: 0;
   width: 100%;
   height: 13px;
@@ -78,7 +78,7 @@ div.dropdown {
   display: none;
   position: absolute;
   left: 120px;
-  top: 2.3em;
+  top: 2.5em;
   z-index: 2000;
   width: 40em;
   padding: 0.3em 1em 0.6em 1em;
@@ -97,7 +97,7 @@ div.dropdown {
 #details ul.meta { list-style: none; padding: 0; }
 #details ul.meta li { display: inline; }
 #details ul.meta li:before { content: "•"; padding: 0 0.9em 0 0.6em; color: #D8D8D8; }
-#details ul.meta li.first:before { content: ""; padding: 0; }
+#details ul.meta li.priority:before { content: ""; padding: 0; }
 
 #details ol.activities { list-style: none; padding: 0; }
 #details ol.activities li { margin-bottom: 0.3em; }
