@@ -1,19 +1,35 @@
 <html>
   <head>
-    <title>Singleshot<%= ": #{escape_once(@title)}" if @title %></title>
+    <title>Singleshot<%= ": #{@title}" if @title %></title>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag :all, :cache=>true %>
+    <%= stylesheet_link_tag 'common', 'frame', :cache=>true %>
     <%= auto_discovery_link_tag :atom, @atom_feed_url if @atom_feed_url %>
     <%= tag :link, :rel=>'search', :type=>Mime::OSD, :href=>open_search_url, :title=>'Search your tasks list' %>
     <%= tag :link, :rel=>'next', :type=>Mime::HTML, :href=>@next if @next %>
     <%= tag :link, :rel=>'previous', :type=>Mime::HTML, :href=>@previous if @previous %>
   </head>
   <body>
-    <div id='header'>
-      <h1><%= link_to 'Singleshot', root_url %></h1>
-      <ul class='links'>
-        <li><%= link_to 'Logout', session_url, :method=>:delete %></li>
-      </ul>
+	  <div id='header'>
+      <ol class='sections'>
+        <li class='section logo'><%= link_to image_tag('singleshot-80-30.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
+        <li class='section nav'>
+        	<ol class='tabs'>
+	          <li class='tab'><%= link_to "Tasks", tasks_url, :title=>'Your task list' %></li>
+	          <li class='tab'><%= link_to "Activity", '' %></li>
+	          <li class='tab'><%= link_to "Inbox", '' %></li>
+					</ol>
+        </li>
+        <li class='section'>
+        	<ol class='tabs'>
+	          <li class='tab'><%= link_to "Settings", '' %></li>
+	          <li class='tab'><%= link_to "Logout", session_url, :method=>:delete %></li>
+					</ol>
+        </li>
+      </ol>
+    </div>
+  
+	<!--
+	
       <ul class='tabs'><%=
         [ ['➠ Tasks list', tasks_url, 'Your task list'],
           ['All Tasks', following_tasks_url, 'Tasks you create, observing or administrating'],
@@ -25,12 +41,10 @@
        <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe with your feed reader') if @alternate && @alternate[Mime::ATOM] %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add to your calendar') if @alternate && @alternate[Mime::ICS] %></ul>
        
     </div>
-    <div id='main'>
+-->
+    <div id='shadow'></div>
+    <div id='wrapper'><div id='main'>
 <%= yield %>
-    </div>
-    <div id='footer'>
-      <!-- Footer comes here -->
-    </div>
-    <%= javascript_tag visual_effect(:highlight, flash['highlight'], :duration => 2) if flash['highlight'] %>
+    </div></div>
   </body>
 </html>
