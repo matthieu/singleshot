@@ -10,6 +10,8 @@ body {
 a { text-decoration: none; color: blue; }
 a:hover { color: red; }
 a img { border: none; }
+abbr { text-decoration: none; border: none; }
+
 
 /** Form controls **/
 

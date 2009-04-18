@@ -27,21 +27,6 @@
         </li>
       </ol>
     </div>
-  
-	<!--
-	
-      <ul class='tabs'><%=
-        [ ['➠ Tasks list', tasks_url, 'Your task list'],
-          ['All Tasks', following_tasks_url, 'Tasks you create, observing or administrating'],
-          ['Completed', completed_tasks_url, 'Tasks you completed'],
-          ['Activity', activities_url, 'Recent task activity'] ].map { |tab|
-            content_tag 'li', link_to(tab[0], tab[1], :title=>tab[2]), :class=>current_page?(tab[1]) ? 'current': nil
-      }.join %><li><%= link_to 'Search', search_url, :onclick=>"$('search').toggle(); return false" %> <form id='search' action='<%= search_url %>' method='get' style='display:none'><input type='text' name='query' value='<%= h(params['query']) %>' /></form></li>
-       </ul>
-       <ul class='alternate'><%= content_tag 'li', link_to(image_tag('feed.png') + ' Feed', @alternate[Mime::ATOM], :rel=>'alternate', :title=>'Subscribe with your feed reader') if @alternate && @alternate[Mime::ATOM] %><%= content_tag 'li', link_to(image_tag('calendar.png') + ' Calendar', @alternate[Mime::ICS], :rel=>'alternate', :title=>'Add to your calendar') if @alternate && @alternate[Mime::ICS] %></ul>
-       
-    </div>
--->
     <div id='shadow'></div>
     <div id='wrapper'><div id='main'>
 <%= yield %>
