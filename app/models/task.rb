@@ -514,7 +514,8 @@ class Task < ActiveRecord::Base
 
 =end
 
-  named_scope :pending, :limit=>5
+  named_scope :pending, :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
+    :conditions=>["(tasks.status = 'ready' AND involved.role = 'potential') OR (tasks.status = 'active' AND involved.role = 'owner')"] # TODO: spec this
   named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
 
   # Completed tasks only in reverse chronological order.

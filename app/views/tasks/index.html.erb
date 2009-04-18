@@ -11,7 +11,7 @@
       <% content_tag_for 'tr', task, :class=>'hentry' + (task.over_due? ? ' overdue' : '') do %>
         <td class='entry-title'><%= link_to h(task.title), task_url(task), :rel=>'bookmark', :title=>truncate(strip_tags(task.description), :length=>250) %></td>
         <td><%= content_tag 'span', ['High', 'Normal', 'Low'][task.priority - 1], :class=>"priority_#{task.priority}" %></td>
-        <td><%= sparkline_tag [task.deadline], :type=>:deadline, :title=>"Due #{relative_date(task.due_on).titleize}" if task.due_on %></td>
+        <td><%= l(task.due_on) if task.due_on %></td>
         <td><%= abbr_time task.created_at, age(task.created_at, false), :class=>'published' %></td>
         <td><%= button_to 'Claim', task_url(task, 'task[owner]'=>authenticated), :method=>:put, :title=>'Claim this task' if authenticated.can_claim?(task) %></td>
       <% end %>
