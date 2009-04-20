@@ -26,7 +26,7 @@ module NavigationHelpers
     when /the frame "(.*)"/
      frame_id = $1
      frame = Webrat::XML.xpath_search(current_dom, ".//iframe|frame").find { |elem| Webrat::XML.attribute(elem, 'id') == frame_id }
-     fail "Did not find frame/iframe with ID #{id}" unless frame
+     fail "Did not find frame/iframe with ID #{frame_id}" unless frame
      Webrat::XML.attribute(frame, 'src')
     else
       raise "Can't find mapping from \"#{page_name}\" to a path.\n" +

@@ -31,6 +31,19 @@ en:
       save:
         button:   "Save"
         hint:     "Save & continue"
+  sessions:
+    errors:
+      nomatch:  "No account with this user name and password."
+    show:
+      login:
+        button:   "Login"
+        hint:     ""
+      username:
+        label:    "Username:"
+        hint:     "Your username"
+      password:
+        label:    "Password:"
+        hint:     "Your password is case sensitive"
   # Layouts
   layouts:
     application:
@@ -58,6 +71,7 @@ en:
       templates:
         heading:  "Start &hellip;"
         link:     "More &hellip;"
+  # Everything else.
   task:
     priority:
       "1":        "High priority"
@@ -87,18 +101,5 @@ en:
       resumed:    "{{person}} resumed {{task}}"
       cancelled:  "{{person}} created {{task}}"
       completed:  "{{person}} completed {{task}}"
-  sessions:
-    errors:
-      nomatch:  "No account with this user name and password."
-    show:
-      login:
-        button:   "Login"
-        hint:     ""
-      username:
-        label:    "Username:"
-        hint:     "Your username"
-      password:
-        label:    "Password:"
-        hint:     "Your password is case sensitive"
   sparkline:
     loading: "Loading &hellip;"

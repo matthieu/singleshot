@@ -174,7 +174,7 @@ describe TasksController do
       it('should require authentication')         { authenticate nil ; put :update, @params ; should redirect_to(session_url) }
       it('should reject unauthorized access')     { authenticate Person.other ; put :update, @params ; should respond_with(404) }
       it('should verify parameters include task') { put :update, 'id'=>@task.id ; should respond_with(400) }
-      it('should redirect back to task list')     { put :update, @params ; should redirect_to(tasks_url) }
+      it('should redirect back to task list')     { put :update, @params ; should redirect_to(back) }
     end
 
     describe '.json' do

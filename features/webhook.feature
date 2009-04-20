@@ -9,7 +9,7 @@ Feature: Sending Webhook notifications
       - event: "completed"
         url:   "http://localhost:1234/hook"
       form:
-        html: ""
+        html: "<input name='amount'>"
       """
     And the resource http://localhost:1234/hook
     When I login

@@ -53,11 +53,19 @@ module Spec::Helpers #:nodoc:
       Hash.from_xml(entity)
     end
 
+    def back
+      "http://test.host/back"
+    end
+
   end
 end
 
 Spec::Runner.configure do |config|
   config.include Spec::Helpers::Controllers, :type=>:controller
+  config.before :each, :type=>:controller do
+    rescue_action_in_public!
+    request.env["HTTP_REFERER"] = '/back'
+  end
   config.after :each do
     I18n.locale = nil 
     Time.zone = nil

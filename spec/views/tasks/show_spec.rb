@@ -32,7 +32,6 @@ describe '/tasks/show' do
   should_have_tag 'link[href^=/stylesheets/task.css]'
 
   should_have_tag 'div#header + div#details'
-  should_have_tag 'div#details + div#shadow'
   should_have_tag '#header ol.sections li', 3
   should_have_tag '#header ol.sections li.logo + li.meta + li.actions'
   should_have_tag '#header ol.sections li.meta span.title', "Absence request"
