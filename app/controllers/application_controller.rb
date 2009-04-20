@@ -76,4 +76,9 @@ protected
     end
   end
 
+  helper_method :sidebar
+  # No sidebar by default.
+  def sidebar
+  end
+
 end

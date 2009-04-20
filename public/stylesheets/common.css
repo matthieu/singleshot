@@ -1,9 +1,9 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: white;
+  background-color: #fff;
   color: black;
-  font: 11pt "Helvetica", "DejaVu Sans", "Verdana";
+  font: 10pt "Helvetica", "DejaVu Sans", "Verdana";
   position: relative;
 }
 
@@ -43,4 +43,3 @@ form dl { margin: 0 0 1em 0; }
 form dl dt { margin: 0.3em 0 0.9em 0; float: left; width: 10em; }
 form dl dd { margin: 0 0 0.9em 0; }
 form dl dd input[type=radio] { margin: 0.3em 0 0.6em 0.3em; }
-

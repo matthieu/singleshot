@@ -3,51 +3,117 @@ body { position: relative; }
 /** Header, footer and such **/
 
 #header {
-  height: 2.5em;
-  width: 100%;
-  line-height: 35px;
-  background-color: #005CB8;
-  color: #fff;
+  width: 60em;
   overflow: hidden;
-}
-#header a { color: #fff; }
-#header a:hover { color: #cc0000; }
-#shadow {
-  background: url('/images/shadow.png');
-  width: 100%;
-  height: 13px;
+  font-size: 1.1em;
 }
 
 #header ol.sections {
   list-style: none;
-  width: 70em;
+  display: block;
+  margin: 0 1em 0 1em;
   padding: 0;
-  margin: 0;
-  position: relative;
+  border-bottom: 1px solid #CCC;
 }
 #header li.section {
-  display: block;
-  float: left;
-  height: 100%;
+  display: table-cell;
   margin: 0;
-  padding: 0 1em 0 1em;
-  overflow: hidden;
+  padding: 0.6em 0 0.3em 0;
   border: none;
+  width: 50%;
 }
-#header li.section.logo {
-  text-align: center;
-  width: 120px;
-  padding: 0;
-}
-#header li.section.nav {
-  border-left: 1px solid #5C9FCF;
-  border-right: 1px solid #5C9FCF;
-  width: 40em;
-}
-#header li.section ol.tabs { list-style: none; padding: 0; } 
-#header li.section li.tab { padding: 1px 0.6em  0; float: left; display: block; }
-#header li.section li.tab a { line-height: 2em; padding: 0 0.6em 0.2em 0.6em; display: block; color: #fff; border: 1px solid #005CB8; }
-#header li.section li.tab a:hover { background-color: #5C9FCF; border: 1px solid #4C8FBF; }
+#header li.section.logo { width: 100px; }
+#header li.section.logo a { color: #0644CA;  }
+#header li.section.logo a img { margin: 0 20px -5px 0; }
+#header li.section.nav { font-weight: bold; }
+#header li.section.extra { text-align: right; font-size: 90%; }
+#header li.section ol.tabs { list-style: none; padding: 0.3em 0 0.3em 0; margin: 0 } 
+#header li.section li.tab { margin: 0 0 0 0.3em; display: inline; padding: 0; }
+#header li.section li.tab a { padding: 0.6em 0.6em 0.2em 0.6em; color: #000; border: 1px solid #fff; }
+#header li.section li.tab a:hover { background-color: #ddd; border: 1px solid #eee; }
+
 
 #main {
+  float: left;
+  overflow: hidden;
+  width: 45em;
+  margin: 2em 0 0 1em;
+  border: 1px solid #f0f0f0;
+}
+
+
+ul#sidebar  {
+  list-style: none;
+  width: 20em;
+  padding: 0;
+  margin: 2em 0 0 0;
+  border: 1px solid #fff;
+  overflow: hidden;
+  font-size: 9pt;
+}
+#sidebar li.section {
+  border: 1px solid #f0f0f0;
+  background-color: #f0ffff;
+  margin: 0 0 2em 2em;
+  padding: 0.9em;
+}
+#sidebar li.section h2 {
+  color: #000;
+  font-size: 1.1em;
+  margin: 0 0 0.6em 0;
+  border-bottom: 1px solid #bbb;
+}
+
+#sidebar li.section ol { list-style: none; padding: 0; margin: 0; }
+#sidebar li.section li { margin: 0 0 0.6em 0; }
+#sidebar li.activity .published { color: #8A8A8A; font-size: 90% }
+
+
+/** Tasks list **/
+
+table.tasks {
+  table-layout: fixed;
+  width: 100%;
+  border-spacing: 0;
+  border-padding: 0;
+  border: none;
+  padding: 0.6em 1em 2em 1em;
+  font-size: 10pt;
+}
+table.tasks thead th {
+  text-align: left;
+  font-weight: normal;
+  padding: 0 0 0.6em 0;
+  padding: 0 0.6em 0.6em 0;
+  margin: 0;
+  border-bottom: 1px solid #bbb;
+}
+table.tasks tbody tr:hover {
+  background-color: #ffffcc;
+  padding: 0 1em 0 1em;
+}
+table.tasks tbody td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6em 0.6em 0.6em 0;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+table.tasks tbody td img { vertical-align: middle; }
+table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a { color: #f04040; }
+table.tasks tbody tr.completed td, table.tasks tbody tr.completed td a,
+table.tasks tbody tr.cancelled td, table.tasks tbody tr.cancelled td a { color: #888; }
+table.tasks tbody td .priority_1 { color: #f04040; }
+table.tasks td .button-to input { font-size: 0.7em; }
+
+/** Login **/
+form.login fieldset {
+  width: 35em;
+  margin: 2em auto 2em auto;
+}
+form.login dt {
+  width: 8em;
 }

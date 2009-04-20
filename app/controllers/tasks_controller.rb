@@ -22,7 +22,7 @@ class TasksController < ApplicationController #:nodoc:
 
   def index
     @tasks = authenticated.tasks.pending.with_stakeholders
-    respond_with presenting(:task_list, @tasks), :action=>'index', :to=>[:html, :json, :xml, :atom]
+    respond_with presenting(:task_list, @tasks), :action=>'index', :to=>[:html, :json, :xml, :atom], :layout=>'main'
   end
 
   def create
@@ -66,6 +66,11 @@ protected
   helper_method :task
   def task
     @task ||= authenticated.tasks.find(params['id'])
+  end
+
+  def sidebar
+    { :activity=>Activity.visible_to(authenticated).all(:limit=>5),
+      :templates=>[] }
   end
 
   def presenter

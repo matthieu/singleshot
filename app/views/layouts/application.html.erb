@@ -11,7 +11,7 @@
   <body>
 	  <div id='header'>
       <ol class='sections'>
-        <li class='section logo'><%= link_to image_tag('singleshot-80-30.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
+        <li class='section logo'><%= link_to image_tag('singleshot-150-30.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
         <li class='section nav'>
         	<ol class='tabs'>
 	          <li class='tab'><%= link_to "Tasks", tasks_url, :title=>'Your task list' %></li>
@@ -19,7 +19,7 @@
 	          <li class='tab'><%= link_to "Inbox", '' %></li>
 					</ol>
         </li>
-        <li class='section'>
+        <li class='section extra'>
         	<ol class='tabs'>
 	          <li class='tab'><%= link_to "Settings", '' %></li>
 	          <li class='tab'><%= link_to "Logout", session_url, :method=>:delete %></li>
@@ -27,9 +27,6 @@
         </li>
       </ol>
     </div>
-    <div id='shadow'></div>
-    <div id='main'>
-<%= yield %>
-    </div>
+    <%= yield(:content) or yield %>
   </body>
 </html>

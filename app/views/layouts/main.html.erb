@@ -1,0 +1,31 @@
+<% content_for :content do %>
+  <div id='main'><%= yield %></div>
+  <ul id='sidebar'>
+    <% if sidebar[:activity] %>
+      <li class='section'>
+        <h2>Activity</h2>
+        <ol class='activities'>
+          <% sidebar[:activity].each do |activity| %>
+            <% content_tag_for 'li', activity do %>
+              <%= translate "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to_task(activity.task) %>
+              <%= content_tag 'span', time_ago_in_words(activity.created_at), :title=>l(activity.created_at), :class=>'published' %>
+            <% end %>
+          <% end %>
+        </ol>
+      </li>
+    <% end %>
+    <% if sidebar[:templates] %>
+      <li class='section'>
+        <h2>Start &hellip;</h2>
+        <ol class='templates'>
+          <% sidebar[:templates].each do |template| %>
+            <% content_tag_for 'li', template do %>
+              <%= link_to template.title, url_for(template), :title=>template.description %>
+            <% end %>
+          <% end %>
+        </ol>
+      </li>
+     <% end %>
+  </ul>
+<% end %>
+<%= render :file => 'layouts/application' %>
