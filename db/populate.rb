@@ -97,7 +97,6 @@ class Populate < ActiveRecord::Migration
   end
 
   FORM = <<-HTML
-<fieldset><legend>Contact</legend>
   <p>{{ owner.fullname }}, please update your contact info:</p>
   <dl>
     <dt>Phone:</dt><dd><input name='data[phone]' size='40' type='text'></dd>
@@ -105,7 +104,6 @@ class Populate < ActiveRecord::Migration
     <dt>E-mail:</dt><dd><input name='data[email]' size='40' type='text'></dd>
     <dt>D.O.B:</dt><dd><input name='data[dob]' type='text' class='date'></dd>
   </dl>
-</fieldset>
   HTML
 
   def self.new_task!(args = {})

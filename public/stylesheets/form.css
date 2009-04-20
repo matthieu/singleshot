@@ -1,0 +1,11 @@
+body { }
+body>form {
+  margin: 2em;
+  padding: 0;
+  width: 70em;
+}
+body>form>div.actions {
+  border-top: 1px solid #eee;
+  margin-top: 1em;
+  padding-top: 1em;
+}

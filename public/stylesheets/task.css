@@ -14,7 +14,7 @@ body { overflow: hidden; }
 #header li.section.meta a.dropdown {
   float: right;
   margin-top: -24px;
-  width: 1em;
+  width: 32px;
   height: 24px;
   text-align: center;
 }
@@ -25,10 +25,10 @@ body { overflow: hidden; }
 #details {
   display: none;
   position: absolute;
-  left: 170px;
-  top: 43px;
+  left: 135px;
+  top: 35px;
   z-index: 2000;
-  width: 40em;
+  width: 42em;
   padding: 0.3em 1em 0.6em 1em;
   background-color: white;
   border-left: 1px solid #8A8A8A;
@@ -49,7 +49,7 @@ body { overflow: hidden; }
   position: relative;
   margin: 0;
   padding: 0 0 2em 0;
-  height: 90%;
+  height: 98%;
   width: 100%;
   border: none;
   z-index: 10;

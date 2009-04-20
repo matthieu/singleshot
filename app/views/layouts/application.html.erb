@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Singleshot<%= ": #{@title}" if @title %></title>
+    <title><%= t('.title', :title=>@title) %></title>
     <%= javascript_include_tag :all, :cache=>true %>
     <%= stylesheet_link_tag 'common', 'frame', :cache=>true %>
     <%= auto_discovery_link_tag :atom, @atom_feed_url if @atom_feed_url %>
@@ -11,18 +11,18 @@
   <body>
 	  <div id='header'>
       <ol class='sections'>
-        <li class='section logo'><%= link_to image_tag('singleshot-150-30.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
+        <li class='section logo'><%= link_to image_tag('singleshot-100-20.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
         <li class='section nav'>
         	<ol class='tabs'>
-	          <li class='tab'><%= link_to "Tasks", tasks_url, :title=>'Your task list' %></li>
-	          <li class='tab'><%= link_to "Activity", '' %></li>
-	          <li class='tab'><%= link_to "Inbox", '' %></li>
+	          <li class='tab'><%= link_to t('.tasklist.link'), tasks_url, :title=>t('.tasklist.hint') %></li>
+            <li class='tab'><%= link_to t('.activity.link'), activities_url, :title=>t('.activity.hint') %></li>
+            <li class='tab'><%= link_to t('.inbox.link'), '', :title=>t('.inbox.hint') %></li>
 					</ol>
         </li>
         <li class='section extra'>
         	<ol class='tabs'>
-	          <li class='tab'><%= link_to "Settings", '' %></li>
-	          <li class='tab'><%= link_to "Logout", session_url, :method=>:delete %></li>
+            <li class='tab'><%= link_to t('.settings.link'), '', :title=>t('.settings.hint') %></li>
+            <li class='tab'><%= link_to t('.logout.link'), session_url, :method=>:delete, :title=>t('.logout.hint') %></li>
 					</ol>
         </li>
       </ol>

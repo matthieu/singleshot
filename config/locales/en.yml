@@ -15,12 +15,49 @@
 
 
 en:
+  # Views
   tasks:
     show:
+      title:      "Singleshot &mdash; {{title}}"
       back:       "Back to your task list"
       due_on:     "Due on {{date}}"
       this:       "this task"
       more:       "See more task details (description, priority, activity)"
+  forms:
+    show:
+      done:
+        button:   "Done"
+        hint:     "Complete this task & return to task list"
+      save:
+        button:   "Save"
+        hint:     "Save & continue"
+  # Layouts
+  layouts:
+    application:
+      title:      "Singleshot &mdash; {{title}}"
+      back:       "Back to your task list"
+      tasklist:
+        link:     "Tasks"
+        hint:     ""
+      activity:
+        link:     "Activity"
+        hint:     ""
+      inbox:
+        link:     "Inbox"
+        hint:     ""
+      settings:
+        link:     "Settings"
+        hint:     ""
+      logout:
+        link:     "Logout"
+        hint:     ""
+    main:
+      activity:
+        heading:  "Activity"
+        link:     "More &hellip;"
+      templates:
+        heading:  "Start &hellip;"
+        link:     "More &hellip;"
   task:
     priority:
       "1":        "High priority"

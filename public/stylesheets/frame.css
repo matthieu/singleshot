@@ -3,11 +3,10 @@ body { position: relative; }
 /** Header, footer and such **/
 
 #header {
-  width: 60em;
+  width: 65em;
   overflow: hidden;
   font-size: 1.1em;
 }
-
 #header ol.sections {
   list-style: none;
   display: block;
@@ -24,10 +23,10 @@ body { position: relative; }
 }
 #header li.section.logo { width: 100px; }
 #header li.section.logo a { color: #0644CA;  }
-#header li.section.logo a img { margin: 0 20px -5px 0; }
+#header li.section.logo a img { margin: 0 20px -3px 0; }
 #header li.section.nav { font-weight: bold; }
-#header li.section.extra { text-align: right; font-size: 90%; }
-#header li.section ol.tabs { list-style: none; padding: 0.3em 0 0.3em 0; margin: 0 } 
+#header li.section.extra { text-align: right; font-size: 8pt; }
+#header li.section ol.tabs { list-style: none; padding: 0.3em 0 0 0; margin: 0 } 
 #header li.section li.tab { margin: 0 0 0 0.3em; display: inline; padding: 0; }
 #header li.section li.tab a { padding: 0.6em 0.6em 0.2em 0.6em; color: #000; border: 1px solid #fff; }
 #header li.section li.tab a:hover { background-color: #ddd; border: 1px solid #eee; }
@@ -36,33 +35,33 @@ body { position: relative; }
 #main {
   float: left;
   overflow: hidden;
-  width: 45em;
-  margin: 2em 0 0 1em;
-  border: 1px solid #f0f0f0;
+  width: 50em;
+  margin: 2em 2em 0 1em;
 }
 
 
 ul#sidebar  {
   list-style: none;
-  width: 20em;
+  width: 18em;
   padding: 0;
   margin: 2em 0 0 0;
+  color: #444;
   border: 1px solid #fff;
   overflow: hidden;
-  font-size: 9pt;
 }
 #sidebar li.section {
-  border: 1px solid #f0f0f0;
-  background-color: #f0ffff;
-  margin: 0 0 2em 2em;
+  font-size: 10pt;
+  margin: 0 0 2em 0;
   padding: 0.9em;
 }
 #sidebar li.section h2 {
-  color: #000;
+  color: #444;
   font-size: 1.1em;
   margin: 0 0 0.6em 0;
   border-bottom: 1px solid #bbb;
 }
+#sidebar li.section a { color: #4040ff; }
+#sidebar li.section a:hover { color: #ff4040; }
 
 #sidebar li.section ol { list-style: none; padding: 0; margin: 0; }
 #sidebar li.section li { margin: 0 0 0.6em 0; }
@@ -78,17 +77,17 @@ table.tasks {
   border-padding: 0;
   border: none;
   padding: 0.6em 1em 2em 1em;
-  font-size: 10pt;
+  font-size: 1em;
 }
 table.tasks thead th {
   text-align: left;
-  font-weight: normal;
+  font-weight: bold;
   padding: 0 0 0.6em 0;
   padding: 0 0.6em 0.6em 0;
   margin: 0;
   border-bottom: 1px solid #bbb;
 }
-table.tasks tbody tr:hover {
+table.tasks tbody tr:hover-disable {
   background-color: #ffffcc;
   padding: 0 1em 0 1em;
 }

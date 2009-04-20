@@ -1,7 +1,7 @@
 <html>
   <head>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag 'common', 'jquery-ui', :cache=>true %>
+    <%= stylesheet_link_tag 'common', 'form', 'jquery-ui', :cache=>true %>
   </head>
   <body>
     <% form_tag url_for, :method=>:put, :id=>'task', :class=>authenticated.can_complete?(task) ? 'enabled' : 'disabled' do %>
@@ -10,8 +10,8 @@
         :attributes=>self.class.sanitized_allowed_attributes + %w{cols rows size type value})
       %>
       <div class='actions'>
-        <button name='status' value='completed' title='Complete and return to the task list'>Done</button>
-        <button title='Save and continue later'>Save</button>
+        <%= content_tag 'button', t('.done.button'), :name=>'status', :value=>'completed', :title=>t('.done.hint') %>
+        <%= content_tag 'button', t('.save.button'), :title=>t('.save.hint') %>
       </div>
     <% end %>
   </body>
