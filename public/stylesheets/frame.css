@@ -1,17 +1,10 @@
-body {
-  position: relative;
-  overflow: hidden;
-}
+body { position: relative; }
 
 /** Header, footer and such **/
 
 #header {
-  position: absolute;
-  top: 0;
-  left: 0;
   height: 2.5em;
   width: 100%;
-  z-index: 1000;
   line-height: 35px;
   background-color: #005CB8;
   color: #fff;
@@ -20,14 +13,9 @@ body {
 #header a { color: #fff; }
 #header a:hover { color: #cc0000; }
 #shadow {
-  position: absolute;
   background: url('/images/shadow.png');
-  top: 2.5em;
-  left: 0;
   width: 100%;
   height: 13px;
-  z-index: 999;
-  float: left;
 }
 
 #header ol.sections {
@@ -57,22 +45,9 @@ body {
   width: 40em;
 }
 #header li.section ol.tabs { list-style: none; padding: 0; } 
-#header li.section li.tab { padding: 1px 0.6em 0 0; float: left; display: block; }
-#header li.section li.tab a { padding: 0 0.6em 0 0.6em; height: 2.2em;  display: block; color: #fff; border: 1px solid #005CB8; }
+#header li.section li.tab { padding: 1px 0.6em  0; float: left; display: block; }
+#header li.section li.tab a { line-height: 2em; padding: 0 0.6em 0.2em 0.6em; display: block; color: #fff; border: 1px solid #005CB8; }
 #header li.section li.tab a:hover { background-color: #5C9FCF; border: 1px solid #4C8FBF; }
 
-
-#wrapper {
-  position: absolute;
-  overflow: auto;
-  top: 2.5em;
-  bottom: 0em;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  padding: 2em 4em 0 4em;
-}
 #main {
 }
-
-table.tasks {
