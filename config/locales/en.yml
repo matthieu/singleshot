@@ -23,6 +23,13 @@ en:
       due_on:     "Due on {{date}}"
       this:       "this task"
       more:       "See more task details (description, priority, activity)"
+    sidebar:
+      activity:
+        heading:  "Activity"
+        link:     "More &hellip;"
+      templates:
+        heading:  "Start &hellip;"
+        link:     "More &hellip;"
   forms:
     show:
       done:
@@ -64,13 +71,6 @@ en:
       logout:
         link:     "Logout"
         hint:     ""
-    main:
-      activity:
-        heading:  "Activity"
-        link:     "More &hellip;"
-      templates:
-        heading:  "Start &hellip;"
-        link:     "More &hellip;"
   # Everything else.
   task:
     priority:

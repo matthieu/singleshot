@@ -1,0 +1,28 @@
+<ul id='sidebar'>
+  <% if sidebar[:activity] %>
+    <li class='section'>
+    <h2><%= t('.activity.heading') %></h2>
+      <ol class='activities'>
+        <% sidebar[:activity].each do |activity| %>
+          <% content_tag_for 'li', activity do %>
+            <%= translate "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to_task(activity.task) %>
+            <%= content_tag 'span', time_ago_in_words(activity.created_at), :title=>l(activity.created_at), :class=>'published' %>
+          <% end %>
+        <% end %>
+      </ol>
+      <%= link_to t('.activity.link'), activities_url %>
+    </li>
+  <% end %>
+  <% if sidebar[:templates] %>
+    <li class='section'>
+      <h2><%= t('.templates.heading') %></h2>
+      <ol class='templates'>
+        <% sidebar[:templates].each do |template| %>
+          <% content_tag_for 'li', template do %>
+            <%= link_to template.title, new_task_url(:from=>template.id), :title=>template.description %>
+          <% end %>
+        <% end %>
+      </ol>
+    </li>
+  <% end %>
+</ul>
