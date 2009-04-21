@@ -18,7 +18,7 @@
 # when updating at task.
 #
 # == Schema Information
-# Schema version: 20090402190432
+# Schema version: 20090421005807
 #
 # Table name: activities
 #

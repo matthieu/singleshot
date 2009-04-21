@@ -1,14 +1,3 @@
-# == Schema Information
-# Schema version: 20090421005807
-#
-# Table name: forms
-#
-#  id      :integer(4)      not null, primary key
-#  task_id :integer(4)      not null
-#  url     :string(255)
-#  html    :text
-#
-
 # Singleshot  Copyright (C) 2008-2009  Intalio, Inc
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,18 +14,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# == Schema Information
-# Schema version: 20090402190432
-#
-# Table name: forms
-#
-#  id      :integer(4)      not null, primary key
-#  task_id :integer(4)      not null
-#  url     :string(255)
-#  html    :text
-#
-class Form < ActiveRecord::Base
-  belongs_to :task
-  attr_accessible :url, :html
-  validates_url :url, :allow_nil=>true
+class StiForTask < ActiveRecord::Migration
+  def self.up
+    change_table :tasks do |t|
+      t.string :type, :null=>false
+      t.change :access_key, :string, :limit=>32, :null=>true
+      t.change :version, :integer, :null=>true
+    end
+  end
+
+  def self.down
+    change_table :tasks do |t|
+      t.remove :type
+    end
+  end
 end

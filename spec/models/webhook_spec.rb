@@ -29,7 +29,6 @@ require File.dirname(__FILE__) + '/helpers'
 #  http_method :string(255)     not null
 #  enctype     :string(255)     not null
 #  hmac_key    :string(255)
-#
 describe Webhook do
   subject { Webhook.make }
 

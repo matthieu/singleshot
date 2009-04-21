@@ -18,7 +18,7 @@ require File.dirname(__FILE__) + '/helpers'
 
 
 # == Schema Information
-# Schema version: 20090402190432
+# Schema version: 20090421005807
 #
 # Table name: forms
 #
@@ -26,6 +26,7 @@ require File.dirname(__FILE__) + '/helpers'
 #  task_id :integer(4)      not null
 #  url     :string(255)
 #  html    :text
+#
 describe Form do
   subject { Form.make }
 

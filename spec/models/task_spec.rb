@@ -15,10 +15,11 @@
 
 
 require File.dirname(__FILE__) + '/helpers'
+require File.dirname(__FILE__) + '/base_spec'
 
 
 # == Schema Information
-# Schema version: 20090402190432
+# Schema version: 20090421005807
 #
 # Table name: tasks
 #
@@ -37,54 +38,33 @@ require File.dirname(__FILE__) + '/helpers'
 #  version      :integer(4)      not null
 #  created_at   :datetime
 #  updated_at   :datetime
+#  type         :string(255)     not null
 #
 describe Task do
-
+  it_should_behave_like Base
   subject { Task.make }
-
-  # -- Descriptive --
-
-  should_have_attribute :title
-  should_have_column :title, :type=>:string
-  should_allow_mass_assignment_of :title
-  should_not_validate_uniqueness_of :title
-  should_validate_presence_of :title
-
-  should_have_attribute :description
-  should_have_column :description, :type=>:string
-  should_allow_mass_assignment_of :description
-  should_not_validate_uniqueness_of :description
-  should_not_validate_presence_of :description
-
-  should_have_attribute :language
-  should_have_column :language, :type=>:string, :limit=>5
-  should_allow_mass_assignment_of :language
-  should_not_validate_presence_of :language
-
 
   # -- Urgency --
 
   should_have_attribute :priority
   should_have_column :priority, :type=>:integer, :limit=>1
-  should_allow_mass_assignment_of :priority
   it('should default to priority 2')          { subject.priority.should == 2 }
   should_validate_inclusion_of :priority, :in=>1..3
 
   should_have_attribute :due_on
   should_have_column :due_on, :type=>:date
-  should_allow_mass_assignment_of :due_on
-
   should_have_attribute :start_on
   should_have_column :start_on, :type=>:date
-  should_allow_mass_assignment_of :start_on
+  should_allow_mass_assignment_of :priority, :due_on, :start_on
+  should_not_validate_presence_of :priority, :due_on, :start_on
 
 
   # -- Stakeholders --
   describe 'stakeholders' do
 
     should_have_many :stakeholders, :include=>:person, :dependent=>:delete_all
-    should_allow_mass_assignment_of :stakeholders
-    should_allow_mass_assignment_of :owner
+    should_not_allow_mass_assignment_of :stakeholders
+    should_allow_mass_assignment_of :creator, :owner
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
@@ -205,6 +185,7 @@ describe Task do
 
   end
 
+
   # -- Status --
   describe 'status' do
 
@@ -290,6 +271,10 @@ describe Task do
 
   end
 
+  # -- Activity --
+  
+  should_have_many :activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc'
+  should_not_allow_mass_assignment_of :activities
 
   describe 'newly created' do
     subject { Person.creator.tasks.create!(:title=>'foo') }
@@ -421,34 +406,6 @@ describe Task do
   end
 
 
-  # -- Activity --
-  
-  should_have_many :activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc'
-  should_not_allow_mass_assignment_of :activities
-
-
-  # -- Presentation --
-
-  should_have_one :form, :dependent=>:delete
-  it 'should allow setting form using Hash' do
-    subject.update_attributes! :form=>{ :url=>'http://example.com' }
-    subject.form(true).url.should == 'http://example.com'
-  end
-
-
-  # -- Data --
-
-  should_have_attribute :data
-  should_have_column :data, :type=>:text
-  should_allow_mass_assignment_of :data
-  it('should have empty hash as default data')  { subject.data.should == {} }
-  it('should allowing assigning nil to data')   { subject.update_attributes :data => nil; subject.data.should == {} }
-  it('should validate data is a hash')          { lambda { Person.supervisor.tasks.find(subject).update_attributes! :data=>'string' }.
-                                                  should raise_error(ActiveRecord::RecordInvalid) }
-  it('should store and retrieve data')          { Person.supervisor.tasks.find(subject).update_attributes!(:data=>{ 'foo'=>'bar'})
-                                                  subject.reload.data.should == { 'foo'=>'bar' } }
-
-
   # -- Access key --
 
   should_have_attribute :access_key
@@ -461,9 +418,8 @@ describe Task do
   should_have_column :version, :type=>:integer
   it('should have locking column version') { subject.class.locking_enabled? && subject.class.locking_column == 'version' }
   should_have_attribute :created_at
-  should_have_column :created_at, :type=>:datetime
   should_have_attribute :updated_at
-  should_have_column :updated_at, :type=>:datetime
+  should_have_column :created_at, :updated_at, :type=>:datetime
 
 
   # -- Query scopes --
@@ -610,8 +566,7 @@ describe Task do
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
       all = { :title=>'new title', :priority=>3, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
-              :stakeholders=>[Stakeholder.new(:person=>Person.observer, :role=>'observer'),
-                              Stakeholder.new(:person=>Person.supervisor, :role=>'supervisor')] }
+              :observers=>[Stakeholder.new(:person=>Person.observer, :role=>'observer')] }
       changed = all.select { |attr, value| subject.tasks.find(Task.make_active).update_attributes(attr=>value) rescue false }.map(&:first)
       case attrs.first
       when nil, :any

@@ -18,7 +18,7 @@ require 'openssl'
 
 
 # == Schema Information
-# Schema version: 20090402190432
+# Schema version: 20090421005807
 #
 # Table name: tasks
 #
@@ -37,34 +37,26 @@ require 'openssl'
 #  version      :integer(4)      not null
 #  created_at   :datetime
 #  updated_at   :datetime
+#  type         :string(255)     not null
 #
-class Task < ActiveRecord::Base
+class Task < Base
 
   def initialize(*args, &block)
     super
     self[:status] = 'available'
-    self[:priority] ||= DEFAULT_PRIORITY
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
-  attr_accessible :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :form, :data, :webhooks, :potential_owners, :supervisors
-  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :stakeholders, :owner, :creator, :status, :data,
+  attr_accessible :status, :due_on, :start_on
+  attr_accessible :owner, :creator, :potential_owners, :excluded_owners, :supervisors, :observers
+  attr_readable   :title, :description, :language, :due_on, :start_on, :owner, :creator, :status, :data,
                   :version, :created_at, :updated_at
+  attr_readable   :owner, :creator, :potential_owners, :excluded_owners, :past_owners, :supervisors, :observers
 
-  # -- Descriptive --
-  # title, description, language
-
-  validates_presence_of :title  # Title is required, description and language are optional
 
 
   # -- Urgency --
  
-  PRIORITY = 1..3 # Priority ranges from 1 to 3, 1 is the highest priority.
-  DEFAULT_PRIORITY = 2 # Default priority is 2.
-
-  validates_inclusion_of :priority, :in=>PRIORITY
-
-  
   def over_due?
     # due_on ? (ready? || active?) && due_on < Date.current : false
   end
@@ -252,6 +244,7 @@ class Task < ActiveRecord::Base
     define_method(role.pluralize) { in_role(role) }
     define_method("#{role}?") { |identity| in_role?(role, identity) }
     define_method "#{role.pluralize}=" do |identities|
+      raise ActiveRecord::RecordInvalid, self unless new_record? || supervisor?(modified_by)
       people = Person.identify(Array(identities))
       stakeholders.delete stakeholders.select { |sh| sh.role == role }
       people.each do |person|
@@ -288,18 +281,6 @@ class Task < ActiveRecord::Base
   end
 
 =end
-
-
-  # -- Data and reference --
-
-  serialize :data
-
-  def data #:nodoc:
-    write_attribute(:data, Hash.new) if read_attribute(:data).blank?
-    read_attribute(:data) || write_attribute(:data, Hash.new)
-  end
-  
-  validate { |task| task.errors.add :data, "Must be a hash" unless Hash === task.data }
 
 
   # -- Status --
@@ -375,25 +356,6 @@ class Task < ActiveRecord::Base
   end
 
 
-  # -- Presentation --
-
-  has_one :form, :dependent=>:delete
-
-  def form_with_hash_typecase=(form)
-    self.build_form form
-  end
-  alias_method_chain :form=, :hash_typecase
-
-
-  # -- Webhooks --
- 
-  has_many :webhooks, :dependent=>:delete_all
-  def webhooks_with_hash_mapping=(hooks)
-    self.webhooks_without_hash_mapping = hooks.map { |hook| Webhook === hook ? hook : Webhook.new(hook) }
-  end
-  alias_method_chain :webhooks=, :hash_mapping
-
-
   # -- Access Control --
 
   # The person creating/updating this task.
@@ -454,10 +416,9 @@ class Task < ActiveRecord::Base
       stakeholders.each do |sh|
         clone.stakeholders.build :role=>sh.role, :person=>sh.person
       end
+      clone.form = form.clone if form
     end
   end
-
-
 
 
 =begin

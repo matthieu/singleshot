@@ -18,11 +18,11 @@ require File.dirname(__FILE__) + '/helpers'
 
 
 # == Schema Information
-# Schema version: 20090206215123
+# Schema version: 20090421005807
 #
 # Table name: people
 #
-#  id         :integer         not null, primary key
+#  id         :integer(4)      not null, primary key
 #  identity   :string(255)     not null
 #  fullname   :string(255)     not null
 #  email      :string(255)     not null

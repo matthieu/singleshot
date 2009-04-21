@@ -14,6 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+require 'machinist'
+
+
 Person.blueprint do
   email    { 'john.smith@example.com' }
   password { 'secret' }
@@ -105,4 +108,9 @@ end
 
 Form.blueprint do
   task   { Task.make }
+end
+
+Template.blueprint do
+  title             { 'Spec me' }
+  #potential_owners  { [Person.owner, Person.potential_owner] }
 end

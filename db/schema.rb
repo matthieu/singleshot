@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090402190432) do
+ActiveRecord::Schema.define(:version => 20090421005807) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id",  :null => false
@@ -61,10 +61,11 @@ ActiveRecord::Schema.define(:version => 20090402190432) do
     t.string   "cancellation"
     t.text     "data",                       :null => false
     t.string   "hooks"
-    t.string   "access_key",   :limit => 32, :null => false
-    t.integer  "version",                    :null => false
+    t.string   "access_key",   :limit => 32
+    t.integer  "version"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "type",                       :null => false
   end
 
   create_table "webhooks", :force => true do |t|
