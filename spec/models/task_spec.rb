@@ -41,7 +41,7 @@ require File.dirname(__FILE__) + '/base_spec'
 #  type         :string(255)     not null
 #
 describe Task do
-  it_should_behave_like Base
+  it_should_behave_like 'Base'
   subject { Task.make }
 
   # -- Urgency --
@@ -65,6 +65,7 @@ describe Task do
     should_have_many :stakeholders, :include=>:person, :dependent=>:delete_all
     should_not_allow_mass_assignment_of :stakeholders
     should_allow_mass_assignment_of :creator, :owner
+    should_have_readonly_attribute :creator
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
@@ -76,6 +77,14 @@ describe Task do
       it('should identify all people in a given role') { [subject.in_role?('find', 'foo'), subject.in_role?('find', 'bar'),
                                                           subject.in_role?('miss', 'foo')].should == [true, true, false] }
       it('should return nil if no identity given')     { subject.in_role?('find', nil).should be_false }
+    end
+
+    describe '#creator' do
+      subject { Task.make :creator=>nil }
+
+      it('should be nil if no person in this role') { subject.creator.should be_nil }
+      it('should return person in role creator')    { subject.associate('creator'=>Person.creator).creator.should == Person.creator }
+      it('should accept new creator')               { lambda { subject.creator = Person.creator }.should change(subject, :creator).to(Person.creator) }
     end
 
     describe 'creator' do
@@ -119,7 +128,7 @@ describe Task do
     describe 'past owner' do
       subject { Person.past_owner }
 
-      it('should be previous owner of task')   { subject.should == Task.make.in_role('past_owner').first }
+      it('should be previous owner of task')   { subject.should == Task.make.past_owners.first }
       should_able_to_claim_task
       should_not_able_to_delegate_task
       should_not_able_to_suspend_task
@@ -280,8 +289,8 @@ describe Task do
     subject { Person.creator.tasks.create!(:title=>'foo') }
 
     should_be_available
-    it('should have creator')                     { subject.in_role('creator').should == [Person.creator] }
-    it('should have creator as supervisor')       { subject.in_role('supervisor').should == [Person.creator] }
+    it('should have creator')                     { subject.creator.should == Person.creator }
+    it('should have creator as supervisor')       { subject.supervisors.should == [Person.creator] }
     it('should have no owner')                    { subject.owner.should be_nil }
     should_log_activity Person.creator, 'created'
   end
@@ -290,7 +299,7 @@ describe Task do
     subject { Person.creator.tasks.create!(:title=>'foo', :owner=>Person.owner) }
 
     should_be_active
-    it('should have creator') { subject.in_role('creator').should == [Person.creator] }
+    it('should have creator') { subject.creator.should == Person.creator }
     it('should have owner') { subject.owner.should == Person.owner }
     should_log_activity Person.creator, 'created'
     should_log_activity Person.owner, 'claimed'

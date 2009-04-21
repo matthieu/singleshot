@@ -17,7 +17,7 @@
 require File.dirname(__FILE__) + '/helpers'
 
 
-share_as :Base do
+share_examples_for Base do
 
   # -- Descriptive --
 

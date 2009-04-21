@@ -41,7 +41,7 @@ require File.dirname(__FILE__) + '/base_spec'
 #  type         :string(255)     not null
 #
 describe Template do
-  it_should_behave_like Base
+  it_should_behave_like 'Base'
   subject { Template.make }
 
   should_be_kind_of Template

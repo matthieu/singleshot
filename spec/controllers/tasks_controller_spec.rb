@@ -111,10 +111,12 @@ describe TasksController do
     end
 
     it('should create new task from request entity')          { new_task!.title.should == 'expenses' }
-    it('should set task creator to authenticated person')     { new_task!.in_role('creator').first.should == Person.creator }
-    it('should set task supervisor to authenticated person')  { new_task!.in_role('supervisor').first.should == Person.creator }
-    it('should accept stakeholders as role/name pairs')       { new_task!('stakeholders'=>[{'role'=>'owner', 'person'=>Person.owner.to_param}])
+    it('should set task creator to authenticated person')     { new_task!.creator.should == Person.creator }
+    it('should set task supervisor to authenticated person')  { new_task!.supervisors.first.should == Person.creator }
+    it('should accept owner through accessor')                { new_task!('owner'=>Person.owner.to_param)
                                                                 Task.last.owner.should == Person.owner }
+    it('should accept stakeholders through accessors')        { new_task!('observers'=>[Person.observer.to_param])
+                                                                Task.last.observers.should == [Person.observer] }
 
     def new_task!(attributes = {})
       attributes['title'] ||= 'expenses'
@@ -197,10 +199,6 @@ describe TasksController do
 
     it 'should modify task' do
       lambda { put :update, @params }.should change { Task.find(@task).priority }.to(1)
-    end
-    it 'should accept stakeholders as role/name pairs' do
-      lambda { put :update, 'id'=>@task.id, 'task'=>{ 'stakeholders'=>[{ 'role'=>'observer', 'person'=>'other' }] } }.
-        should change { Task.last.in_role('observer') }.to([Person.other])
     end
   end
 

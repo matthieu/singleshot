@@ -51,10 +51,8 @@ Feature: WebAPI
       """
       { task: {
           title: "From Alice to Bob",
-          stakeholders: [
-            { role: creator, person: alice },
-            { role: owner, person: bob }
-          ]
+          creator: "alice",
+          owner: "bob"
       } }
       """
     Then the response task creator should be alice

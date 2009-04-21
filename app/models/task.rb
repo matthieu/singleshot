@@ -48,8 +48,7 @@ class Task < Base
   end
 
   attr_accessible :status, :due_on, :start_on
-  attr_accessible :owner, :creator, :potential_owners, :excluded_owners, :supervisors, :observers
-  attr_readable   :title, :description, :language, :due_on, :start_on, :owner, :creator, :status, :data,
+  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :owner, :creator, :status, :data,
                   :version, :created_at, :updated_at
   attr_readable   :owner, :creator, :potential_owners, :excluded_owners, :past_owners, :supervisors, :observers
 
@@ -119,8 +118,11 @@ class Task < Base
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
     :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
 
+  attr_accessible :owner, :creator, :potential_owners, :excluded_owners, :supervisors, :observers
+  attr_readonly :creator
+
   def stakeholders_with_supervisor_access=(list)
-    raise ActiveRecord::RecordInvalid, self unless new_record? || in_role?('supervisor', modified_by)
+    raise ActiveRecord::RecordInvalid, self unless new_record? || supervisor?(modified_by)
     self.stakeholders_without_supervisor_access = list
   end
   alias_method_chain :stakeholders=, :supervisor_access
@@ -163,7 +165,11 @@ class Task < Base
   end
 
   def creator=(person)
-    stakeholders.build :person=>Person.identify(person), :role=>'creator' if person
+    person = Person.identify(person) if person
+    unless person == creator
+      stakeholders.delete stakeholders.select { |sh| sh.role == 'creator' }
+      stakeholders.build :person=>person, :role=>'creator' if person
+    end
   end
 
   def stakeholders_before_add(sh)
@@ -172,10 +178,10 @@ class Task < Base
       errors.add :stakeholders, "Task cannot have two creators" unless in_role('creator').empty?
     when 'owner'
       changed_attributes['owner'] ||= nil
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if in_role?('excluded_owner', sh.person)
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if excluded_owner?(sh.person)
       errors.add :stakeholders, "Task cannot have two owners" unless in_role('owner').empty?
     when 'potential_owner'
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if in_role?('excluded_owner', sh.person)
+      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if excluded_owner?(sh.person)
     end
     raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
@@ -188,8 +194,8 @@ class Task < Base
 
   before_save do |task|
     past_owner, owner = task.changes['owner']
-    task.stakeholders.build :role=>'potential_owner', :person=>owner if owner && !task.in_role?('potential_owner', owner)
-    task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.in_role?('past_owner', past_owner)
+    task.stakeholders.build :role=>'potential_owner', :person=>owner if owner && !task.potential_owner?(owner)
+    task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.past_owner?(past_owner)
   end
 
 =begin
@@ -302,7 +308,7 @@ class Task < Base
     case task.status
     when 'available'
       # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
-      if !task.owner && (potential = task.in_role('potential_owner')) && potential.size == 1
+      if !task.owner && (potential = task.potential_owners) && potential.size == 1
         task.owner = potential.first
       end
       # Assigned task becomes active.
@@ -323,7 +329,7 @@ class Task < Base
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at desc', :dependent=>:delete_all
 
   before_create do |task|
-    creator = task.in_role('creator').first
+    creator = task.creator
     task.modified_by ||= creator
     task.activities.build :name=>'created', :person=>creator  if creator
     task.activities.build :name=>'claimed', :person=>task.owner if task.owner
@@ -364,11 +370,11 @@ class Task < Base
   # Returns true if this person can own the task. Potential owners and supervisors can own the task,
   # excluded owners cannot (even if they appear in the other list).
   def can_own?(person)
-    (in_role?('potential_owner', person) || in_role?('supervisor', person)) && !in_role?('excluded_owner', person)
+    (potential_owner?(person) || supervisor?(person)) && !excluded_owner?(person)
   end
 
   validate_on_update do |task|
-    by_supervisor = task.in_role?('supervisor', task.modified_by)
+    by_supervisor = task.supervisor?(task.modified_by)
     past_owner, owner = task.changes['owner']
     if past_owner != owner
       if owner

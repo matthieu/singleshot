@@ -58,8 +58,8 @@ class Person < ActiveRecord::Base
     def identify(identity)
       case identity
       when Person then identity
-      when Array then Person.all(:conditions=>{:identity=>identity.flatten.uniq})
-      else Person.find_by_identity(identity.to_s) or raise ActiveRecord::RecordNotFound
+      when Array then Person.all(:conditions=>{:identity=>identity.flatten.map(&:to_param).uniq})
+      else Person.find_by_identity(identity.to_param) or raise ActiveRecord::RecordNotFound
       end
     end
 

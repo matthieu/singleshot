@@ -115,14 +115,14 @@ describe Person do
   describe '.identify' do
     subject { Person.make }
 
+    it('should return same Person as argument')   { should identify(subject) }
+    it('should return person with same identity') { should identify(subject.identity) }
+    it('should fail if no person identified')     { should_not identify('missing') }
+    
     # Expecting Person.identify(identity) to return subject
     def identify(identity)
       simple_matcher("identify '#{identity}'") { |given, matcher| wrap_expectation(matcher) { Person.identify(identity) == subject } }
     end
-   
-    it('should return same Person as argument')   { should identify(subject) }
-    it('should return person with same identity') { should identify(subject.identity) }
-    it('should fail if no person identified')     { should_not identify('missing') }
   end
 
   describe '.tasks' do
@@ -133,8 +133,8 @@ describe Person do
 
       it('should save task')                                { subject.should == Task.last }
       it('should return new task, modified_by person')      { subject.modified_by.should == @bob }
-      it('should associate task with person as creator')    { subject.in_role('creator').should == [@bob] }
-      it('should associate task with person as supervisor') { subject.in_role('supervisor').should == [@bob] }
+      it('should associate task with person as creator')    { subject.creator.should == @bob }
+      it('should associate task with person as supervisor') { subject.supervisors.should == [@bob] }
     end
 
     describe '.create!' do

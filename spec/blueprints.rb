@@ -47,12 +47,15 @@ end
 
 
 Task.blueprint do
-  title        { 'Spec me' }
-  status       { 'available' }
-  object.associate 'creator'=>Person.creator, 'supervisor'=>Person.supervisor,
-    'potential_owner'=>[Person.owner, Person.potential, Person.past_owner],
-    'past_owner'=>Person.past_owner, 'excluded_owner'=>Person.excluded, 'observer'=>Person.observer
-  object.owner ||= Person.owner if object.status == 'active' || object.status == 'completed'
+  title             { 'Spec me' }
+  status            { 'available' }
+  creator           { Person.creator }
+  supervisors       { [Person.supervisor] }
+  potential_owners  { [Person.owner, Person.potential, Person.past_owner] }
+  excluded_owners   { [Person.excluded] }
+  past_owners       { [Person.past_owner] }
+  observers         { [Person.observer] }
+  owner             { ['active', 'completed'].include?(status) ? Person.owner : nil }
 end
 
 class Task

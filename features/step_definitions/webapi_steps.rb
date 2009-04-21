@@ -72,8 +72,10 @@ end
 Then /^the response task (.*) should be (.*)$/ do |attribute, value|
   task = ActiveSupport::JSON.decode(body)['task']
   case attribute
+  when 'creator', 'owner'
+    task[attribute].should == value
   when 'creator', 'owner', 'potential_owner', 'past_owner', 'excluded_owner', 'observer', 'supervisor'
-    task['stakeholders'].select { |sh| sh['role'] == attribute }.map { |sh| sh['person'] }.should include(value)
+    task[attribute.pluralize].should include(value)
   else
     task[attribute].inspect.should == value
   end
