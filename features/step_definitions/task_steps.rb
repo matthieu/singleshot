@@ -29,11 +29,6 @@ Given /^the task "(.*)" created by (.*) and assigned to (.*)$/ do |title, person
   Person.identify(person).tasks.create!(:title=>title, :owner=>owner)
 end
 
-Given /^(.*) is (.*) of task "(.*)"$/ do |person, role, title|
-  Given "the person #{person}"
-  Task.find_by_title(title).stakeholders.create! :role=>role.sub(' ', '_'), :person=>Person.identify(person)
-end
-
 
 When /^(\S*) (claims|releases|suspends|resumes|completes|cancels) the task "(.*)"$/ do |person, action, title|
   task = Person.identify(person).tasks.find(:first, :conditions=>{:title=>title})

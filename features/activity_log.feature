@@ -4,119 +4,175 @@ Feature: activity log
   As a user of Singleshot
   I want an activity log that records changes to the tasks
 
+  Background:
+    Given the person scott
+    And the person alice
+    And the person bob
 
   Scenario: log shows owner creating task
-    Given the task "expenses" created by scott
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      """
     Then the activity log shows the entries
       """
-      scott created expenses
+      scott created Expense report
       """
 
   Scenario: log shows owner creating and claiming task
-    Given the task "expenses" created by scott and assigned to scott
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      owner: scott
+      """
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott claimed expenses
+      scott created Expense report
+      scott claimed Expense report
       """
 
   Scenario: log shows owner creating and delegating task
-    Given the task "expenses" created by scott and assigned to alice
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      owner: alice
+      """
     Then the activity log shows the entries
       """
-      scott created expenses
-      alice claimed expenses
+      scott created Expense report
+      alice claimed Expense report
       """
 
   Scenario: log shows potential owner claiming task
-    Given the task "expenses" created by scott
-    And alice is potential owner of task "expenses"
-    And bob is potential owner of task "expenses"
-    When alice claims the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      potential_owners:
+      - alice
+      - bob
+      """
+    When alice claims the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      alice claimed expenses
+      scott created Expense report
+      alice claimed Expense report
       """
 
   Scenario: log shows owner delegating task
-    Given the task "expenses" created by scott
-    And alice is owner of task "expenses"
-    And bob is potential owner of task "expenses"
-    When alice delegates the task "expenses" to bob
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      owner: alice
+      potential_owners:
+      - bob
+      """
+    When alice delegates the task "Expense report" to bob
     Then the activity log shows the entries
       """
-      scott created expenses
-      alice delegated expenses
-      bob claimed expenses
+      scott created Expense report
+      alice claimed Expense report
+      alice delegated Expense report
+      bob claimed Expense report
       """
 
   Scenario: log shows supervisor delegating task
-    Given the task "expenses" created by scott
-    And alice is owner of task "expenses"
-    And bob is potential owner of task "expenses"
-    When scott delegates the task "expenses" to bob
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      supervisors: scott
+      owner: alice
+      potential_owners:
+      - bob
+      """
+    When scott delegates the task "Expense report" to bob
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott delegated expenses
-      bob claimed expenses
+      scott created Expense report
+      alice claimed Expense report
+      scott delegated Expense report
+      bob claimed Expense report
       """
 
   Scenario: log shows owner released task
-    Given the task "expenses" created by scott
-    And alice is owner of task "expenses"
-    When alice releases the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      owner: alice
+      """
+    When alice releases the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      alice released expenses
+      alice claimed Expense report
+      alice released Expense report
       """
 
   Scenario: log shows supervisor modified task
-    Given the task "expenses" created by scott
-    When scott modifies the priority of task "expenses" to 3
+    Given the task
+      """
+      title: "Expense report"
+      supervisors: scott
+      """
+    When scott modifies the priority of task "Expense report" to 3
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott modified expenses
+      scott modified Expense report
       """
 
   Scenario: log shows supervisor suspended task
-    Given the task "expenses" created by scott
-    When scott suspends the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      supervisors: scott
+      """
+    When scott suspends the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott suspended expenses
+      scott suspended Expense report
       """
 
   Scenario: log shows supervisor resumed task
-    Given the task "expenses" created by scott
-    And scott suspends the task "expenses"
-    When scott resumes the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      supervisors: scott
+      """
+    And scott suspends the task "Expense report"
+    When scott resumes the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott suspended expenses
-      scott resumed expenses
+      scott suspended Expense report
+      scott resumed Expense report
       """
 
   Scenario: log shows supervisor cancelled task
-    Given the task "expenses" created by scott
-    When scott cancels the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      supervisors: scott
+      """
+    When scott cancels the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      scott cancelled expenses
+      scott cancelled Expense report
       """
 
   Scenario: log shows owner completed task
-    Given the task "expenses" created by scott
-    And alice is owner of task "expenses"
-    When alice completes the task "expenses"
+    Given the task
+      """
+      title: "Expense report"
+      creator: scott
+      owner: alice
+      """
+    When alice completes the task "Expense report"
     Then the activity log shows the entries
       """
-      scott created expenses
-      alice completed expenses
+      scott created Expense report
+      alice claimed Expense report
+      alice completed Expense report
       """

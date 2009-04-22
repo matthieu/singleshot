@@ -41,8 +41,8 @@ require File.dirname(__FILE__) + '/base_spec'
 #  type         :string(255)     not null
 #
 describe Task do
-  it_should_behave_like 'Base'
   subject { Task.make }
+  it_should_behave_like 'Base'
 
   # -- Urgency --
 
@@ -84,7 +84,8 @@ describe Task do
 
       it('should be nil if no person in this role') { subject.creator.should be_nil }
       it('should return person in role creator')    { subject.associate('creator'=>Person.creator).creator.should == Person.creator }
-      it('should accept new creator')               { lambda { subject.creator = Person.creator }.should change(subject, :creator).to(Person.creator) }
+      it('should accept new creator')               { lambda { Person.supervisor.tasks.find(subject).update_attributes! :creator=>Person.creator }.
+                                                        should change { Task.find(subject).creator }.to(Person.creator) }
     end
 
     describe 'creator' do
@@ -106,8 +107,7 @@ describe Task do
 
       it('should be nil if no person in this role') { subject.owner.should be_nil }
       it('should return person in role owner')      { subject.associate('owner'=>Person.owner).owner.should == Person.owner }
-      it('should accept new owner')                 { lambda { subject.owner = Person.owner }.should change(subject, :owner).to(Person.owner) and
-                                                      lambda { subject.owner = Person.other }.should change(subject, :owner).to(Person.other) }
+      it('should accept new owner')                 { lambda { subject.owner = Person.owner }.should change(subject, :owner).to(Person.owner) }
     end
 
     describe 'owner' do
@@ -489,7 +489,9 @@ describe Task do
   def able_to_claim_task
     simple_matcher "be offered/able to claim task" do |given|
       task = Task.make
-      fail unless subject.can_claim?(task) == (subject.tasks.find(task).update_attributes(:owner=>subject) rescue false)
+      allowed = subject.can_claim?(task)
+      changed = subject.tasks.find(task).update_attributes(:owner=>subject) rescue false
+      fail unless allowed == changed 
       task.reload.owner == subject
     end
   end
@@ -498,7 +500,9 @@ describe Task do
   def able_to_delegate_task
     simple_matcher "be offered/able to delegate task" do |given|
       task = Task.make_active
-      fail unless subject.can_delegate?(task, Person.potential) == subject.tasks.find(task).update_attributes(:owner=>Person.potential)
+      allowed = subject.can_delegate?(task, Person.potential)
+      changed = subject.tasks.find(task).update_attributes(:owner=>Person.potential) rescue false
+      fail unless allowed == changed
       task.reload.owner == Person.potential
     end
   end
@@ -575,7 +579,7 @@ describe Task do
   def able_to_change_task(*attrs)
     simple_matcher "be able to change task" do |given|
       all = { :title=>'new title', :priority=>3, :due_on=>Date.tomorrow, :data=>{ 'foo'=>'bar' },
-              :observers=>[Stakeholder.new(:person=>Person.observer, :role=>'observer')] }
+              :observers=>[Person.observer.to_param] }
       changed = all.select { |attr, value| subject.tasks.find(Task.make_active).update_attributes(attr=>value) rescue false }.map(&:first)
       case attrs.first
       when nil, :any

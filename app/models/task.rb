@@ -41,16 +41,14 @@ require 'openssl'
 #
 class Task < Base
 
-  def initialize(*args, &block)
+  def initialize(args = nil, &block)
     super
     self[:status] = 'available'
     self[:access_key] = ActiveSupport::SecureRandom.hex(16)
   end
 
   attr_accessible :status, :due_on, :start_on
-  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :owner, :creator, :status, :data,
-                  :version, :created_at, :updated_at
-  attr_readable   :owner, :creator, :potential_owners, :excluded_owners, :past_owners, :supervisors, :observers
+  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :status, :data, :version, :created_at, :updated_at
 
 
 
@@ -110,183 +108,66 @@ class Task < Base
   end
 
 =end
-  
 
   # -- Stakeholders --
 
-  # Stakeholders and people (as stakeholders) associated with this task.
-  has_many :stakeholders, :include=>:person, :dependent=>:delete_all,
-    :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
-
-  attr_accessible :owner, :creator, :potential_owners, :excluded_owners, :supervisors, :observers
+  stakeholders 'owner', 'creator', 'potential_owners', 'excluded_owners', 'past_owners', 'supervisors', 'observers'
   attr_readonly :creator
 
-  def stakeholders_with_supervisor_access=(list)
-    raise ActiveRecord::RecordInvalid, self unless new_record? || supervisor?(modified_by)
-    self.stakeholders_without_supervisor_access = list
-  end
-  alias_method_chain :stakeholders=, :supervisor_access
-
-  # Return all people associate with the specified role. For example:
-  #   task.in_role('observer')
-  def in_role(role)
-    stakeholders.select { |sh| sh.role == role }.map(&:person)
-  end
-
-  # Return all people associated with the specified roles. For example:
-  #   task.in_roles('owner', 'potential')
-  def in_roles(*roles)
-    stakeholders.select { |sh| roles.include?(sh.role) }.map(&:person).uniq
-  end
-
-  # Return true if a person is associated with this task in a particular role. For example:
-  #   task.in_role?('owner', john)
-  #   task.in_role?('owner', "john.smith")
-  def in_role?(role, identity)
-    return false unless identity
-    person = Person.identify(identity)
-    stakeholders.any? { |sh| sh.role == role && sh.person == person }
-  end
-
-  def owner
-    in_role('owner').first
-  end
-
-  def owner=(person)
-    person = Person.identify(person) if person
-    unless person == owner
-      stakeholders.delete stakeholders.select { |sh| sh.role == 'owner' }
-      stakeholders.build :person=>person, :role=>'owner' if person
-    end
-  end
-
-  def creator
-    in_role('creator').first
-  end
-
-  def creator=(person)
-    person = Person.identify(person) if person
-    unless person == creator
-      stakeholders.delete stakeholders.select { |sh| sh.role == 'creator' }
-      stakeholders.build :person=>person, :role=>'creator' if person
+  ['owner', 'creator'].each do |role|
+    define_method(role) { in_role(role).first }
+    define_method("#{role}?") { |identity| in_role?(role, identity) }
+    define_method "#{role}=" do |identity|
+      person = Person.identify(identity) if identity
+      unless person == send(role)
+        stakeholders.delete stakeholders.select { |sh| sh.role == role }
+        stakeholders.build :person=>person, :role=>role if person
+      end
     end
   end
 
   def stakeholders_before_add(sh)
+    super
     case sh.role
-    when 'creator'
-      errors.add :stakeholders, "Task cannot have two creators" unless in_role('creator').empty?
     when 'owner'
       changed_attributes['owner'] ||= nil
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot become task owner" if excluded_owner?(sh.person)
-      errors.add :stakeholders, "Task cannot have two owners" unless in_role('owner').empty?
+      errors.add :owner, "Excluded owner #{sh.person.to_param} cannot become task owner" if excluded_owner?(sh.person)
+      past_owner, new_owner = changes['owner']
+      errors.add :owner, "Only owner or supervisor can change ownership" unless
+        (modified_by && modified_by.can_change?(self)) || past_owner.nil? || modified_by == past_owner
     when 'potential_owner'
       errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if excluded_owner?(sh.person)
+      stakeholders_supervisor_check
+    when 'past_owner'
+    else
+      stakeholders_supervisor_check
     end
-    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
+    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders) || errors.on(:owner)
   end
 
   def stakeholders_before_remove(sh)
-    changed_attributes['owner'] = sh.person if sh.role == 'owner'
+    super
+    if sh.role == 'owner'
+      errors.add :owner, "Only owner or supervisor can change ownership" unless modified_by && modified_by.can_delegate?(self)
+      changed_attributes['owner'] = sh.person
+    else
+      stakeholders_supervisor_check
+    end
+    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders) || errors.on(:owner)
   end
 
-  private :stakeholders_before_add, :stakeholders_before_remove
+  def stakeholders_supervisor_check
+    unless new_record? || (modified_by && modified_by.can_change?(self))
+      errors.add :stakeholders, "Only supervisor allowed to change stakeholders"
+    end
+  end
+  private :stakeholders_supervisor_check
 
   before_save do |task|
     past_owner, owner = task.changes['owner']
     task.stakeholders.build :role=>'potential_owner', :person=>owner if owner && !task.potential_owner?(owner)
     task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.past_owner?(past_owner)
   end
-
-=begin
-  def stakeholders=(list) #:nodoc: prevents delete/insert with no material update.
-    returning stakeholders do |current|
-      current.replace(list.map { |item| current.detect { |sh| sh.role == item.role && sh.person == item.person } || item })
-    end
-  end
-
-  attr_accessible *Stakeholder::SINGULAR_ROLES
-
-  # Task creator and owner.  Adds three methods for each role:
-  # * {role}          -- Returns person associated with this role, or nil.
-  # * {role}?(person) -- Returns true if person associated with this role.
-  # * {role}= person  -- Assocaites person with this role (can be nil).
-  Stakeholder::SINGULAR_ROLES.each do |role|
-    define_method(role) { in_role(role).first }
-    define_method("#{role}?") { |identity| in_role?(role, identity) }
-    define_method "#{role}=" do |identity|
-      attribute_will_change!(role)
-      associate!(role=>identity.blank? ? nil : identity)
-    end
-    define_method("#{role}_changed?") { attribute_changed?(role) }
-    define_method("#{role}_change") { attribute_change(role) }
-  end
-=end
-
-=begin
-  
-  # Eager loading of stakeholders associated with each task.
-  named_scope :with_stakeholders, :include=>{ :stakeholders=>:person }
-  # Load only tasks that this person is a stakeholder of (owner, observer, etc).
-  named_scope :for_stakeholder, lambda { |person|
-    { :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id', :readonly=>false,
-      :conditions=>["involved.person_id=? AND involved.role != 'excluded' AND tasks.status != 'reserved'", person.id] } }
-
-
-  def creator_with_change_check=(creator)
-    changed_attributes['creator'] = creator
-    self.creator_without_change_check = creator if reserved? || new_record?
-  end
-  alias_method_chain :creator=, :change_check
-
-  ACCESSOR_FROM_ROLE = { 'creator'=>'creator', 'owner'=>'owner', 'potential'=>'potential_owners', 'excluded'=>'excluded_owners',
-                         'observer'=>'observers', 'admin'=>'admins' }
-=end
-  # Task observer, admins and potential/excluded owner.  Adds three methods for each role:
-  # * {plural}            -- Returns people associated with this role.
-  # * {singular}?(person) -- Returns true if person associated with this role.
-  # * {plural}= people    -- Assocaites people with this role.
-  Stakeholder::PLURAL_ROLES.each do |role|
-    define_method(role.pluralize) { in_role(role) }
-    define_method("#{role}?") { |identity| in_role?(role, identity) }
-    define_method "#{role.pluralize}=" do |identities|
-      raise ActiveRecord::RecordInvalid, self unless new_record? || supervisor?(modified_by)
-      people = Person.identify(Array(identities))
-      stakeholders.delete stakeholders.select { |sh| sh.role == role }
-      people.each do |person|
-        stakeholders.build :person=>person, :role=>role
-      end
-    end
-  end
-=begin
-
-  # Returns true if person is a stakeholder in this task: any role except excluded owners list.
-  def stakeholder?(person)
-    stakeholders.any? { |sh| sh.person_id == person.id && sh.role != 'excluded' }
-  end
-
-  validate do |task|
-    # Can only have one member of a singular role.
-    Stakeholder::SINGULAR_ROLES.each do |role|
-      task.errors.add role, "Can only have one #{role}." if task.stakeholders.select { |sh| sh.role == role }.size > 1
-    end
-    task.errors.add :creator, 'Cannot change creator.' if task.creator_changed? && ![nil, 'reserved'].include?(task.status_was)
-    task.errors.add :owner, "#{task.owner.fullname} is on the excluded owners list and cannot be owner of this task." if
-      task.owner && task.excluded_owner?(task.owner)
-    to, from = task.owner_change
-    if task.potential_owners.empty?
-      # With no potential owners, task must have a set owner.
-      #task.errors.add :owner, "This task intended for one owner." unless task.owner || task.reserved?
-    else
-      # We have a limited set of potential owners, owner must be one of them.
-      #task.errors.add :owner, "#{task.owner.fullname} is not allowd as owner of this task" unless task.owner && task.potential_owners?(task.owner)
-    end
-    conflicting = task.potential_owners & task.excluded_owners
-    task.errors.add :potential_owners, "#{conflicting.map(&:fullname).join(', ')} listed on both excluded and potential owners list" unless
-      conflicting.empty?
-  end
-
-=end
 
 
   # -- Status --
@@ -370,20 +251,11 @@ class Task < Base
   # Returns true if this person can own the task. Potential owners and supervisors can own the task,
   # excluded owners cannot (even if they appear in the other list).
   def can_own?(person)
-    (potential_owner?(person) || supervisor?(person)) && !excluded_owner?(person)
+    (potential_owners.empty? || potential_owner?(person) || supervisor?(person)) && !excluded_owner?(person)
   end
 
   validate_on_update do |task|
     by_supervisor = task.supervisor?(task.modified_by)
-    past_owner, owner = task.changes['owner']
-    if past_owner != owner
-      if owner
-        task.errors.add :owner, "#{owner.to_param} is not allowed to claim task" unless task.can_own?(owner)
-      end
-      if past_owner # owned, so delegating to someone else
-        task.errors.add :owner, "Only owner or supervisor can change ownership" unless task.modified_by == past_owner || by_supervisor
-      end
-    end
 
     if task.status_changed?
       case task.status_was

@@ -23,9 +23,10 @@ class Template < Base
   end
 
   # These stakeholders are used when transforming template to task.
-  attr_accessible :supervisors, :potential_owners, :excluded_owners, :observers
+  stakeholders 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
 
   validates_inclusion_of :status, :in=>'template' # Make sure we don't accidentally have a Task status.
+
 
   def template?
     true
