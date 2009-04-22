@@ -60,7 +60,8 @@ class Base < ActiveRecord::Base
 
   # Stakeholders and people (as stakeholders) associated with this task.
   has_many :stakeholders, :include=>:person, :dependent=>:delete_all, :foreign_key=>'task_id',
-    :before_add=>:stakeholders_before_add, :before_remove=>:stakeholders_before_remove
+    :before_add=>:stakeholder_change!, :before_remove=>:stakeholder_change!
+  
 
   # Return all people associate with the specified role. For example:
   #   task.in_role('observer')
@@ -83,8 +84,15 @@ class Base < ActiveRecord::Base
     stakeholders.any? { |sh| sh.role == role && sh.person == person }
   end
 
-  cattr_accessor :singular_roles
-  cattr_accessor :plural_roles
+  # Returns all singular roles defined for this model (e.g. creator, owner).
+  def singular_roles
+    self.class.read_inheritable_attribute(:singular_roles) || []
+  end
+
+  # Returns all plural roles defined for this model (e.g. supervisors, observers).
+  def plural_roles
+    self.class.read_inheritable_attribute(:plural_roles) || []
+  end
 
   # Use these to add new stakeholder accessors. For singular roles adds the accessors:
   # * {role}              -- Returns stakeholder in that role
@@ -129,17 +137,16 @@ class Base < ActiveRecord::Base
     end
   end
  
-  def stakeholders_before_add(sh)
-    if self.class.read_inheritable_attribute(:singular_roles).include?(sh.role)
-      errors.add :stakeholders, "Task cannot have two #{sh.role}" unless in_role(sh.role).empty?
+  validate do |record|
+    record.singular_roles.each do |role|
+      record.errors.add role, "Task cannot have two #{role.pluralize}" if record.in_role(role).size > 1
     end
-    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders)
   end
 
-  def stakeholders_before_remove(sh)
+  def stakeholder_change!(sh)
+    role = singular_roles.include?(sh.role) ? sh.role : sh.role.pluralize
+    changed_attributes[role] ||= __send__(role)
   end
-  private :stakeholders_before_add, :stakeholders_before_remove
-
 
 
   def template?

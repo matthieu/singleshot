@@ -6,6 +6,7 @@ require 'spec/autorun'
 require 'spec/rails'
 require 'remarkable_rails'
 require File.expand_path(File.dirname(__FILE__) + '/blueprints')
+trap("SIGINT"){ exit! 0 }
 
 
 Spec::Runner.configure do |config|

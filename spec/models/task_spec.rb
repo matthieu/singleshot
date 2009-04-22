@@ -69,14 +69,14 @@ describe Task do
 
     describe '#in_role' do
       before { @foo, @bar, @baz = Person.named('foo', 'bar', 'baz') }
-      it('should return all people in a given role') { subject.associate('find'=>[@foo, @bar], 'miss'=>@baz).in_role('find').should == [@foo, @bar] }
+      it('should return all people in a given role') { subject.associate('supervisors'=>[@foo, @bar], 'observers'=>@baz).in_role('supervisors').should == [@foo, @bar] }
     end
 
     describe '#in_role?' do
-      subject { Task.make.associate('find'=>Person.named('foo', 'bar'), 'miss'=>Person.named('baz')) }
-      it('should identify all people in a given role') { [subject.in_role?('find', 'foo'), subject.in_role?('find', 'bar'),
-                                                          subject.in_role?('miss', 'foo')].should == [true, true, false] }
-      it('should return nil if no identity given')     { subject.in_role?('find', nil).should be_false }
+      subject { Task.make.associate('supervisors'=>Person.named('foo', 'bar'), 'observers'=>Person.named('baz')) }
+      it('should identify all people in a given role') { [subject.in_role?('supervisors', 'foo'), subject.in_role?('find', 'bar'),
+                                                          subject.in_role?('observers', 'foo')].should == [true, true, false] }
+      it('should return nil if no identity given')     { subject.in_role?('supervisors', nil).should be_false }
     end
 
     describe '#creator' do
@@ -207,7 +207,7 @@ describe Task do
       subject { Task.make }
 
       it('should be the initial status for new tasks')            { Task.new(:status=>'active').status.should == 'available' }
-      it { should change_status_to('active', "with new owner")    { subject.update_attributes! :owner=>Person.owner } }
+      it { should change_status_to('active', "with new owner")    { Person.owner.tasks.find(subject).update_attributes! :owner=>Person.owner } }
       it { should_not change_status("on its own accord")          { subject.save! } }
       it { should honor_cancellation_policy }
       it { should_not change_status_to('completed')               { Person.supervisor.tasks.find(subject).update_attributes :owner=>Person.owner, :status=>'completed' } }

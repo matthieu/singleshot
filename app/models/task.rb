@@ -114,58 +114,35 @@ class Task < Base
   stakeholders 'owner', 'creator', 'potential_owners', 'excluded_owners', 'past_owners', 'supervisors', 'observers'
   attr_readonly :creator
 
-  ['owner', 'creator'].each do |role|
-    define_method(role) { in_role(role).first }
-    define_method("#{role}?") { |identity| in_role?(role, identity) }
-    define_method "#{role}=" do |identity|
-      person = Person.identify(identity) if identity
-      unless person == send(role)
-        stakeholders.delete stakeholders.select { |sh| sh.role == role }
-        stakeholders.build :person=>person, :role=>role if person
+  validate do |task|
+    if task.changed.include?('owner')
+      past_owner, new_owner = task.changes['owner']
+      task.errors.add 'owner', "Excluded owner #{new_owner.to_param} cannot become task owner" unless new_owner.nil? || task.can_own?(new_owner)
+      task.errors.add 'owner', "Only owner or supervisor can change ownership" unless task.new_record? || task.modified_by.nil? || task.modified_by.can_change?(task) || task.modified_by == past_owner || (past_owner.nil? && task.modified_by == new_owner) || task.potential_owners == [new_owner]
+    end
+    if task.changed.include?('potential_owners')
+      task.potential_owners.each do |potential|
+        task.errors.add 'potential_owners', "Excluded owner #{potential.to_param} cannot be potential owner" if task.excluded_owner?(potential)
       end
     end
-  end
 
-  def stakeholders_before_add(sh)
-    super
-    case sh.role
-    when 'owner'
-      changed_attributes['owner'] ||= nil
-      errors.add :owner, "Excluded owner #{sh.person.to_param} cannot become task owner" if excluded_owner?(sh.person)
-      past_owner, new_owner = changes['owner']
-      errors.add :owner, "Only owner or supervisor can change ownership" unless
-        (modified_by && modified_by.can_change?(self)) || past_owner.nil? || modified_by == past_owner
-    when 'potential_owner'
-      errors.add :stakeholders, "Excluded owner #{sh.person.to_param} cannot be potential owner" if excluded_owner?(sh.person)
-      stakeholders_supervisor_check
-    when 'past_owner'
-    else
-      stakeholders_supervisor_check
-    end
-    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders) || errors.on(:owner)
-  end
-
-  def stakeholders_before_remove(sh)
-    super
-    if sh.role == 'owner'
-      errors.add :owner, "Only owner or supervisor can change ownership" unless modified_by && modified_by.can_delegate?(self)
-      changed_attributes['owner'] = sh.person
-    else
-      stakeholders_supervisor_check
-    end
-    raise ActiveRecord::RecordInvalid, self if errors.on(:stakeholders) || errors.on(:owner)
-  end
-
-  def stakeholders_supervisor_check
-    unless new_record? || (modified_by && modified_by.can_change?(self))
-      errors.add :stakeholders, "Only supervisor allowed to change stakeholders"
+    unless task.new_record? || (task.modified_by && task.modified_by.can_change?(task)) || (task.plural_roles & task.changed).empty?
+      task.errors.add 'stakeholders', "Only supervisor allowed to change stakeholders"
     end
   end
-  private :stakeholders_supervisor_check
 
-  before_save do |task|
-    past_owner, owner = task.changes['owner']
-    task.stakeholders.build :role=>'potential_owner', :person=>owner if owner && !task.potential_owner?(owner)
+  # Make changes to ownership (incl. potetial and past) that just make sense, but we need to do
+  # this post validation, e.g owner can change ownership but not have permission to change past
+  # owners list (only supervisor can mess with that).
+  after_validation do |task|
+    # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
+    unless task.owner
+      potential = task.potential_owners
+      task.owner = potential.first if potential.size == 1
+    end
+    # Likewise, owner should always appear as potential owner. Previous owner also listed as past_owner.
+    past_owner, new_owner = task.changes['owner']
+    task.stakeholders.build :role=>'potential_owner', :person=>new_owner if new_owner && !task.potential_owner?(new_owner)
     task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.past_owner?(past_owner)
   end
 
@@ -187,15 +164,9 @@ class Task < Base
 
   before_validation do |task|
     case task.status
-    when 'available'
-      # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
-      if !task.owner && (potential = task.potential_owners) && potential.size == 1
-        task.owner = potential.first
-      end
-      # Assigned task becomes active.
+    when 'available' # Assigned task becomes active.
       task.status = 'active' if task.owner
-    when 'active'
-      # Unassigned task becomes available.
+    when 'active' # Unassigned task becomes available.
       task.status = 'available' unless task.owner
     end
   end
