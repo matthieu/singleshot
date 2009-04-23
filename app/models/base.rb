@@ -110,7 +110,7 @@ class Base < ActiveRecord::Base
       singular = role.singularize
       if singular == role # singular role (creator, owner)
 
-        write_inheritable_attribute :singular_roles, Set.new(role) + (read_inheritable_attribute(:singular_roles) || [])
+        write_inheritable_attribute :singular_roles, (read_inheritable_attribute(:singular_roles) || Set.new) << role
         define_method(role) { in_role(role).first }
         define_method("#{role}?") { |identity| in_role?(role, identity) }
         define_method "#{role}=" do |identity|
@@ -123,7 +123,7 @@ class Base < ActiveRecord::Base
 
       else # plural role (potential_owners, supervisors)
 
-        write_inheritable_attribute :plural_roles, Set.new(role) + (read_inheritable_attribute(:plural_roles) || [])
+        write_inheritable_attribute :plural_roles, (read_inheritable_attribute(:plural_roles) || Set.new) << role
         define_method(role) { in_role(singular) }
         define_method("#{singular}?") { |identity| in_role?(singular, identity) }
         define_method "#{role}=" do |identities|
