@@ -138,12 +138,12 @@ class Task < Base
     end
   end
 
-  # Make changes to ownership (incl. potetial and past) that just make sense, but we need to do
-  # this post validation, e.g owner can change ownership but not have permission to change past
-  # owners list (only supervisor can mess with that).
-  after_validation_on_create do |task|
-    # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
-    unless task.owner
+  before_validation_on_create do |task|
+    if task.owner
+      # Owner should always be allowed as potential owner.
+      task.stakeholders.build :role=>'potential_owner', :person=>task.owner if !task.potential_owner?(task.owner)
+    else
+      # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
       potential = task.potential_owners
       task.owner = potential.first if potential.size == 1
     end
