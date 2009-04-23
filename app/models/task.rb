@@ -117,8 +117,15 @@ class Task < Base
   validate do |task|
     if task.changed.include?('owner')
       past_owner, new_owner = task.changes['owner']
-      task.errors.add 'owner', "Excluded owner #{new_owner.to_param} cannot become task owner" unless new_owner.nil? || task.can_own?(new_owner)
-      task.errors.add 'owner', "Only owner or supervisor can change ownership" unless task.new_record? || task.modified_by.nil? || task.modified_by.can_change?(task) || task.modified_by == past_owner || (past_owner.nil? && task.modified_by == new_owner) || task.potential_owners == [new_owner]
+      task.errors.add 'owner', "#{new_owner.to_param} cannot perform this task" if new_owner && !task.can_own?(new_owner)
+      if task.new_record? || task.modified_by.nil? || task.modified_by.can_change?(task)
+        # Anyone accepted as owner during task creation or when assigned by supervisor.
+      elsif task.modified_by == past_owner # Delegated by owner. Owner can delegate to anyone (incl. no one).
+      elsif task.modified_by == new_owner  # New owner claiming task.
+        task.errors.add 'owner', "You cannot claim task from someone else" if past_owner
+      else # Someone else trying to delegate class.
+        task.errors.add 'owner', "Only owner or supervisor can delegate task"
+      end
     end
     if task.changed.include?('potential_owners')
       task.potential_owners.each do |potential|
@@ -134,16 +141,19 @@ class Task < Base
   # Make changes to ownership (incl. potetial and past) that just make sense, but we need to do
   # this post validation, e.g owner can change ownership but not have permission to change past
   # owners list (only supervisor can mess with that).
-  after_validation do |task|
+  after_validation_on_create do |task|
     # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
     unless task.owner
       potential = task.potential_owners
       task.owner = potential.first if potential.size == 1
     end
+  end
+
+  after_validation_on_update do |task|
     # Likewise, owner should always appear as potential owner. Previous owner also listed as past_owner.
     past_owner, new_owner = task.changes['owner']
-    task.stakeholders.build :role=>'potential_owner', :person=>new_owner if new_owner && !task.potential_owner?(new_owner)
-    task.stakeholders.build :role=>'past_owner', :person=>past_owner if past_owner && !task.past_owner?(past_owner)
+    task.stakeholders.create :role=>'potential_owner', :person=>new_owner if new_owner && !task.potential_owner?(new_owner)
+    task.stakeholders.create :role=>'past_owner', :person=>past_owner if past_owner && !task.past_owner?(past_owner)
   end
 
 
@@ -163,10 +173,9 @@ class Task < Base
   STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
 
   before_validation do |task|
-    case task.status
-    when 'available' # Assigned task becomes active.
+    if task.available?
       task.status = 'active' if task.owner
-    when 'active' # Unassigned task becomes available.
+    elsif task.active?
       task.status = 'available' unless task.owner
     end
   end
@@ -179,39 +188,6 @@ class Task < Base
   # -- Activities --
 
   has_many :activities, :include=>[:task, :person], :order=>'activities.created_at desc', :dependent=>:delete_all
-
-  before_create do |task|
-    creator = task.creator
-    task.modified_by ||= creator
-    task.activities.build :name=>'created', :person=>creator  if creator
-    task.activities.build :name=>'claimed', :person=>task.owner if task.owner
-  end
-
-  before_update do |task|
-    past_owner, owner = task.changes['owner']
-    if owner
-      task.activities.build :name=>'delegated', :person=>task.modified_by  if task.modified_by && task.modified_by != owner
-      task.activities.build :name=>'claimed', :person=>owner
-    else
-      task.activities.build :name=>'released', :person=>past_owner
-    end
-
-    if task.status_changed?
-      case task.status
-      when 'active', 'available'
-        task.activities.build :name=>'resumed', :person=>task.modified_by if task.status_was == 'suspended' && task.modified_by
-      when 'suspended'
-        task.activities.build :name=>'suspended', :person=>task.modified_by if task.modified_by
-      when 'completed'
-        task.activities.build :name=>'completed', :person=>task.owner
-      when 'cancelled'
-        task.activities.build :name=>'cancelled', :person=>task.modified_by if task.modified_by
-      end
-    end
-  
-    changed = task.changed - ['status', 'owner']
-    task.activities.build :name=>'modified', :person=>task.modified_by unless changed.empty?
-  end
 
 
   # -- Access Control --

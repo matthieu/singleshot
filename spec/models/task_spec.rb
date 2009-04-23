@@ -74,7 +74,7 @@ describe Task do
 
     describe '#in_role?' do
       subject { Task.make.associate('supervisors'=>Person.named('foo', 'bar'), 'observers'=>Person.named('baz')) }
-      it('should identify all people in a given role') { [subject.in_role?('supervisors', 'foo'), subject.in_role?('find', 'bar'),
+      it('should identify all people in a given role') { [subject.in_role?('supervisors', 'foo'), subject.in_role?('supervisors', 'bar'),
                                                           subject.in_role?('observers', 'foo')].should == [true, true, false] }
       it('should return nil if no identity given')     { subject.in_role?('supervisors', nil).should be_false }
     end
@@ -115,7 +115,7 @@ describe Task do
 
       it('should not have more than one owner')       { lambda { Task.make.associate! 'owner'=>[subject, Person.owner] }.
                                                         should raise_error(ActiveRecord::RecordInvalid) }
-      it('should default to single potential owner')  { Task.make.tap { |t| t.associate!('potential_owner'=>subject) }.owner.should == subject }
+      it('should default to single potential owner')  { Task.make(:potential_owners=>[subject]).owner.should == subject }
       should_able_to_claim_task
       should_able_to_delegate_task
       should_not_able_to_suspend_task
@@ -223,7 +223,7 @@ describe Task do
       subject { Task.make_active }
 
       it('should be status for owned tasks')                    { subject.status.should == 'active' }
-      it { should change_status_to('available', "if no owner")  { Person.owner.tasks.find(subject).update_attributes :owner=>nil } }
+      it { should change_status_to('available', "if no owner")  { Person.owner.tasks.find(subject).update_attributes! :owner=>nil } }
       it { should_not change_status("with owner change")        { Person.owner.tasks.find(subject).update_attributes :owner=>Person.potential } }
       it { should change_status_to('suspended', "if suspended by supervisor") { Person.supervisor.tasks.find(subject).update_attributes :status=>'suspended' } }
       it { should_not change_status("unless suspended by supervisor")         { Person.owner.tasks.find(subject).update_attributes :status=>'suspended' } }
