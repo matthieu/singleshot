@@ -185,6 +185,11 @@ class Person < ActiveRecord::Base
 
   end
 
+  # task(5) same as tasks.find(5)
+  def task(*args)
+    tasks.find(*args)
+  end
+
   # -- Access control to task --
 
   # Returns true if this person can claim the task. Offered to potential owners and supervisors.

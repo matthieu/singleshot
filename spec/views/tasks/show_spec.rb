@@ -20,7 +20,7 @@ describe '/tasks/show' do
   before do
     @task = Task.make :title=>"Absence request", :description=>"Employee wants their leave of absence approved"
     template.stub!(:authenticated).and_return Person.observer
-    template.stub!(:task).and_return @task
+    template.stub!(:task).and_return { Task.find(@task) }
   end
   subject { render '/tasks/show' }
 
@@ -47,7 +47,7 @@ describe '/tasks/show' do
 
   describe 'to owner' do
     before do
-      @task.update_attributes! :owner=>Person.owner
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner
       template.stub!(:authenticated).and_return Person.owner
       render '/tasks/show'
     end
@@ -80,7 +80,7 @@ describe '/tasks/show' do
   
   describe 'with low priority task' do
     before do
-      @task.priority = 3
+      Person.supervisor.task(@task).update_attributes! :priority=>3
       render '/tasks/show'
     end
     
@@ -89,7 +89,7 @@ describe '/tasks/show' do
 
   describe 'with high priority task' do
     before do
-      @task.priority = 1
+      Person.supervisor.task(@task).update_attributes! :priority=>1
       render '/tasks/show'
     end
     
@@ -98,7 +98,7 @@ describe '/tasks/show' do
 
   describe 'with due on date' do
     before do
-      @task.due_on = Date.new(2009,4,19)
+      Person.supervisor.task(@task).update_attributes! :due_on=>Date.new(2009,4,19)
       render '/tasks/show'
     end
     
@@ -108,8 +108,8 @@ describe '/tasks/show' do
   
   describe 'activities' do
     before do
-      @task.update_attributes! :owner=>Person.owner
-      Person.supervisor.tasks.find(@task).update_attributes! :priority=>1
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner
+      Person.supervisor.task(@task).update_attributes! :priority=>1
       render '/tasks/show'
     end
     
@@ -121,7 +121,7 @@ describe '/tasks/show' do
   
   describe 'with no form' do
     before do
-      @task.update_attributes! :owner=>Person.owner, :form=>{}
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{}
       template.stub!(:authenticated).and_return Person.owner
       render '/tasks/show'
     end
@@ -132,7 +132,7 @@ describe '/tasks/show' do
   
   describe 'with form' do
     before do
-      @task.update_attributes! :owner=>Person.owner, :form=>{ :html=>'<input>'}
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{ :html=>'<input>' }
       assigns[:iframe_url] = 'http://localhost'
       render '/tasks/show'
     end
