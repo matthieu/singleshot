@@ -45,16 +45,34 @@ module Spec::Helpers #:nodoc:
       { :authenticated=>person.id }
     end
 
-    def json(entity = response.body)
+    def json(entity = nil)
+      unless entity
+        run_action!
+        entity = response.body
+      end
       ActiveSupport::JSON.decode(entity)
     end
 
-    def xml(entity = response.body)
+    def xml(entity = nil)
+      unless entity
+        run_action!
+        entity = response.body
+      end
       Hash.from_xml(entity)
     end
 
     def back
       "http://test.host/back"
+    end
+
+    # Expecting response with 201 Created and the specified location URL. For example:
+    #   should_respond_with_created 'http://localhost/new_resource'
+    #   should_respond_with_created { task_url(Task.last) }
+    def respond_with_created(url = nil, &block)
+      simple_matcher "respond with created #{url}" do |given|
+        run_action!
+        response.code == '201' && response['Location'] == (url || instance_eval(&block))
+      end
     end
 
   end

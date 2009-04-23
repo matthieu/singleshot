@@ -21,184 +21,252 @@ describe TasksController do
   controller_name :tasks
 
   should_route :get, '/tasks', :controller=>'tasks', :action=>'index'
-  should_route :post, '/tasks', :controller=>'tasks', :action=>'create'
-  should_route :get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1'
-  should_route :put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1'
-
-
-  describe 'GET /tasks' do
+  describe :get=>'index' do
     before do
-      Task.make :title=>'expenses' 
+      Task.make :title=>'Absence request'
       Task.make :title=>'TPS report'
     end
+    before { authenticate Person.owner }
 
-    describe '.html' do
-      before { request.accept = Mime::HTML }
-
-      it('should require authentication') { get :index ; should redirect_to(session_url) }
-      it('should render tasks')           { authenticate Person.creator ; get :index ; should render_template('tasks/index.html.erb') }
-      it('should render tasks for authenticated person')  { rendering.proxy_owner.should == Person.creator }
-      it('should render pending tasks')                   { rendering.proxy_scope.proxy_options.should == Task.pending.proxy_options }
-      it('should load tasks with stakeholders')           { rendering.proxy_options.should == Task.with_stakeholders.proxy_options }
+    share_examples_for 'index' do
+      should_assign_to(:tasks) { Task.all }
+      it('should render tasks for authenticated person')  { tasks.proxy_owner.should == Person.owner }
+      it('should render pending tasks')                   { tasks.proxy_scope.proxy_options.should == Task.pending.proxy_options }
+      it('should load tasks with stakeholders')           { tasks.proxy_options.should == Task.with_stakeholders.proxy_options }
     end
 
-    describe '.json' do
-      before { request.accept = Mime::JSON }
+    describe Mime::HTML do
+      it_should_behave_like 'index'
+      should_render_template 'tasks/index.html.erb'
+      should_render_with_layout 'main'
 
-      it('should require authentication') { get :index ; should respond_with(401) }
-      it('should render tasks')           { authenticate Person.creator ; get :index ; json.should include('task_list') }
-      it('should render tasks for authenticated person')  { rendering.proxy_owner.should == Person.creator }
-      it('should render pending tasks')                   { rendering.proxy_scope.proxy_options.should == Task.pending.proxy_options }
-      it('should load tasks with stakeholders')           { rendering.proxy_options.should == Task.with_stakeholders.proxy_options }
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
     end
 
-    describe '.xml' do
-      before { request.accept = Mime::XML }
+    describe Mime::JSON do
+      it_should_behave_like 'index'
+      should_respond_with_content_type Mime::JSON
+      it('should render task_list object') { json.should include('task_list') }
 
-      it('should require authentication') { get :index ; should respond_with(401) }
-      it('should render tasks')           { authenticate Person.creator ; get :index ; xml.should include('task_list') }
-      it('should render tasks for authenticated person')  { rendering.proxy_owner.should == Person.creator }
-      it('should render pending tasks')                   { rendering.proxy_scope.proxy_options.should == Task.pending.proxy_options }
-      it('should load tasks with stakeholders')           { rendering.proxy_options.should == Task.with_stakeholders.proxy_options }
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
     end
 
-    describe '.atom'
-    describe '.ical'
+    describe Mime::XML do
+      it_should_behave_like 'index'
+      should_respond_with_content_type Mime::XML
+      it('should render task_list element') { xml.should include('task_list') }
 
-    def rendering
-      controller.should_receive(:presenting) { |sym, tasks| @rendering = tasks }
-      authenticate Person.creator
-      get :index
-      @rendering
-    end
-  end
-
-
-  describe 'POST /tasks' do
-    before { rescue_action_in_public! }
-    before { authenticate Person.creator }
-    before { @params = { 'task'=>{ 'title'=>'expenses' } } }
-
-    describe '.html' do
-      before { request.accept = Mime::HTML }
-
-      it('should require authentication')               { authenticate nil ; post :create, @params ; should redirect_to(session_url) }
-      it('should verify parameters include task')       { post :create, nil ; should respond_with(400) }
-      it('should require task to have a title')         { post :create, 'task'=>{} ; should respond_with(422) }
-      it('should redirect back to task list')           { post :create, @params ; should redirect_to(tasks_url) }
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
     end
 
-    describe '.json' do
-      before { request.accept = Mime::JSON }
-
-      it('should require authentication')               { authenticate nil ; post :create, @params ; should respond_with(401) }
-      it('should verify parameters include task')       { post :create, nil ; should respond_with(400) }
-      it('should require task to have a title')         { post :create, 'task'=>{} ; should respond_with(422) }
-      it('should return status 201 Created')            { post :create, @params ; should respond_with(201) }
-      it('should return location of new task')          { post :create, @params ; response.location.should == task_url(Task.last) }
-      it('should render new task')                      { post :create, @params ; json.should include('task') }
+    describe Mime::ATOM do # TODO: describe /tasks.atom
     end
-
-    describe '.xml' do
-      before { request.accept = Mime::XML }
-
-      it('should require authentication')               { authenticate nil ; post :create, @params ; should respond_with(401) }
-      it('should verify parameters include task')       { post :create, nil ; should respond_with(400) }
-      it('should require task to have a title')         { post :create, 'task'=>{} ; should respond_with(422) }
-      it('should return status 201 Created')            { post :create, @params ; should respond_with(201) }
-      it('should return location of new task')          { post :create, @params ; response.location.should == task_url(Task.last) }
-      it('should render new task')                      { post :create, @params ; xml.should include('task') }
-    end
-
-    it('should create new task from request entity')          { new_task!.title.should == 'expenses' }
-    it('should set task creator to authenticated person')     { new_task!.creator.should == Person.creator }
-    it('should set task supervisor to authenticated person')  { new_task!.supervisors.first.should == Person.creator }
-    it('should accept owner through accessor')                { new_task!('owner'=>Person.owner.to_param)
-                                                                Task.last.owner.should == Person.owner }
-    it('should accept stakeholders through accessors')        { new_task!('observers'=>[Person.observer.to_param])
-                                                                Task.last.observers.should == [Person.observer] }
-
-    def new_task!(attributes = {})
-      attributes['title'] ||= 'expenses'
-      request.accept = Mime::HTML
-      post :create, 'task'=>attributes
-      fail response.status unless response.code =~ /(200|201|303)/
-      Task.last
-    end
-  end
-
-
-  describe 'GET /tasks/{id}' do
-    before { rescue_action_in_public! }
-    before do
-      @task = Task.make(:title=>'expenses')
-      @params = { 'id'=>@task.id }
-    end
-
-    describe '.html' do
-      before { request.accept = Mime::HTML }
-
-      it('should require authentication')     { get :show, @params ; should redirect_to(session_url) }
-      it('should reject unauthorized access') { authenticate Person.other ; get :show, @params ; should respond_with(404) }
-      it('should render task')                { authenticate Person.creator ; get :show, @params ; should render_template('tasks/show.html.erb') }
-    end
-
-    describe '.json' do
-      before { request.accept = Mime::JSON }
-
-      it('should require authentication')     { get :show, @params ; should respond_with(401) }
-      it('should reject unauthorized access') { authenticate Person.other ; get :show, @params ; should respond_with(404) }
-      it('should render task')                { authenticate Person.creator ; get :show, @params ; json['task']['title'].should == 'expenses' }
-    end
-
-    describe '.xml' do
-      before { request.accept = Mime::XML }
-
-      it('should require authentication')     { get :show, @params ; should respond_with(401) }
-      it('should reject unauthorized access') { authenticate Person.other ; get :show, @params ; should respond_with(404) }
-      it('should render task')                { authenticate Person.creator ; get :show, @params ; xml['task']['title'].should == 'expenses' }
+    describe Mime::ICS do  # TODO: describe /tasks.ics
     end
 
   end
 
 
-  describe 'PUT /tasks/{id}' do
-    before { rescue_action_in_public! }
-    before do
-      @task = Task.make(:title=>'expenses')
-      @params = { 'id'=>@task.id, 'task'=>{ 'priority' => 1 } }
+  should_route :post, '/tasks', :controller=>'tasks', :action=>'create'
+  describe :post=>'create' do
+    before { authenticate Person.owner }
+    params 'task'=>{ 'title'=>'TPS Report' }
+
+    share_examples_for 'create' do
+      should_assign_to(:task) { Task.last }
+      should_have_task 'TPS Report', 'creator'=>lambda { Person.owner }, 'owner'=>lambda { Person.owner },
+                       'supervisors'=>lambda { [Person.owner] }
+
+      describe '(no task title)' do
+        params 'task'=>{}
+        should_respond_with 422
+      end
     end
+
+    describe Mime::HTML do
+      it_should_behave_like 'create'
+      should_redirect_to { tasks_url }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
+    end
+
+    describe Mime::JSON do
+      it_should_behave_like 'create'
+      should_respond_with_created { task_url(Task.last) }
+      should_respond_with_content_type Mime::JSON
+      it('should render task object') { json.should include('task') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+    describe Mime::XML do
+      it_should_behave_like 'create'
+      should_respond_with_created { task_url(Task.last) }
+      should_respond_with_content_type Mime::XML
+      it('should render task element') { xml.should include('task') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+  end
+
+
+  should_route :get, '/tasks/1', :controller=>'tasks', :action=>'show', :id=>'1'
+  describe :get=>'show', :id=>89 do
+    before { @task = Task.make(:id=>89, :title=>'TPS Report') }
+    before { authenticate Person.owner }
+
+    share_examples_for 'show' do
+      should_assign_to(:task) { @task }
+
+      describe '(inaccessible)' do
+        before { authenticate Person.other }
+        should_respond_with 404
+      end
+    end
+
+    describe Mime::HTML do
+      it_should_behave_like 'show'
+      should_render_template 'tasks/show.html.erb'
+      should_render_without_layout
+
+      describe '(without form)' do
+        should_not_assign_to :iframe_url
+      end
+
+      describe '(with form URL)' do
+        before { @task.create_form :url=>'http://localhost/form' }
+        before { @task.update_attributes! :form=>{ :url=>'http://localhost/form' } }
+        should_assign_to :iframe_url, :with=>'http://localhost/form'
+      end
+
+      describe '(with form)' do
+        before { @task.update_attributes! :form=>{ :html=>'<input>' } }
+        should_assign_to(:iframe_url) { form_url(89) }
+      end
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
+    end
+
+    describe Mime::JSON do
+      it_should_behave_like 'show'
+      should_respond_with_content_type Mime::JSON
+      it('should render task object') { json.should include('task') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+    describe Mime::XML do
+      it_should_behave_like 'show'
+      should_respond_with_content_type Mime::XML
+      it('should render task element') { xml.should include('task') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+  end
+
+
+  should_route :put, '/tasks/1', :controller=>'tasks', :action=>'update', :id=>'1'
+  describe :put=>'update', :id=>89 do
+    before { @task = Task.make(:id=>89, :title=>'TPS Report') }
     before { authenticate Person.supervisor }
+    params 'task'=>{ 'priority'=>1 }
 
-    describe '.html' do
-      before { request.accept = Mime::HTML }
+    share_examples_for 'update' do
+      should_assign_to(:task) { @task }
+      should_have_task 'TPS Report', :priority=>1
 
-      it('should require authentication')         { authenticate nil ; put :update, @params ; should redirect_to(session_url) }
-      it('should reject unauthorized access')     { authenticate Person.other ; put :update, @params ; should respond_with(404) }
-      it('should verify parameters include task') { put :update, 'id'=>@task.id ; should respond_with(400) }
-      it('should redirect back to task list')     { put :update, @params ; should redirect_to(back) }
+      describe '(inaccessible)' do
+        before { authenticate Person.other }
+        should_respond_with 404
+      end
+
+      describe '(unauthorized)' do
+        before { authenticate Person.owner }
+        should_respond_with 401
+      end
     end
 
-    describe '.json' do
-      before { request.accept = Mime::JSON }
+    describe Mime::HTML do
+      it_should_behave_like 'update'
+      # should_redirect_to 
 
-      it('should require authentication')         { authenticate nil ;put :update, @params ; should respond_with(401) }
-      it('should reject unauthorized access')     { authenticate Person.other ; put :update, @params ; should respond_with(404) }
-      it('should verify parameters include task') { put :update, 'id'=>@task.id ; should respond_with(400) }
-      it('should render task')                    { put :update, @params ; json['task']['title'].should == 'expenses' }
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
     end
 
-    describe '.xml' do
-      before { request.accept = Mime::XML }
+    describe Mime::JSON do
+      it_should_behave_like 'update'
+      should_respond_with_content_type Mime::JSON
+      it('should render task object') { json.should include('task') }
 
-      it('should require authentication')         { authenticate nil ; put :update, @params ; should respond_with(401) }
-      it('should reject unauthorized access')     { authenticate Person.other ; put :update, @params ; should respond_with(404) }
-      it('should verify parameters include task') { put :update, 'id'=>@task.id ; should respond_with(400) }
-      it('should render task')                    { put :update, @params ; xml['task']['title'].should == 'expenses' }
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
     end
 
-    it 'should modify task' do
-      lambda { put :update, @params }.should change { Task.find(@task).priority }.to(1)
+    describe Mime::XML do
+      it_should_behave_like 'update'
+      should_respond_with_content_type Mime::XML
+      it('should render task element') { xml.should include('task') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+  end
+
+
+  # Runs action and returns controller's task list. Used in index specs.
+  def tasks
+    run_action!
+    assigns[:tasks]
+  end
+
+  # Expecting to have the titled task with the specified attributes. For example:
+  #   should_have_task 'TPS Report'
+  #   should_have_task 'TPS Report', :status=>'available'
+  def have_task(*args)
+    attrs = args.extract_options!
+    title = attrs.delete('title') || args.shift
+    with = attrs.inject({}) { |h, (k,v)| h.update(k=>v.respond_to?(:call) ? :proc : v) }
+    simple_matcher "have task '#{title}' #{with.inspect}" do |given|
+      run_action!
+      task = Task.find_by_title(title)
+      task && attrs.all? { |k,v| task.send(k) == v.respond_to?(:call) ? v.call : v }
     end
   end
 

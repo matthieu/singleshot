@@ -22,7 +22,18 @@ class TasksController < ApplicationController #:nodoc:
 
   def index
     @tasks = authenticated.tasks.pending.with_stakeholders
-    respond_with presenting(:task_list, @tasks), :action=>'index', :to=>[:html, :json, :xml, :atom], :layout=>'main'
+    respond_to do |wants|
+      wants.html do
+        # TODO: Add activity and sidebar
+        render :layout=>'main'
+      end
+      wants.any { respond_with presenting(:task_list, @tasks), :to=>[:html, :json, :xml, :atom] }
+    end
+  end
+
+  def new
+    @task = Template.find(params['from'])
+    show
   end
 
   def create
@@ -35,17 +46,21 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def show
-    if task.form && !task.form.url.blank?
-	    @iframe_url = task.form.url
-	  elsif task.form && !task.form.html.blank?
-		  @iframe_url = form_url(task)
-		end
-    respond_with presenter, :action=>'show', :layout=>false
+    respond_to do |wants|
+      wants.html do
+        if task.form && !task.form.url.blank?
+          @iframe_url = task.form.url
+        elsif task.form && !task.form.html.blank?
+          @iframe_url = form_url(task)
+        end
+        render :layout=>false
+      end
+      wants.any  { respond_with presenter }
+    end
   end
 
-  verify :only=>[:update], :unless=>lambda { authenticated.can_update?(task) },
-    :render=>{ :text=>'You are not authorized to change this task', :status=>:unauthorized }
   def update
+    return render :text=>'You are not authorized to change this task', :status=>:unauthorized unless authenticated.can_change?(task)
     presenter.update! params['task']
     respond_to do |wants|
       wants.html do
@@ -55,11 +70,13 @@ class TasksController < ApplicationController #:nodoc:
     end
   end
 
+=begin
   def completed
     @tasks = authenticated.tasks.completed.with_stakeholders
     @datapoints = lambda { authenticated.tasks.completed.group_by { |task| task.updated_at.to_date }.map { |date, entries| entries.size } }
     respond_with presenting(:task_list, @tasks), :action=>'completed', :to=>[:html, :json, :xml, :atom]
   end
+=end
 
 protected
 
@@ -70,7 +87,7 @@ protected
 
   def sidebar
     { :activity=>Activity.visible_to(authenticated).all(:limit=>5),
-      :templates=>[] }
+      :templates=>Template.all }
   end
 
   def presenter
