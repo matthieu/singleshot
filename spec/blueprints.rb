@@ -116,5 +116,5 @@ end
 
 Template.blueprint do
   title             { 'Spec me' }
-  #potential_owners  { [Person.owner, Person.potential_owner] }
+  potential_owners  { [Person.owner, Person.potential] }
 end

@@ -14,21 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class Template < Base
-  attr_readonly :due_on, :start_on, :status
-
-  def initialize(*args, &block)
-    super
-    self[:status] = 'template'
-  end
-
-  # These stakeholders are used when transforming template to task.
-  stakeholders 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
-
-  validates_inclusion_of :status, :in=>'template' # Make sure we don't accidentally have a Task status.
-
-  named_scope :visible_to, lambda { |person| {
-    :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
-    :conditions=>{ 'involved.person_id'=>person, 'involved.role'=>'potential_owner' } } }
-
+Given /^the template$/ do |template|
+  Template.create! YAML.load(template)
 end
+

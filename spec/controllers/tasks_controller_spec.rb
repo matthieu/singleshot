@@ -275,6 +275,41 @@ describe TasksController do
   end
 
 
+  should_route :get, '/tasks/new', :controller=>'tasks', :action=>'new'
+  describe :get=>'new', :from=>55 do
+    before { @template = Template.make(:id=>55, :title=>'TPS Report') }
+    before { authenticate Person.owner }
+
+    should_assign_to(:task) { @template }
+    should_render_template 'tasks/show.html.erb'
+
+    describe '(without form)' do
+      should_not_assign_to :iframe_url
+    end
+
+    describe '(with form URL)' do
+      before { @template.create_form :url=>'http://localhost/form' }
+      before { @template.update_attributes! :form=>{ :url=>'http://localhost/form' } }
+      should_assign_to :iframe_url, :with=>'http://localhost/form'
+    end
+
+    describe '(with form)' do
+      before { @template.update_attributes! :form=>{ :html=>'<input>' } }
+      should_assign_to(:iframe_url) { form_url(55) }
+    end
+
+    describe '(unauthenticated)' do
+      before { authenticate nil }
+      should_redirect_to { session_url }
+    end
+
+    describe '(inaccessible)' do
+      before { authenticate Person.other }
+      should_respond_with 404
+    end
+
+  end
+
   # Expecting to have the titled task with the specified attributes. For example:
   #   should_have_task 'TPS Report'
   #   should_have_task 'TPS Report', :status=>'available'

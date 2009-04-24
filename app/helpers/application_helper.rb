@@ -17,6 +17,8 @@
 # Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
 
+  Sidebar = Struct.new(:activities, :templates)
+
   # Renders bar sparkline. First argument are data points, second argument are options:
   # * title -- Title to show when hovering over element
   def bar_sparkline(datum, options = {})

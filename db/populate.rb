@@ -87,6 +87,9 @@ class Populate < ActiveRecord::Migration
     advance
     new_task! :supervisor=>@me
     @me.tasks.last.update_attributes! :status=>'cancelled'
+
+    Template.create! :title=>'Absence request', :description=>'Request leave of absence',
+      :potential_owners=>[@me], :form=>{ :html=>"<input type='text' name='data[date]'>" }
   end
 
   def self.down

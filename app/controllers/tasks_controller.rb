@@ -33,7 +33,7 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def new
-    @task = Template.find(params['from'])
+    @task = authenticated.templates.find(params['from'])
     show
   end
 
@@ -54,7 +54,7 @@ class TasksController < ApplicationController #:nodoc:
         elsif task.form && !task.form.html.blank?
           @iframe_url = form_url(task)
         end
-        render :layout=>false
+        render :action=>'show', :layout=>false
       end
       wants.any  { respond_with presenter }
     end
