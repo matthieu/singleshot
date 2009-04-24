@@ -43,19 +43,21 @@ describe Activity do
   should_be_readonly
   should_have_named_scope :since, :with=>2009, :conditions=>['activities.created_at >= ?', 2009]
   should_have_named_scope :visible_to, :with=>'john', :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
-                               :conditions=>{ 'involved.person_id'=>'john' }, :group=>'activities.id'
+                               :conditions=>['involved.person_id = ?', 'john']
+  should_have_default_scope :include=>[:person, :task], :order=>'activities.created_at desc', :group=>'activities.id'
+
+  def have_default_scope(options)
+    simple_matcher "have default scope #{options.inspect}" do |given|
+      p given.class.class_eval { scope(:find) }
+      scope = given.class.class_eval { scope(:find) }
+      options.all? { |k, v| scope[k] == v }
+    end
+  end
 
   describe '#date' do
     subject { Activity.make }
 
     it('should return created_at as date') { subject.date.should == subject.created_at.to_date }
-  end
-
-  describe 'default scope' do
-    subject { Activity.class_eval { scope(:find) } }
-
-    it('should return activities by reverse chronological order') { subject[:order].should == 'activities.created_at desc' }
-    it('should only affect selection order') { subject.except(:order).should be_empty }
   end
 
   describe 'datapoints' do

@@ -52,7 +52,7 @@ class Activity < ActiveRecord::Base
   end
 
   # Returns activities by recently added order.
-  default_scope :include=>[:person, :task], :order=>'activities.created_at desc'
+  default_scope :include=>[:person, :task], :order=>'activities.created_at desc', :group=>'activities.id'
 
   # Return activities created since a given date.
   named_scope :since, lambda { |date| { :conditions=>['activities.created_at >= ?', date] } } do
