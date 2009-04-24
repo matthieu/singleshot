@@ -190,6 +190,9 @@ class Person < ActiveRecord::Base
     tasks.find(*args)
   end
 
+  has_many :templates, :through=>:stakeholders, :uniq=>true # TODO: spec me
+
+
   # -- Access control to task --
 
   # Returns true if this person can claim the task. Offered to potential owners and supervisors.

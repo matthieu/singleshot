@@ -52,6 +52,7 @@ class Stakeholder < ActiveRecord::Base
 
   # Stakeholder associated with a task.
   belongs_to :task
+  belongs_to :template, :foreign_key=>'task_id' # TODO: spec me
 
   # Stakeholder associated with a person.
   belongs_to :person

@@ -148,9 +148,4 @@ class Base < ActiveRecord::Base
     changed_attributes[role] ||= __send__(role)
   end
 
-
-  def template?
-    false
-  end
-
 end

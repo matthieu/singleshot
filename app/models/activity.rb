@@ -52,7 +52,7 @@ class Activity < ActiveRecord::Base
   end
 
   # Returns activities by recently added order.
-  default_scope :order=>'activities.created_at desc'
+  default_scope :include=>[:person, :task], :order=>'activities.created_at desc'
 
   # Return activities created since a given date.
   named_scope :since, lambda { |date| { :conditions=>['activities.created_at >= ?', date] } } do
@@ -64,10 +64,12 @@ class Activity < ActiveRecord::Base
     end
   end
 
+  # TODO: spec these tw
   named_scope :visible_to, lambda { |person| {
     :joins=>'JOIN stakeholders AS involved ON involved.task_id=activities.task_id',
-    :conditions=>{ 'involved.person_id'=>person }, :group=>'activities.id'
-  } }
+    :conditions=>['involved.person_id = ?', person] } }
+  
+  named_scope :limit, lambda { |count| { :limit=>count } }
 
   # TODO: test this!
   after_save do |activity|

@@ -281,17 +281,6 @@ class Task < Base
 
   # --- Finders and named scopes ---
 
-  # Pending tasks are:
-  # - Active tasks owned by the person
-  # - Ready tasks that can be claimed by the person
-  named_scope :pending, :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
-    :conditions=>["(tasks.status = 'ready' AND involved.role = 'potential') OR (tasks.status = 'active' AND involved.role = 'owner')"],
-    :extend=>RankingMethods
-
-  named_scope :completed, lambda { |end_date|
-    { :conditions=>["tasks.status = 'completed' AND tasks.updated_at >= ?", end_date || Date.current - 7.days],
-      :order=>'tasks.updated_at DESC' } }
-
   named_scope :following, lambda { |end_date|
     { :conditions=>["tasks.updated_at >= ?", end_date || Date.current - 7.days],
       :order=>'tasks.updated_at DESC' } }

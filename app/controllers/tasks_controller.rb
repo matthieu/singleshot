@@ -24,7 +24,8 @@ class TasksController < ApplicationController #:nodoc:
     @tasks = authenticated.tasks.pending.with_stakeholders
     respond_to do |wants|
       wants.html do
-        # TODO: Add activity and sidebar
+        @activities = Activity.visible_to(authenticated).since(Date.today - 1.week).limit(5)
+        @templates = authenticated.templates
         render :layout=>'main'
       end
       wants.any { respond_with presenting(:task_list, @tasks), :to=>[:html, :json, :xml, :atom] }
@@ -86,8 +87,7 @@ protected
   end
 
   def sidebar
-    { :activity=>Activity.visible_to(authenticated).all(:limit=>5),
-      :templates=>Template.all }
+    ApplicationHelper::Sidebar.new @activities, @templates
   end
 
   def presenter

@@ -25,20 +25,45 @@ describe TasksController do
     before do
       Task.make :title=>'Absence request'
       Task.make :title=>'TPS report'
+      Template.make :title=>'Expense report', :potential_owners=>[Person.owner]
+      Template.make :title=>'Budget report'
     end
     before { authenticate Person.owner }
 
     share_examples_for 'index' do
-      should_assign_to(:tasks) { Task.all }
-      it('should render tasks for authenticated person')  { tasks.proxy_owner.should == Person.owner }
-      it('should render pending tasks')                   { tasks.proxy_scope.proxy_options.should == Task.pending.proxy_options }
-      it('should load tasks with stakeholders')           { tasks.proxy_options.should == Task.with_stakeholders.proxy_options }
+      should_assign_to :tasks
+
+      describe 'tasks' do
+        subject { run_action! ; assigns[:tasks].scope(:find) }
+
+        it('should include only visible tasks')         { subject[:conditions].should =~ /`stakeholders`.person_id = #{Person.owner.id}/ }
+        it('should include active tasks')               { subject[:conditions].should =~ /tasks.status = 'active' AND involved.role = 'owner'/ }
+        it('should include available tasks')            { subject[:conditions].should =~ /tasks.status = 'available' AND involved.role = 'potential_owner'/ }
+        it('should eager load stakeholders and people') { subject[:include].should include(:stakeholders=>:person) }
+      end
     end
 
     describe Mime::HTML do
       it_should_behave_like 'index'
       should_render_template 'tasks/index.html.erb'
       should_render_with_layout 'main'
+
+      should_assign_to :activities
+      should_assign_to :templates
+
+      describe 'sidebar activities' do
+        subject { run_action! ; assigns[:activities].scope(:find) }
+        it('should include only last 7 days')           { subject[:conditions].should =~ /activities.created_at >= '#{Date.today - 7.days}'/ }
+        it('should include only visible activities')    { subject[:conditions].should =~ /involved.person_id = #{Person.owner.id}/ }
+        it('should include at most 5 activities')       { subject[:limit].should == 5 }
+        it('should eager load people and tasks')        { subject[:include].should include(:person, :task) }
+        it('should order from most recent to earliest') { subject[:order].should =~ /activities.created_at desc/ }
+      end
+
+      describe 'sidebar templates' do
+        subject { run_action! ; assigns[:templates].scope(:find) }
+        it('should include only visible activities')    { subject[:conditions].should =~ /`stakeholders`.person_id = #{Person.owner.id}/ }
+      end
 
       describe '(unauthenticated)' do
         before { authenticate nil }
@@ -249,12 +274,6 @@ describe TasksController do
 
   end
 
-
-  # Runs action and returns controller's task list. Used in index specs.
-  def tasks
-    run_action!
-    assigns[:tasks]
-  end
 
   # Expecting to have the titled task with the specified attributes. For example:
   #   should_have_task 'TPS Report'
