@@ -21,6 +21,13 @@ class FormsController < ApplicationController #:nodoc:
   def show
   end
 
+  def create
+    args = task.to_hash.merge(:data=>params['data'], :owner=>authenticated)
+    @task = authenticated.tasks.create!(args)
+    @task.update_attributes! :status=>'completed' if params['status'] == 'compeleted'
+    render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(task_url(@task))}')</script>"
+  end
+
   def update
     task.update_attributes! :status=>params['status'] || task.status, :data=>params['data']
     if task.completed? || task.cancelled?
@@ -34,7 +41,7 @@ private
 
   helper_method :task
   def task
-    @task ||= authenticated.tasks.find(params[:id], :include=>:stakeholders)
+    @task ||= authenticated.tasks.find(params['id']) rescue authenticated.templates.find(params['id'])
   end
 
 end

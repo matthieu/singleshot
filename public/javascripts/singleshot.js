@@ -63,7 +63,7 @@ var Singleshot = {
 
   populateForm: function(form, data, prefix) {
     var form = $(form);
-    prefix = prefix || 'task'
+    prefix = prefix || 'data';
     for (key in data) {
       var value = data[key];
       var input = form.find('input[name=' + prefix + '[' + key + ']]');

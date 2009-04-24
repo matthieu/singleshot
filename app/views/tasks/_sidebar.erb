@@ -19,7 +19,7 @@
       <ol class='templates'>
         <% sidebar.templates.each do |template| %>
           <% content_tag_for 'li', template do %>
-            <%= link_to template.title, new_task_url(:from=>template.id), :title=>template.description %>
+            <%= link_to template.title, template_url(template), :title=>template.description %>
           <% end %>
         <% end %>
       </ol>

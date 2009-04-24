@@ -1,0 +1,2 @@
+class TemplatePresenter < TaskPresenter
+end
