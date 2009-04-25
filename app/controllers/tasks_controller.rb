@@ -56,13 +56,16 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def update
-    return render :text=>'You are not authorized to change this task', :status=>:unauthorized unless authenticated.can_change?(task)
-    presenter.update! params['task']
-    respond_to do |wants|
-      wants.html do
-        redirect_to((task.completed? || task.cancelled?) ? tasks_url : :back)
+    if authenticated.can_change?(task)
+      presenter.update! params['task']
+      respond_to do |wants|
+        wants.html do
+          redirect_to((task.completed? || task.cancelled?) ? tasks_url : :back)
+        end
+        wants.any  { respond_with presenter }
       end
-      wants.any  { respond_with presenter }
+    else
+      render :text=>'You are not authorized to change this task', :status=>:unauthorized
     end
   end
 

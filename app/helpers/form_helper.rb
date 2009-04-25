@@ -17,6 +17,7 @@
 # Methods added to this helper will be available to all templates in the application.
 module FormHelper
 
+  # Wraps form_tag to work properly for either task or template.
   def form(task_or_template, &block)
     if task_or_template.type == 'Template'
       form_tag forms_url(:id=>task_or_template), :method=>:post, :id=>'task', :class=>'enabled', &block

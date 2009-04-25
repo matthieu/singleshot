@@ -38,6 +38,11 @@ en:
       save:
         button:   "Save"
         hint:     "Save & continue"
+  templates:
+    show:
+      title:      "Singleshot &mdash; {{title}}"
+      back:       "Back to your task list"
+      more:       "See more task details (description, priority, etc)"
   sessions:
     errors:
       nomatch:  "No account with this user name and password."
@@ -88,6 +93,9 @@ en:
       done:
         button:   "Done"
         title:    "Complete task"
+  person:
+    link:
+      title:      "{{fullname}}'s profile"
   activity:
     show:
       title: "Activities"

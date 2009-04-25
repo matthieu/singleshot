@@ -14,6 +14,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-module ActivityHelper
+require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+
+describe ApplicationHelper do
+  include ApplicationHelper
+
+  describe 'link_to_person' do
+    subject { link_to_person mock_model(Person, :url=>'http://test.host/john', :fullname=>'John Smith') }
+it 'foo' do
+  p subject rescue p $!
+end
+    should_have_tag 'a.url[href=http://test.host/john]'
+    should_have_tag 'a.fn', 'John Smith'
+    should_have_tag 'a[title=John Smith\'s profile]'
+  end
 
 end
