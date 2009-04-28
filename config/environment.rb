@@ -56,5 +56,5 @@ Rails::Initializer.run do |config|
   config.active_record.schema_format = :sql
   config.active_record.partial_updates = true
 
-  config.active_record.observers = :activity_observer
+  config.active_record.observers = []
 end

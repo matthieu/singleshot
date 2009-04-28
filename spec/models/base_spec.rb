@@ -72,4 +72,25 @@ share_examples_for Base do
   should_not_have_attribute :modified_by
   it('should have accessor modified_by') { subject.methods.should include('modified_by', 'modified_by=') }
 
+
+  # -- Activity --
+  
+  should_have_many :activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at DESC'
+  should_not_allow_mass_assignment_of :activities
+
+
+  # Expecting a new activity to show up after yielding to block, matching record, person and name.
+  # For example:
+  #   it { should log_activity(Person.owner, 'completed') { Person.owner.tasks(id).update_attributes :status=>'completed' } }
+  def log_activity(person, name)
+    simple_matcher "log activity '#{person.to_param} #{name}'" do |given, matcher|
+      if block_given?
+        Activity.delete_all
+        yield
+      end
+      activities = Activity.all
+      matcher.failure_message = "expecting activity \"#{person.to_param} #{name} #{given.title}\" but got #{activities.empty? ? 'nothing' : activities.map(&:name).to_sentence.inspect} instead"
+      activities.any? { |activity| activity.task == given && activity.person == person && activity.name == name }
+    end
+  end
 end

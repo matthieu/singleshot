@@ -180,11 +180,6 @@ class Task < Base
   end
 
 
-  # -- Activities --
-
-  has_many :activities, :include=>[:task, :person], :order=>'activities.created_at desc', :dependent=>:delete_all
-
-
   # -- Access Control --
 
   # The person creating/updating this task.
@@ -226,6 +221,46 @@ class Task < Base
       end
     end
   end
+
+
+  # -- Activity --
+
+  after_create do |task|
+    creator = task.creator
+    task.modified_by ||= creator
+    task.log! creator, 'task.created' if creator
+    task.log! task.owner, 'task.claimed' if task.owner
+  end
+
+  before_update do |task|
+    changed = task.changed
+    if changed.delete('owner')
+      past_owner, owner = task.changes['owner']
+      if owner
+        task.log! task.modified_by, 'task.delegated' if task.modified_by && task.modified_by != owner
+        task.log! owner, 'task.claimed' 
+      else
+        task.log! past_owner, 'task.released' 
+      end
+      changed.delete('past_owners')
+    end
+
+    if changed.delete('status')
+      case task.status
+      when 'active', 'available'
+        task.log! task.modified_by, 'task.resumed' if task.status_was == 'suspended' && task.modified_by
+      when 'suspended'
+        task.log! task.modified_by, 'task.suspended' if task.modified_by
+      when 'completed'
+        task.log! task.owner, 'task.completed' 
+      when 'cancelled'
+        task.log! task.modified_by, 'task.cancelled'  if task.modified_by
+      end
+    end
+  
+    task.log! task.modified_by, 'task.modified' unless changed.empty? || task.modified_by.nil?
+  end
+
 
 
   # Locking column used for versioning and detecting update conflicts.
@@ -275,13 +310,6 @@ class Task < Base
 
 
   # --- Finders and named scopes ---
-
-  named_scope :following, lambda { |end_date|
-    { :conditions=>["tasks.updated_at >= ?", end_date || Date.current - 7.days],
-      :order=>'tasks.updated_at DESC' } }
-
-  named_scope :visible, :conditions=>["tasks.status != 'reserved'"]
-
 =end
 
   named_scope :pending, :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',

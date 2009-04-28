@@ -25,13 +25,6 @@ class Template < Base
   # These stakeholders are used when transforming template to task.
   stakeholders 'creator', 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
 
-  # Allowed statuses:
-  # - enabled   -- Template can be used to create new tasks (default).
-  # - disabled  -- Template cannot be used to create new tasks.
-  statuses 'enabled', 'disabled'
-  
-  default_scope :order=>'title ASC'
-
   def can_update?(person) # Test is person can update template.
     supervisor?(person)
   end
@@ -40,6 +33,12 @@ class Template < Base
     supervisor?(person)
   end
 
+  # Allowed statuses:
+  # - enabled   -- Template can be used to create new tasks (default).
+  # - disabled  -- Template cannot be used to create new tasks.
+  statuses 'enabled', 'disabled'
+  
+  default_scope :order=>'title ASC'
   # Scope templates that should be listed for a person (the potential owner).
   named_scope :listed_for, lambda { |person| {
     :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
@@ -49,4 +48,25 @@ class Template < Base
     :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
     :conditions=>["involved.person_id = ? AND involved.role != 'excluded_owner'", person] } }
 
+
+  after_create do |template|
+    creator = template.creator
+    template.modified_by ||= creator
+    template.log! creator, 'template.created' if creator
+  end
+
+  before_update do |template|
+    if template.modified_by
+      changed = template.changed
+      if changed.delete('status')
+        case template.status
+        when 'enabled'
+          template.log! template.modified_by, 'template.enabled'
+        when 'disabled'
+          template.log! template.modified_by, 'template.disabled' 
+        end
+      end
+      template.log! template.modified_by, 'template.modified'  unless changed.empty?
+    end
+  end
 end

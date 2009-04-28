@@ -204,4 +204,19 @@ class Base < ActiveRecord::Base
     end
   end 
   
+
+  # -- Activity --
+
+  has_many :activities, :include=>[:task, :person], :foreign_key=>'task_id', :order=>'activities.created_at DESC',  :dependent=>:delete_all
+
+  # Log activity associated with this record. For example:
+  #   task.log! owner, 'task.created'
+  def log!(person, name)
+    if new_record?
+      activities.build :person=>person, :name=>name
+    else
+      activities.create :person=>person, :name=>name
+    end
+  end
+
 end

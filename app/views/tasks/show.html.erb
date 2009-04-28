@@ -11,7 +11,7 @@
   <ol class='activities'>
     <% instance.activities.each do |activity| %>
       <li class='activity'>
-        <span class='title'><%= t "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>t('.this') %></span>
+        <span class='title'><%= t "activity.#{activity.name}", :person=>link_to_person(activity.person), :task=>t('.this') %></span>
         <span class='created'><%= time_ago_in_words activity.created_at %></span>
       </li>
     <% end %>

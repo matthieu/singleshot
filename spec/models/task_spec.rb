@@ -282,9 +282,6 @@ describe Task do
 
   # -- Activity --
   
-  should_have_many :activities, :include=>[:task, :person], :dependent=>:delete_all, :order=>'activities.created_at desc'
-  should_not_allow_mass_assignment_of :activities
-
   describe 'newly created' do
     subject { Person.creator.tasks.create!(:title=>'foo') }
 
@@ -292,7 +289,7 @@ describe Task do
     it('should have creator')                     { subject.creator.should == Person.creator }
     it('should have creator as supervisor')       { subject.supervisors.should == [Person.creator] }
     it('should have no owner')                    { subject.owner.should be_nil }
-    should_log_activity Person.creator, 'created'
+    should_log_activity Person.creator, 'task.created'
   end
 
   describe 'created and delegated' do
@@ -301,8 +298,8 @@ describe Task do
     should_be_active
     it('should have creator') { subject.creator.should == Person.creator }
     it('should have owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.creator, 'created'
-    should_log_activity Person.owner, 'claimed'
+    should_log_activity Person.creator, 'task.created'
+    should_log_activity Person.owner, 'task.claimed'
   end
 
   describe 'owner claiming' do
@@ -314,7 +311,7 @@ describe Task do
 
     should_be_active
     it('should have owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.owner, 'claimed'
+    should_log_activity Person.owner, 'task.claimed'
   end
 
   describe 'owner delegating' do
@@ -326,8 +323,8 @@ describe Task do
 
     should_be_active
     it('should have new owner') { subject.owner.should == Person.potential }
-    should_log_activity Person.owner, 'delegated'
-    should_log_activity Person.potential, 'claimed'
+    should_log_activity Person.owner, 'task.delegated'
+    should_log_activity Person.potential, 'task.claimed'
   end
 
   describe 'supervisor delegating' do
@@ -339,8 +336,8 @@ describe Task do
 
     should_be_active
     it('should have new owner') { subject.owner.should == Person.potential }
-    should_log_activity Person.supervisor, 'delegated'
-    should_log_activity Person.potential, 'claimed'
+    should_log_activity Person.supervisor, 'task.delegated'
+    should_log_activity Person.potential, 'task.claimed'
   end
 
   describe 'owner releasing' do
@@ -352,7 +349,7 @@ describe Task do
 
     should_be_available
     it('should have no owner') { subject.owner.should be_nil }
-    should_log_activity Person.owner, 'released'
+    should_log_activity Person.owner, 'task.released'
   end
 
   describe 'supervisor suspending' do
@@ -364,7 +361,7 @@ describe Task do
 
     should_be_suspended
     it('should retain owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.supervisor, 'suspended'
+    should_log_activity Person.supervisor, 'task.suspended'
   end
 
   describe 'supervisor resuming' do
@@ -377,7 +374,7 @@ describe Task do
 
     should_be_active
     it('should retain owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.supervisor, 'resumed'
+    should_log_activity Person.supervisor, 'task.resumed'
   end
 
   describe 'supervisor cancelling' do
@@ -389,7 +386,7 @@ describe Task do
 
     should_be_cancelled
     it('should retain owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.supervisor, 'cancelled'
+    should_log_activity Person.supervisor, 'task.cancelled'
   end
 
   describe 'owner completing' do
@@ -401,7 +398,7 @@ describe Task do
 
     should_be_completed
     it('should retain owner') { subject.owner.should == Person.owner }
-    should_log_activity Person.owner, 'completed'
+    should_log_activity Person.owner, 'task.completed'
   end
 
   describe 'supervisor modifying' do
@@ -411,7 +408,7 @@ describe Task do
       subject.reload
     end
 
-    should_log_activity Person.supervisor, 'modified'
+    should_log_activity Person.supervisor, 'task.modified'
   end
 
 
@@ -592,22 +589,6 @@ describe Task do
         fail if subject.can_change?(Task.make_active)
         changed == attrs
       end
-    end
-  end
-
-
-  # Expecting a new activity to show up after yielding to block, matching task (subject), person and name.
-  # For example:
-  #   it { should log_activity(Person.owner, 'completed') { Person.owner.tasks(id).update_attributes :status=>'completed' } }
-  def log_activity(person, name)
-    simple_matcher "log activity '#{person.to_param} #{name}'" do |given, matcher|
-      if block_given?
-        Activity.delete_all
-        yield
-      end
-      activities = Activity.all
-      matcher.failure_message = "expecting activity \"#{person.to_param} #{name} #{given.title}\" but got #{activities.empty? ? 'nothing' : activities.map(&:name).to_sentence.inspect} instead"
-      activities.any? { |activity| activity.task == given && activity.person == person && activity.name == name }
     end
   end
 
