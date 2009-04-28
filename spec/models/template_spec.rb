@@ -45,10 +45,37 @@ describe Template do
   subject { Template.make }
 
   should_be_kind_of Template
-  should_allow_mass_assignment_of :title, :description, :language, :priority, :form, :data, :webhooks
-  should_allow_mass_assignment_of :supervisors, :potential_owners, :excluded_owners, :observers
-  should_not_allow_mass_assignment_of :due_on, :start_on, :stakeholders, :owner, :creator, :past_owners, :status
+  should_allow_mass_assignment_of :title, :description, :language, :status, :priority, :form, :data, :webhooks
+  should_allow_mass_assignment_of :creator, :supervisors, :potential_owners, :excluded_owners, :observers
+  should_not_allow_mass_assignment_of :due_on, :start_on, :stakeholders, :owner, :past_owners
+  should_have_readonly_attribute :creator
 
-  it("should use the status 'template'") { subject.status.should == 'template' }
-  
+  should_validate_inclusion_of :status, :in=>['enabled', 'disabled']
+  it('should default status to enabled') { subject.status.should == 'enabled' }
+
+  should_have_named_scope :listed_for, :with=>'edward', :joins=>"JOIN stakeholders AS involved ON involved.task_id=tasks.id",
+    :conditions=>["involved.person_id = ? AND involved.role = 'potential_owner' AND status = 'enabled'", 'edward']
+  should_have_named_scope :accessible_to, :with=>'edward', :joins=>"JOIN stakeholders AS involved ON involved.task_id=tasks.id",
+    :conditions=>["involved.person_id = ? AND involved.role != 'excluded_owner'", 'edward']
+  should_have_default_scope :order=>'title ASC'
+
+  describe 'newly created' do
+    subject { Person.creator.templates.create!(:title=>'foo') }
+
+    should_be_enabled
+    it('should have creator')                     { subject.creator.should == Person.creator }
+    it('should have creator as supervisor')       { subject.supervisors.should == [Person.creator] }
+  end
+
+  describe 'can_update?' do
+    it('should allow supervisor to update template')          { subject.can_update?(Person.supervisor).should be_true }
+    it('should not allow creator to update template')         { subject.can_update?(Person.creator).should be_false }
+    it('should not allow potential owner to update template') { subject.can_update?(Person.potential).should be_false }
+  end
+
+  describe 'can_destroy?' do
+    it('should allow supervisor to destroy template')          { subject.can_update?(Person.supervisor).should be_true }
+    it('should not allow creator to destroy template')         { subject.can_update?(Person.creator).should be_false }
+    it('should not allow potential owner to destroy template') { subject.can_update?(Person.potential).should be_false }
+  end
 end

@@ -19,7 +19,21 @@ class Base < ActiveRecord::Base
 
   attr_accessible :priority
   validates_inclusion_of :priority, :in=>PRIORITY
-  
+
+
+  # -- Status --
+
+  attr_accessible :status
+  validates_presence_of :status
+
+  # Check method for each status (active?, completed?, etc).
+  # Use this to declare which statuses are available for this model. It validates inclusion
+  # and also defines check methods (e.g. active?, enabled?)
+  def self.statuses(*names)
+    names.each { |status| define_method("#{status}?") { self.status == status } }
+    validates_inclusion_of :status, :in=>names
+  end
+
 
   # -- Data and meta-data --
 
@@ -55,7 +69,7 @@ class Base < ActiveRecord::Base
   end
   alias_method_chain :webhooks=, :hash_mapping
 
-  #
+  
   # -- Stakeholders --
 
   # Stakeholders and people (as stakeholders) associated with this task.
@@ -148,4 +162,46 @@ class Base < ActiveRecord::Base
     changed_attributes[role] ||= __send__(role)
   end
 
+
+  # -- Access control --
+
+  # The person creating/updating this object.
+  attr_accessor :modified_by
+
+  module ModifiedByOwner
+    # Initialize the object on behalf of its creator. For example:
+    #   creator = Person.find(authenticated)
+    #   creator.tasks.new(attributes)
+    def new(attributes = {}, &block)
+      proxy_reflection.klass.new attributes do |object|
+        yield object if block_given?
+        object.stakeholders.build :role=>'creator', :person=>proxy_owner unless object.creator
+        object.stakeholders.build :role=>'supervisor', :person=>proxy_owner if object.supervisors.empty?
+      end
+    end
+
+    # Create the object on behalf of its creator. For example:
+    #   creator = Person.find(authenticated)
+    #   creator.tasks.create(attributes)
+    def create(attributes = {}, &block)
+      self.new(attributes, &block).tap(&:save)
+    end
+
+    # Similar to #create but throws RecordNotSaved if it fails to create a new record.
+    def create!(attributes = {}, &block)
+      self.new(attributes, &block).tap(&:save!)
+    end
+    
+    # Use this to find object and update it on behalf of this person. For example:
+    #   task = owner.tasks.find(task_id)
+    #   task.update_attributes :status=>'completed'
+    def find(*args)
+      super.tap do |found|
+        Array(found).each do |object|
+          object.modified_by = proxy_owner
+        end
+      end
+    end
+  end 
+  
 end

@@ -165,12 +165,7 @@ class Task < Base
   # * suspended -- Task is suspended.
   # * completed -- Task has completed.
   # * cancelled -- Task was cancelled.
-  STATUSES = ['available', 'active', 'suspended', 'completed', 'cancelled']
-
-  validates_inclusion_of :status, :in=>STATUSES
-
-  # Check method for each status (active?, completed?, etc).
-  STATUSES.each { |status| define_method("#{status}?") { self.status == status } }
+  statuses 'available', 'active', 'suspended', 'completed', 'cancelled'
 
   before_validation do |task|
     if task.available?

@@ -19,16 +19,34 @@ class Template < Base
 
   def initialize(*args, &block)
     super
-    self[:status] = 'template'
+    self[:status] = 'enabled'
   end
 
   # These stakeholders are used when transforming template to task.
-  stakeholders 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
+  stakeholders 'creator', 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
 
-  validates_inclusion_of :status, :in=>'template' # Make sure we don't accidentally have a Task status.
+  # Allowed statuses:
+  # - enabled   -- Template can be used to create new tasks (default).
+  # - disabled  -- Template cannot be used to create new tasks.
+  statuses 'enabled', 'disabled'
+  
+  default_scope :order=>'title ASC'
 
-  named_scope :visible_to, lambda { |person| {
+  def can_update?(person) # Test is person can update template.
+    supervisor?(person)
+  end
+
+  def can_destroy?(person) # Test is person can destroy template.
+    supervisor?(person)
+  end
+
+  # Scope templates that should be listed for a person (the potential owner).
+  named_scope :listed_for, lambda { |person| {
     :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
-    :conditions=>{ 'involved.person_id'=>person, 'involved.role'=>'potential_owner' } } }
+    :conditions=>["involved.person_id = ? AND involved.role = 'potential_owner' AND status = 'enabled'", person] } }
+  # Scope templates that should be visible to a person (anyone but potential owner).
+  named_scope :accessible_to, lambda { |person| {
+    :joins=>'JOIN stakeholders AS involved ON involved.task_id=tasks.id',
+    :conditions=>["involved.person_id = ? AND involved.role != 'excluded_owner'", person] } }
 
 end

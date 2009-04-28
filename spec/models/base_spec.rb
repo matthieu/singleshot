@@ -40,6 +40,14 @@ share_examples_for Base do
   should_validate_inclusion_of :priority, :in=>1..3
 
 
+  # -- Status --
+
+  should_have_attribute :status
+  should_have_column :status, :type=>:string
+  should_validate_presence_of :status
+  should_allow_mass_assignment_of :status
+
+
   # -- Presentation --
 
   should_have_one :form, :dependent=>:delete
@@ -57,5 +65,11 @@ share_examples_for Base do
   it('should have empty hash as default data')  { subject.data.should == {} }
   it('should allowing assigning nil to data')   { subject.data = nil ; should have(:no).error_on(:data) }
   it('should validate data is a hash')          { subject.data = 'string' ; should have(1).error_on(:data) }
+
+
+  # -- Access control --
+
+  should_not_have_attribute :modified_by
+  it('should have accessor modified_by') { subject.methods.should include('modified_by', 'modified_by=') }
 
 end

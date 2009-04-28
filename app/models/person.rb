@@ -147,50 +147,14 @@ class Person < ActiveRecord::Base
 
   has_many :activities, :dependent=>:delete_all
   has_many :stakeholders, :dependent=>:delete_all
-  has_many :tasks, :through=>:stakeholders, :uniq=>true do
-
-    # Initialize the task on behalf of its creator. For example:
-    #   creator = Person.find(authenticated)
-    #   creator.tasks.new(attributes)
-    def new(attributes = {}, &block)
-      Task.new attributes do |task|
-        yield task if block_given?
-        task.stakeholders.build :role=>'creator', :person=>proxy_owner unless task.creator
-        task.stakeholders.build :role=>'supervisor', :person=>proxy_owner if task.supervisors.empty?
-      end
-    end
-
-    # Create the task on behalf of its creator. For example:
-    #   creator = Person.find(authenticated)
-    #   creator.tasks.create(attributes)
-    def create(attributes = {}, &block)
-      self.new(attributes, &block).tap(&:save)
-    end
-
-    # Similar to #create but throws RecordNotSaved if it fails to create a new record.
-    def create!(attributes = {}, &block)
-      self.new(attributes, &block).tap(&:save!)
-    end
-    
-    # Use this to find a task and update it on behalf of this person. For example:
-    #   task = owner.tasks.find(task_id)
-    #   task.update_attributes :status=>'completed'
-    def find(*args)
-      super.tap do |found|
-        Array(found).each do |task|
-          task.modified_by = proxy_owner
-        end
-      end
-    end
-
-  end
+  has_many :tasks, :through=>:stakeholders, :uniq=>true, :extend=>::Base::ModifiedByOwner
 
   # task(5) same as tasks.find(5)
   def task(*args)
     tasks.find(*args)
   end
 
-  has_many :templates, :through=>:stakeholders, :uniq=>true # TODO: spec me
+  has_many :templates, :through=>:stakeholders, :uniq=>true, :extend=>::Base::ModifiedByOwner
 
 
   # -- Access control to task --

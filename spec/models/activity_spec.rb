@@ -46,14 +46,6 @@ describe Activity do
                                :conditions=>['involved.person_id = ?', 'john']
   should_have_default_scope :include=>[:person, :task], :order=>'activities.created_at desc', :group=>'activities.id'
 
-  def have_default_scope(options)
-    simple_matcher "have default scope #{options.inspect}" do |given|
-      p given.class.class_eval { scope(:find) }
-      scope = given.class.class_eval { scope(:find) }
-      options.all? { |k, v| scope[k] == v }
-    end
-  end
-
   describe '#date' do
     subject { Activity.make }
 

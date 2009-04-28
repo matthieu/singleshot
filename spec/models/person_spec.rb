@@ -125,6 +125,7 @@ describe Person do
     end
   end
 
+  # TODO: this needs to be generalized, as it now applies to both tasks and templates
   describe '.tasks' do
 
     describe '.create' do

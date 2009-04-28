@@ -116,5 +116,7 @@ end
 
 Template.blueprint do
   title             { 'Spec me' }
+  creator           { Person.creator }
+  supervisors       { [Person.supervisor] }
   potential_owners  { [Person.owner, Person.potential] }
 end
