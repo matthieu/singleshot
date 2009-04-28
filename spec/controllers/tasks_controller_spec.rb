@@ -18,7 +18,6 @@ require File.dirname(__FILE__) + '/helpers'
 
 
 describe TasksController do
-  controller_name :tasks
 
   should_route :get, '/tasks', :controller=>'tasks', :action=>'index'
   describe :get=>'index' do

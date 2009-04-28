@@ -16,24 +16,62 @@
 
 class TemplatesController < ApplicationController #:nodoc:
 
+  respond_to :html, :json, :xml
+
   def show
     respond_to do |wants|
       wants.html do
-        if task.form && !task.form.url.blank?
-          @iframe_url = task.form.url
-        elsif task.form && !task.form.html.blank?
-          @iframe_url = form_url(task)
+        if instance.form && !instance.form.url.blank?
+          @iframe_url = instance.form.url
+        elsif instance.form && !instance.form.html.blank?
+          @iframe_url = form_url(instance)
         end
         render :layout=>'single'
       end
     end
   end
 
-protected
-
-  helper_method :task
-  def task
-    @task ||= authenticated.templates.find(params['id'])
+  def create
+    @instance = authenticated.templates.new
+    presenter.update! params['template']
+    respond_to do |wants|
+      wants.html { redirect_to templates_url, :status=>:see_other }
+      wants.any  { respond_with presenter, :status=>:created, :location=>instance }
+    end
+  end
+  
+  def update
+    if instance.can_update?(authenticated)
+      presenter.update! params['template']
+      respond_to do |wants|
+        wants.html { redirect_to template_url(instance) }
+        wants.any  { respond_with presenter }
+      end 
+    else
+      render :text=>'You are not authorized to change this task', :status=>:unauthorized
+    end
   end
 
+  def destroy
+    if instance.can_destroy?(authenticated)
+      instance.destroy
+      respond_to do |wants|
+        wants.html { redirect_to templates_url }
+        wants.any  { head :ok }
+      end 
+    else
+      render :text=>'You are not authorized to change this task', :status=>:unauthorized
+    end
+  end
+
+protected
+
+  helper_method :instance
+  def instance
+    @instance ||= authenticated.templates.find(params['id'])
+  end
+
+  def presenter
+    @presenter ||= presenting(instance)
+  end
 end

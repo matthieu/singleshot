@@ -10,9 +10,8 @@ class TaskPresenter < Presenter::Base
       webhooks = [webhooks.first] unless Array === webhooks
       attrs['webhooks'] = webhooks.map { |attr| Webhook.new attr }
     end
-    # TODO: should take over access control validation, no?
-    task.modified_by = authenticated
-    task.update_attributes! attrs
+    object.modified_by = authenticated
+    object.update_attributes! attrs
   end
 
   def to_hash
