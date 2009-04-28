@@ -1,15 +1,15 @@
 <% content_for :actions do %>
-  <%= button_to t('task.actions.claim.button'), task_url(task, 'task[owner]'=>authenticated), :title=>t('task.actions.claim.title') if authenticated.can_claim?(task) %>
-  <%= button_to t('task.actions.done.button'), task_url(task, 'task[status]'=>'completed'), :title=>t('task.actions.done.title') if !@iframe_url && authenticated.can_complete?(task) %>
-  <%= button_to t('task.actions.cancel.button'), task_url(task, 'task[status]'=>'cancelled'), :confirm=>t('task.actions.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(task) %>
+  <%= button_to t('.claim.button'), task_url(instance, 'task[owner]'=>authenticated), :title=>t('.claim.title') if authenticated.can_claim?(instance) %>
+  <%= button_to t('.done.button'), task_url(instance, 'task[status]'=>'completed'), :title=>t('.done.title') if !@iframe_url && authenticated.can_complete?(instance) %>
+  <%= button_to t('.cancel.button'), task_url(instance, 'task[status]'=>'cancelled'), :confirm=>t('.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(instance) %>
 <% end %>
 <% content_for :dropdown do %>
   <ul class='meta'>
-    <%= content_tag 'li', t("task.priority.#{task.priority}"), :class=>"priority priority-#{task.priority}" %>
-    <%= content_tag 'li', t('.due_on', :date=>l(task.due_on, :format=>:long)), :class=>'due_on' if task.due_on %>
+    <%= content_tag 'li', t("task.priority.#{instance.priority}"), :class=>"priority priority-#{instance.priority}" %>
+    <%= content_tag 'li', t('.due_on', :date=>l(instance.due_on, :format=>:long)), :class=>'due_on' if instance.due_on %>
   </ul>
   <ol class='activities'>
-    <% task.activities.each do |activity| %>
+    <% instance.activities.each do |activity| %>
       <li class='activity'>
         <span class='title'><%= t "activity.expanded.#{activity.name}", :person=>link_to_person(activity.person), :task=>t('.this') %></span>
         <span class='created'><%= time_ago_in_words activity.created_at %></span>

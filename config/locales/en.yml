@@ -18,11 +18,18 @@ en:
   # Views
   tasks:
     show:
-      title:      "Singleshot &mdash; {{title}}"
-      back:       "Back to your task list"
       due_on:     "Due on {{date}}"
       this:       "this task"
-      more:       "See more task details (description, priority, activity)"
+      claim:
+        button:   "Claim"
+        title:    "Claim task"
+      cancel:
+        button:   "Cancel"
+        title:    "Cancel task"
+        confirm:  "Are you sure?"
+      done:
+        button:   "Done"
+        title:    "Complete task"
     sidebar:
       activity:
         heading:  "Activity"
@@ -76,23 +83,18 @@ en:
       logout:
         link:     "Logout"
         hint:     ""
+    single:
+      title:      "Singleshot &mdash; {{title}}"
+      back:       "Back to your task list"
+      due_on:     "Due on {{date}}"
+      this:       "this task"
+      more:       "See more task details (description, priority, activity)"
   # Everything else.
   task:
     priority:
       "1":        "High priority"
       "2":        "Normal priority"
       "3":        "Low priority"
-    actions:
-      claim:
-        button:   "Claim"
-        title:    "Claim task"
-      cancel:
-        button:   "Cancel"
-        title:    "Cancel task"
-        confirm: "Are you sure?"
-      done:
-        button:   "Done"
-        title:    "Complete task"
   person:
     link:
       title:      "{{fullname}}'s profile"

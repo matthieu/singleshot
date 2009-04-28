@@ -18,7 +18,6 @@ class TasksController < ApplicationController #:nodoc:
 
   respond_to :html, :json, :xml
   verify :params=>:task, :only=>[:create, :update], :render=>{:text=>'Missing task', :status=>:bad_request}
-  before_filter :task, :only=>[:show, :update]
 
   def index
     @tasks = authenticated.tasks.pending.with_stakeholders
@@ -33,21 +32,21 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def create
-    @task = authenticated.tasks.new
+    @instance = authenticated.tasks.new
     presenter.update! params['task']
     respond_to do |wants|
       wants.html { redirect_to tasks_url, :status=>:see_other }
-      wants.any  { respond_with presenter, :status=>:created, :location=>@task }
+      wants.any  { respond_with presenter, :status=>:created, :location=>instance }
     end
   end
 
   def show
     respond_to do |wants|
       wants.html do
-        if task.form && !task.form.url.blank?
-          @iframe_url = task.form.url
-        elsif task.form && !task.form.html.blank?
-          @iframe_url = form_url(task)
+        if instance.form && !instance.form.url.blank?
+          @iframe_url = instance.form.url
+        elsif instance.form && !instance.form.html.blank?
+          @iframe_url = form_url(instance)
         end
         render :layout=>'single'
       end
@@ -56,11 +55,11 @@ class TasksController < ApplicationController #:nodoc:
   end
 
   def update
-    if authenticated.can_change?(task)
+    if authenticated.can_change?(instance)
       presenter.update! params['task']
       respond_to do |wants|
         wants.html do
-          redirect_to((task.completed? || task.cancelled?) ? tasks_url : :back)
+          redirect_to((instance.completed? || instance.cancelled?) ? tasks_url : :back)
         end
         wants.any  { respond_with presenter }
       end
@@ -79,9 +78,9 @@ class TasksController < ApplicationController #:nodoc:
 
 protected
 
-  helper_method :task
-  def task
-    @task ||= authenticated.tasks.find(params['id'])
+  helper_method :instance
+  def instance
+    @instance ||= authenticated.tasks.find(params['id'])
   end
 
   def sidebar
@@ -89,7 +88,7 @@ protected
   end
 
   def presenter
-    @presenter ||= presenting(task)
+    @presenter ||= presenting(instance)
   end
 
 end

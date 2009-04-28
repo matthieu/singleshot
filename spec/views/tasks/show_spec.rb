@@ -20,9 +20,9 @@ describe '/tasks/show' do
   before do
     @task = Task.make :title=>"Absence request", :description=>"Employee wants their leave of absence approved"
     template.stub!(:authenticated).and_return Person.observer
-    template.stub!(:task).and_return { Task.find(@task) }
+    template.stub!(:instance).and_return { Task.find(@task) }
   end
-  subject { render '/tasks/show' }
+  subject { render '/tasks/show', :layout=>'single' }
 
 
   should_have_tag 'title', "Singleshot &mdash; Absence request"
@@ -49,7 +49,7 @@ describe '/tasks/show' do
     before do
       Person.owner.task(@task).update_attributes! :owner=>Person.owner
       template.stub!(:authenticated).and_return Person.owner
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
 
     should_have_tag '#details ol.activities li', /Owner is owner of this task/
@@ -60,7 +60,7 @@ describe '/tasks/show' do
   describe 'to potential owner' do
     before do
       template.stub!(:authenticated).and_return Person.owner
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
 
     should_have_tag '#header ol.sections li.actions form input[value=Claim]'
@@ -71,7 +71,7 @@ describe '/tasks/show' do
   describe 'to supervisor' do
     before do
       template.stub!(:authenticated).and_return Person.supervisor
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
 
     should_have_tag '#header ol.sections li.actions form input[value=Cancel]'
@@ -81,7 +81,7 @@ describe '/tasks/show' do
   describe 'with low priority task' do
     before do
       Person.supervisor.task(@task).update_attributes! :priority=>3
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_have_tag '#details ul.meta li.priority', "Low priority"
@@ -90,7 +90,7 @@ describe '/tasks/show' do
   describe 'with high priority task' do
     before do
       Person.supervisor.task(@task).update_attributes! :priority=>1
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_have_tag '#details ul.meta li.priority', "High priority"
@@ -99,7 +99,7 @@ describe '/tasks/show' do
   describe 'with due on date' do
     before do
       Person.supervisor.task(@task).update_attributes! :due_on=>Date.new(2009,4,19)
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_have_tag '#details ul.meta li.due_on', "Due on April 19, 2009"
@@ -110,7 +110,7 @@ describe '/tasks/show' do
     before do
       Person.owner.task(@task).update_attributes! :owner=>Person.owner
       Person.supervisor.task(@task).update_attributes! :priority=>1
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_have_tag '#details ol.activities', /Creator created this task/
@@ -123,7 +123,7 @@ describe '/tasks/show' do
     before do
       Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{}
       template.stub!(:authenticated).and_return Person.owner
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_not_have_tag 'iframe'
@@ -134,7 +134,7 @@ describe '/tasks/show' do
     before do
       Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{ :html=>'<input>' }
       assigns[:iframe_url] = 'http://localhost'
-      render '/tasks/show'
+      render '/tasks/show', :layout=>'single'
     end
     
     should_have_tag 'iframe#frame[noresize][src=http://localhost]'

@@ -29,7 +29,7 @@ describe TasksController do
     end
     before { authenticate Person.owner }
 
-    share_examples_for 'index' do
+    share_examples_for 'task.index' do
       should_assign_to :tasks
 
       describe 'tasks' do
@@ -43,7 +43,7 @@ describe TasksController do
     end
 
     describe Mime::HTML do
-      it_should_behave_like 'index'
+      it_should_behave_like 'task.index'
       should_render_template 'tasks/index.html.erb'
       should_render_with_layout 'main'
 
@@ -71,7 +71,7 @@ describe TasksController do
     end
 
     describe Mime::JSON do
-      it_should_behave_like 'index'
+      it_should_behave_like 'task.index'
       should_respond_with_content_type Mime::JSON
       it('should render task_list object') { json.should include('task_list') }
 
@@ -82,7 +82,7 @@ describe TasksController do
     end
 
     describe Mime::XML do
-      it_should_behave_like 'index'
+      it_should_behave_like 'task.index'
       should_respond_with_content_type Mime::XML
       it('should render task_list element') { xml.should include('task_list') }
 
@@ -105,8 +105,8 @@ describe TasksController do
     before { authenticate Person.owner }
     params 'task'=>{ 'title'=>'TPS Report' }
 
-    share_examples_for 'create' do
-      should_assign_to(:task) { Task.last }
+    share_examples_for 'task.create' do
+      should_assign_to(:instance) { Task.last }
       should_have_task 'TPS Report', 'creator'=>lambda { Person.owner }, 'owner'=>lambda { Person.owner },
                        'supervisors'=>lambda { [Person.owner] }
 
@@ -117,7 +117,7 @@ describe TasksController do
     end
 
     describe Mime::HTML do
-      it_should_behave_like 'create'
+      it_should_behave_like 'task.create'
       should_redirect_to { tasks_url }
 
       describe '(unauthenticated)' do
@@ -127,7 +127,7 @@ describe TasksController do
     end
 
     describe Mime::JSON do
-      it_should_behave_like 'create'
+      it_should_behave_like 'task.create'
       should_respond_with_created { task_url(Task.last) }
       should_respond_with_content_type Mime::JSON
       it('should render task object') { json.should include('task') }
@@ -139,7 +139,7 @@ describe TasksController do
     end
 
     describe Mime::XML do
-      it_should_behave_like 'create'
+      it_should_behave_like 'task.create'
       should_respond_with_created { task_url(Task.last) }
       should_respond_with_content_type Mime::XML
       it('should render task element') { xml.should include('task') }
@@ -158,8 +158,8 @@ describe TasksController do
     before { @task = Task.make(:id=>89, :title=>'TPS Report') }
     before { authenticate Person.owner }
 
-    share_examples_for 'show' do
-      should_assign_to(:task) { @task }
+    share_examples_for 'task.show' do
+      should_assign_to(:instance) { @task }
 
       describe '(inaccessible)' do
         before { authenticate Person.other }
@@ -168,9 +168,9 @@ describe TasksController do
     end
 
     describe Mime::HTML do
-      it_should_behave_like 'show'
+      it_should_behave_like 'task.show'
       should_render_template 'tasks/show.html.erb'
-      should_render_without_layout
+      should_render_with_layout 'single'
 
       describe '(without form)' do
         should_not_assign_to :iframe_url
@@ -194,7 +194,7 @@ describe TasksController do
     end
 
     describe Mime::JSON do
-      it_should_behave_like 'show'
+      it_should_behave_like 'task.show'
       should_respond_with_content_type Mime::JSON
       it('should render task object') { json.should include('task') }
 
@@ -205,7 +205,7 @@ describe TasksController do
     end
 
     describe Mime::XML do
-      it_should_behave_like 'show'
+      it_should_behave_like 'task.show'
       should_respond_with_content_type Mime::XML
       it('should render task element') { xml.should include('task') }
 
@@ -224,8 +224,8 @@ describe TasksController do
     before { authenticate Person.supervisor }
     params 'task'=>{ 'priority'=>1 }
 
-    share_examples_for 'update' do
-      should_assign_to(:task) { @task }
+    share_examples_for 'task.update' do
+      should_assign_to(:instance) { @task }
       should_have_task 'TPS Report', :priority=>1
 
       describe '(inaccessible)' do
@@ -240,7 +240,7 @@ describe TasksController do
     end
 
     describe Mime::HTML do
-      it_should_behave_like 'update'
+      it_should_behave_like 'task.update'
       # should_redirect_to 
 
       describe '(unauthenticated)' do
@@ -250,7 +250,7 @@ describe TasksController do
     end
 
     describe Mime::JSON do
-      it_should_behave_like 'update'
+      it_should_behave_like 'task.update'
       should_respond_with_content_type Mime::JSON
       it('should render task object') { json.should include('task') }
 
@@ -261,7 +261,7 @@ describe TasksController do
     end
 
     describe Mime::XML do
-      it_should_behave_like 'update'
+      it_should_behave_like 'task.update'
       should_respond_with_content_type Mime::XML
       it('should render task element') { xml.should include('task') }
 
@@ -273,41 +273,6 @@ describe TasksController do
 
   end
 
-
-  should_route :get, '/tasks/new', :controller=>'tasks', :action=>'new'
-  describe :get=>'new', :from=>55 do
-    before { @template = Template.make(:id=>55, :title=>'TPS Report') }
-    before { authenticate Person.owner }
-
-    should_assign_to(:task) { @template }
-    should_render_template 'tasks/show.html.erb'
-
-    describe '(without form)' do
-      should_not_assign_to :iframe_url
-    end
-
-    describe '(with form URL)' do
-      before { @template.create_form :url=>'http://localhost/form' }
-      before { @template.update_attributes! :form=>{ :url=>'http://localhost/form' } }
-      should_assign_to :iframe_url, :with=>'http://localhost/form'
-    end
-
-    describe '(with form)' do
-      before { @template.update_attributes! :form=>{ :html=>'<input>' } }
-      should_assign_to(:iframe_url) { form_url(55) }
-    end
-
-    describe '(unauthenticated)' do
-      before { authenticate nil }
-      should_redirect_to { session_url }
-    end
-
-    describe '(inaccessible)' do
-      before { authenticate Person.other }
-      should_respond_with 404
-    end
-
-  end
 
   # Expecting to have the titled task with the specified attributes. For example:
   #   should_have_task 'TPS Report'

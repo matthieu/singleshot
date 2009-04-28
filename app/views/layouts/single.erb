@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title><%= t('.title', :title=>h(task.title)) %></title>
+    <title><%= t('.title', :title=>h(instance.title)) %></title>
     <%= javascript_include_tag :all, :cache=>true %>
     <%= stylesheet_link_tag 'common', 'frame', 'task', :cache=>true %>
   </head>
@@ -9,7 +9,7 @@
       <ol class='sections'>
         <li class='section logo'><%= link_to image_tag('singleshot-100-20.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
         <li class='section meta'>
-          <%= content_tag 'span', h(task.title), :title=>"#{task.title}\n\n#{task.description}", :class=>'title' %>
+          <%= content_tag 'span', h(instance.title), :title=>"#{instance.title}\n\n#{instance.description}", :class=>'title' %>
           <%= link_to image_tag('blue_down.png'), '#details', :class=>'dropdown', :title=>t('.more') %>
         </li>
         <li class='section actions'>
@@ -18,7 +18,7 @@
       </ol>
     </div>
     <div id='details' class='dropdown'>
-      <div class='description'><%= auto_link(sanitize(simple_format(task.description))) %></div>
+      <div class='description'><%= auto_link(sanitize(simple_format(instance.description))) %></div>
       <%= dropdown = yield(:dropdown) ; "<hr>#{dropdown}" if dropdown %>
     </div>
     <%= content_tag 'iframe', nil, :id=>'frame', :noresize=>'noresize', :src=>@iframe_url if @iframe_url %>
