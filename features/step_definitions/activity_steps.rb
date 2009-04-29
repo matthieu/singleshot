@@ -15,6 +15,8 @@
 
 
 Then /^the activity log shows the entries$/ do |entries|
-  activities = Activity.all(:order=>'id').map { |activity| [activity.person.to_param, activity.name, activity.task.title].join(" ") }
+  activities = Activity.all(:order=>'id').map { |activity|
+    person, task = activity.person, activity.task
+    I18n.t("activity.#{activity.name}", :person=>activity.person.to_param, :task=>activity.task.title) }
   activities.should == entries.split("\n")
 end

@@ -9,7 +9,7 @@ Feature: activity log
     And the person alice
     And the person bob
 
-  Scenario: log shows owner creating task
+  Scenario: Creating a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -20,7 +20,7 @@ Feature: activity log
       scott created Expense report
       """
 
-  Scenario: log shows owner creating and claiming task
+  Scenario: Creating and claiming a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -30,10 +30,10 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      scott claimed Expense report
+      scott is owner of Expense report
       """
 
-  Scenario: log shows owner creating and delegating task
+  Scenario: Creating and delegating a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -43,10 +43,10 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      alice claimed Expense report
+      alice is owner of Expense report
       """
 
-  Scenario: log shows potential owner claiming task
+  Scenario: Claiming a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -59,10 +59,10 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      alice claimed Expense report
+      alice is owner of Expense report
       """
 
-  Scenario: log shows owner delegating task
+  Scenario: Owner delegating a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -75,12 +75,12 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      alice claimed Expense report
+      alice is owner of Expense report
       alice delegated Expense report
-      bob claimed Expense report
+      bob is owner of Expense report
       """
 
-  Scenario: log shows supervisor delegating task
+  Scenario: Supervisor delegating a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -94,12 +94,12 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      alice claimed Expense report
+      alice is owner of Expense report
       scott delegated Expense report
-      bob claimed Expense report
+      bob is owner of Expense report
       """
 
-  Scenario: log shows owner released task
+  Scenario: Releasing a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -108,11 +108,11 @@ Feature: activity log
     When alice releases the task "Expense report"
     Then the activity log shows the entries
       """
-      alice claimed Expense report
-      alice released Expense report
+      alice is owner of Expense report
+      alice no longer owner of Expense report
       """
 
-  Scenario: log shows supervisor modified task
+  Scenario: Modifying a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -124,7 +124,7 @@ Feature: activity log
       scott modified Expense report
       """
 
-  Scenario: log shows supervisor suspended task
+  Scenario: Suspending a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -136,7 +136,7 @@ Feature: activity log
       scott suspended Expense report
       """
 
-  Scenario: log shows supervisor resumed task
+  Scenario: Resuming a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -150,7 +150,7 @@ Feature: activity log
       scott resumed Expense report
       """
 
-  Scenario: log shows supervisor cancelled task
+  Scenario: Cancelling a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -162,7 +162,7 @@ Feature: activity log
       scott cancelled Expense report
       """
 
-  Scenario: log shows owner completed task
+  Scenario: Completing a task shows in the log
     Given the task
       """
       title: "Expense report"
@@ -173,6 +173,72 @@ Feature: activity log
     Then the activity log shows the entries
       """
       scott created Expense report
-      alice claimed Expense report
+      alice is owner of Expense report
       alice completed Expense report
+      """
+
+  Scenario: Creating new template shows in the log
+    Given the template
+      """
+      title: "TPS report"
+      creator: scott
+      """
+    Then the activity log shows the entries
+      """
+      scott created the template TPS report
+      """
+
+  Scenario: Enabling a template shows in the log
+    Given the template
+      """
+      title: "TPS report"
+      creator: scott
+      """
+    When scott disables the template "TPS report"
+    Then the activity log shows the entries
+      """
+      scott created the template TPS report
+      scott disabled the template TPS report
+      """
+
+  Scenario: Enabling a template shows in the log
+    Given the template
+      """
+      title: "TPS report"
+      creator: scott
+      status: disabled
+      """
+    When scott disables the template "TPS report"
+    And scott enables the template "TPS report"
+    Then the activity log shows the entries
+      """
+      scott created the template TPS report
+      scott enabled the template TPS report
+      """
+
+  Scenario: Changing a template shows in the log
+    Given the template
+      """
+      title: "TPS report"
+      creator: scott
+      """
+    When scott changes the template "TPS report"
+    Then the activity log shows the entries
+      """
+      scott created the template TPS report
+      scott changed the template TPS report
+      """
+
+  Scenario: Deleting a template shows in the log
+    Given the template
+      """
+      title: "TPS report"
+      creator: scott
+      """
+    When scott disables the template "TPS report"
+    And scott deletes the template "TPS report"
+    Then the activity log shows the entries
+      """
+      scott created the template TPS report
+      scott deleted the template TPS report
       """

@@ -18,3 +18,17 @@ Given /^the template$/ do |template|
   Template.create! YAML.load(template)
 end
 
+Given /^(\S*) (\S*) the template "([^\"]*)"$/ do |name, change, title|
+  template = Person.identify(name).templates.find(:first, :conditions=>{'title'=>title}).reload
+  case change
+  when 'enables'
+    template.update_attributes! :status=>'enabled'
+  when 'disables'
+    template.update_attributes! :status=>'disabled'
+  when 'changes'
+    template.update_attributes! :priority=>1
+  when 'deletes'
+    template.destroy
+  else fail "Dont know what to do with #{change}"
+  end
+end

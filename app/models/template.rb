@@ -15,11 +15,10 @@
 
 
 class Template < Base
-  attr_readonly :due_on, :start_on, :status
 
   def initialize(*args, &block)
     super
-    self[:status] = 'enabled'
+    self[:status] ||= 'enabled'
   end
 
   # These stakeholders are used when transforming template to task.
@@ -32,6 +31,11 @@ class Template < Base
   def can_destroy?(person) # Test is person can destroy template.
     supervisor?(person)
   end
+  
+  before_create do |template|
+    template.supervisors = [template.creator] if template.supervisors.empty?
+  end
+
 
   # Allowed statuses:
   # - enabled   -- Template can be used to create new tasks (default).
@@ -50,8 +54,7 @@ class Template < Base
 
 
   after_create do |template|
-    creator = template.creator
-    template.modified_by ||= creator
+    creator = template.creator || template.modified_by
     template.log! creator, 'template.created' if creator
   end
 
@@ -68,5 +71,9 @@ class Template < Base
       end
       template.log! template.modified_by, 'template.modified'  unless changed.empty?
     end
+  end
+
+  before_destroy do |template|
+    template.log! template.modified_by, 'template.deleted' if template.modified_by
   end
 end

@@ -31,7 +31,7 @@
 class Activity < ActiveRecord::Base
 
   # Activity associated with a task.
-  belongs_to :task
+  belongs_to :task, :class_name=>'::Base'
   validates_presence_of :task
 
   # Activity associated with a person.

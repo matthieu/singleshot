@@ -109,11 +109,13 @@ en:
       modified:   "{{person}} modified {{task}}"
       suspended:  "{{person}} suspended {{task}}"
       resumed:    "{{person}} resumed {{task}}"
-      cancelled:  "{{person}} created {{task}}"
+      released:   "{{person}} no longer owner of {{task}}"
+      cancelled:  "{{person}} cancelled {{task}}"
       completed:  "{{person}} completed {{task}}"
     template:
       created:    "{{person}} created the template {{task}}"
       enabled:    "{{person}} enabled the template {{task}}"
       disabled:   "{{person}} disabled the template {{task}}"
+      modified:    "{{person}} changed the template {{task}}"
   sparkline:
     loading: "Loading &hellip;"

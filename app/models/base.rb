@@ -213,9 +213,9 @@ class Base < ActiveRecord::Base
   #   task.log! owner, 'task.created'
   def log!(person, name)
     if new_record?
-      activities.build :person=>person, :name=>name
+      activities.build :person=>person, :name=>name, :task=>self
     else
-      activities.create :person=>person, :name=>name
+      activities.create :person=>person, :name=>name, :task=>self
     end
   end
 
