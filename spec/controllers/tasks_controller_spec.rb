@@ -235,7 +235,7 @@ describe TasksController do
 
       describe '(unauthorized)' do
         before { authenticate Person.owner }
-        should_respond_with 401
+        should_respond_with 422
       end
     end
 

@@ -118,7 +118,6 @@ class Base < ActiveRecord::Base
   # * {plural}= people    -- Assocaites people with this role.
   def self.stakeholders(*roles)
     attr_accessible *roles
-    attr_readonly *roles
 
     roles.each do |role|
       singular = role.singularize

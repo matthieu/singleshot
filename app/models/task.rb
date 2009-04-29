@@ -114,6 +114,17 @@ class Task < Base
   stakeholders 'owner', 'creator', 'potential_owners', 'excluded_owners', 'past_owners', 'supervisors', 'observers'
   attr_readonly :creator
 
+  before_validation_on_create do |task|
+    if task.owner
+      # Owner should always be allowed as potential owner.
+      task.stakeholders.build :role=>'potential_owner', :person=>task.owner if !task.potential_owner?(task.owner)
+    else
+      # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
+      potential = task.potential_owners
+      task.owner = potential.first if potential.size == 1
+    end
+  end
+
   validate do |task|
     if task.changed.include?('owner')
       past_owner, new_owner = task.changes['owner']
@@ -135,17 +146,6 @@ class Task < Base
 
     unless task.new_record? || (task.modified_by && task.modified_by.can_change?(task)) || (task.plural_roles & task.changed).empty?
       task.errors.add 'stakeholders', "Only supervisor allowed to change stakeholders"
-    end
-  end
-
-  before_validation_on_create do |task|
-    if task.owner
-      # Owner should always be allowed as potential owner.
-      task.stakeholders.build :role=>'potential_owner', :person=>task.owner if !task.potential_owner?(task.owner)
-    else
-      # If we create the task with one potential owner, wouldn't it make sense to automatically assign it?
-      potential = task.potential_owners
-      task.owner = potential.first if potential.size == 1
     end
   end
 

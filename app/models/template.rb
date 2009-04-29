@@ -23,6 +23,7 @@ class Template < Base
 
   # These stakeholders are used when transforming template to task.
   stakeholders 'creator', 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
+  attr_readonly 'creator'
 
   def can_update?(person) # Test is person can update template.
     supervisor?(person)

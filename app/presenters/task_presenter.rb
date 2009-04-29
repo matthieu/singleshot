@@ -6,25 +6,28 @@ class TaskPresenter < Presenter::Base
   end
 
   def update!(attrs)
+    task.singular_roles.each do |role|
+      attrs[role] = Person.identify(attrs[role]) if attrs[role]
+    end
     if webhooks = attrs.delete('webhooks')
       webhooks = [webhooks.first] unless Array === webhooks
       attrs['webhooks'] = webhooks.map { |attr| Webhook.new attr }
     end
-    object.modified_by = authenticated
-    object.update_attributes! attrs
+    task.modified_by = authenticated
+    task.update_attributes! attrs
   end
 
   def to_hash
     super do |hash|
-      Stakeholder::SINGULAR_ROLES.each do |role|
-        if person = hash[role]
-          hash[role] = person['identity']
+      task.singular_roles.each do |role|
+        if person = task.send(role)
+          hash[role] = person.to_param
         end
       end
-      Stakeholder::PLURAL_ROLES.each do |role|
+      task.plural_roles.each do |role|
         role = role.pluralize
-        if people = hash[role]
-          hash[role] = people.map { |person| person['identity'] }
+        if people = task.send(role)
+          hash[role] = people.map { |person| { role=>person.to_param } }
         end
       end
       hash['links'] = [ link_to('self', href) ]
