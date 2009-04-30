@@ -19,6 +19,8 @@ class TemplatesController < ApplicationController #:nodoc:
   respond_to :html, :json, :xml
 
   def show
+    # @template is used by controller, so must use some other word, @source in this case.
+    @instance = authenticated.templates.find(params['id'])
     respond_to do |wants|
       wants.html do
         if instance.form && !instance.form.url.blank?

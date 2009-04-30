@@ -13,6 +13,9 @@ class TaskPresenter < Presenter::Base
       webhooks = [webhooks.first] unless Array === webhooks
       attrs['webhooks'] = webhooks.map { |attr| Webhook.new attr }
     end
+    if form = attrs.delete('form')
+      attrs['form'] = Form.new(form)
+    end
     task.modified_by = authenticated
     task.update_attributes! attrs
   end

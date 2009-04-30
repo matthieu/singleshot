@@ -53,11 +53,6 @@ class Base < ActiveRecord::Base
   has_one :form, :dependent=>:delete, :foreign_key=>'task_id'
   attr_accessible :form
 
-  def form_with_hash_typecase=(form) #:nodoc:
-    self.build_form form
-  end
-  alias_method_chain :form=, :hash_typecase
-
 
   # -- Webhooks --
  

@@ -119,4 +119,5 @@ Template.blueprint do
   creator           { Person.creator }
   supervisors       { [Person.supervisor] }
   potential_owners  { [Person.owner, Person.potential] }
+  form.html = "<input name='data[foo]'>"
 end

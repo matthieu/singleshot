@@ -143,18 +143,24 @@ class Person < ActiveRecord::Base
   end
 
 
-  # -- Tasks --
+  # -- Tasks/Templates/Activity --
 
-  has_many :activities, :dependent=>:delete_all
-  has_many :stakeholders, :dependent=>:delete_all
   has_many :tasks, :through=>:stakeholders, :uniq=>true, :extend=>::Base::ModifiedByOwner
 
   # task(5) same as tasks.find(5)
-  def task(*args)
-    tasks.find(*args)
+  def task(id)
+    tasks.find(id)
   end
 
   has_many :templates, :through=>:stakeholders, :uniq=>true, :extend=>::Base::ModifiedByOwner
+
+  # template(5) same as templates.find(5)
+  def template(id)
+    templates.find(id)
+  end
+
+  has_many :stakeholders, :dependent=>:delete_all
+  has_many :activities, :dependent=>:delete_all
 
 
   # -- Access control to task --

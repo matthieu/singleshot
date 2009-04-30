@@ -14,8 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^the task$/ do |task|
-  Task.create! YAML.load(task)
+Given /^the task$/ do |yaml|
+  args = YAML.load(yaml)
+  form = args.delete('form')
+  webhooks = args.delete('webhooks')
+  Task.create! args do |record|
+    record.build_form form if form
+    webhooks.each do |webhook|
+      record.webhooks.build webhook
+    end if webhooks
+  end
 end
 
 Given /^the task "(.*)" created by (\S*)$/ do |title, person|

@@ -59,12 +59,53 @@ describe Template do
     :conditions=>["involved.person_id = ? AND involved.role != 'excluded_owner'", 'edward']
   should_have_default_scope :order=>'title ASC'
 
+  describe 'to_task' do
+    before do
+      @template = Template.make
+      Person.owner.template(@template).to_task.save!
+      @attributes = 'title', 'description', 'language', 'priority', 'form', 'data', 'webhook'
+    end
+    subject { Task.last }
+    
+    should_be_active
+    it('should be created by new owner') { subject.creator.should == Person.owner }
+    it('should be owned by new owner')   { subject.owner.should == Person.owner }
+    it('should have same potential owners as template') { subject.potential_owners.should == @template.potential_owners }
+    it('should have same excluded owners as template')  { subject.excluded_owners.should == @template.excluded_owners }
+    it('should have same supervisors as template')      { subject.supervisors.should == @template.supervisors }
+    it('should have same core attributes as template')  { subject.attributes.should include(@template.attributes.slice(@attributes)) }
+    it('should clone form')                             { subject.form.should_not be(@template.form) }
+  end
+
   describe 'newly created' do
     subject { Person.creator.templates.create!(:title=>'foo') }
 
     should_be_enabled
     it('should have creator')                     { subject.creator.should == Person.creator }
     it('should have creator as supervisor')       { subject.supervisors.should == [Person.creator] }
+    should_log_activity Person.creator, 'template.created'
+  end
+
+  describe 'disabled' do
+    before do
+      Template.make
+      Person.supervisor.template(Template.last).update_attributes! :status=>'disabled'
+    end
+    subject { Template.last }
+
+    should_be_disabled
+    should_log_activity Person.supervisor, 'template.disabled'
+  end
+
+  describe 'ensabled' do
+    before do
+      Template.make :status=>'disabled'
+      Person.supervisor.template(Template.last).update_attributes! :status=>'enabled'
+    end
+    subject { Template.last }
+
+    should_be_enabled
+    should_log_activity Person.supervisor, 'template.enabled'
   end
 
   describe 'can_update?' do

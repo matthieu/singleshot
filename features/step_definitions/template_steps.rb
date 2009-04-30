@@ -14,8 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-Given /^the template$/ do |template|
-  Template.create! YAML.load(template)
+Given /^the template$/ do |yaml|
+  args = YAML.load(yaml)
+  form = args.delete('form')
+  webhooks = args.delete('webhooks')
+  Template.create! args do |record|
+    record.build_form form if form
+    webhooks.each do |webhook|
+      record.webhooks.build webhook
+    end if webhooks
+  end
 end
 
 Given /^(\S*) (\S*) the template "([^\"]*)"$/ do |name, change, title|

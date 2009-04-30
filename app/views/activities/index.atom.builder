@@ -9,7 +9,7 @@ atom_feed :root_url=>@root_url do |feed|
   @activities.each do |activity|
     feed.entry activity, :url=>task_url(activity.task, :format=>nil) do |entry|
       task, person = activity.task, activity.person
-      entry.title t("activity.expanded.#{activity.name}", :person=>activity.person, :task=>activity.task)
+      entry.title t("activity.#{activity.name}", :person=>activity.person, :task=>activity.task)
       #entry.content related.single_entry(:html), :type=>'html'
       entry.author do |author|
         author.name  person ? person.fullname : 'Unknown'

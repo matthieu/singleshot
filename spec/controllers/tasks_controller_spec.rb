@@ -173,17 +173,17 @@ describe TasksController do
       should_render_with_layout 'single'
 
       describe '(without form)' do
+        before { @task.update_attributes! :form=>nil }
         should_not_assign_to :iframe_url
       end
 
       describe '(with form URL)' do
         before { @task.create_form :url=>'http://localhost/form' }
-        before { @task.update_attributes! :form=>{ :url=>'http://localhost/form' } }
         should_assign_to :iframe_url, :with=>'http://localhost/form'
       end
 
       describe '(with form)' do
-        before { @task.update_attributes! :form=>{ :html=>'<input>' } }
+        before { @task.create_form :html=>'<input>' }
         should_assign_to(:iframe_url) { form_url(89) }
       end
 

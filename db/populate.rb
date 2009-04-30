@@ -88,8 +88,9 @@ class Populate < ActiveRecord::Migration
     new_task! :supervisor=>@me
     @me.tasks.last.update_attributes! :status=>'cancelled'
 
-    Template.create! :title=>'Absence request', :description=>'Request leave of absence',
-      :potential_owners=>[@me], :form=>{ :html=>"<input name='data[date]' type='text' class='date'>" }
+    Template.create! :title=>'Absence request', :description=>'Request leave of absence', :potential_owners=>[@me] do |template|
+      template.build_form :html=>"<input name='data[date]' type='text' class='date'>"
+    end
   end
 
   def self.down
@@ -113,7 +114,6 @@ class Populate < ActiveRecord::Migration
     advance
     args[:title] ||= Faker::Lorem.sentence
     args[:description] ||= Faker::Lorem.paragraphs(3).join("\n\n")
-    args[:form] ||= { :html=>FORM }
     Task.new args do |task|
       args[:potential_owner] ||= [@me, @bond]
       [:potential_owner, :excluded_owner, :supervisor, :observer].select { |role| args.has_key?(role) }.each do |role|
@@ -121,6 +121,7 @@ class Populate < ActiveRecord::Migration
           task.stakeholders.build :role=>role.to_s, :person=>person
         end
       end
+      task.build_form :html=>FORM
     end.save!
   end
 

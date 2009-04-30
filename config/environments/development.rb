@@ -34,4 +34,4 @@ config.gem 'faker',             :version=>'0.3.1', :lib=>false
 config.gem 'notahat-machinist', :version=>'0.3.1', :lib=>false
 
 # To enable Rack::Bug get the bookmarklet from http://localhost:3000/__rack_bug__/bookmarklet.html
-config.middleware.use 'Rack::Bug'
+#config.middleware.use 'Rack::Bug'

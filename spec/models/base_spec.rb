@@ -51,10 +51,6 @@ share_examples_for Base do
   # -- Presentation --
 
   should_have_one :form, :dependent=>:delete
-  it 'should allow setting form using Hash' do
-    subject.update_attributes! :form=>{ :url=>'http://example.com' }
-    subject.form(true).url.should == 'http://example.com'
-  end
 
 
   # -- Data --

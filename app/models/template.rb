@@ -21,6 +21,9 @@ class Template < Base
     self[:status] ||= 'enabled'
   end
 
+
+  # -- Stakeholders & Access control --
+
   # These stakeholders are used when transforming template to task.
   stakeholders 'creator', 'supervisors', 'potential_owners', 'excluded_owners', 'observers'
   attr_readonly 'creator'
@@ -54,6 +57,8 @@ class Template < Base
     :conditions=>["involved.person_id = ? AND involved.role != 'excluded_owner'", person] } }
 
 
+  # -- Activity log --
+
   after_create do |template|
     creator = template.creator || template.modified_by
     template.log! creator, 'template.created' if creator
@@ -77,4 +82,19 @@ class Template < Base
   before_destroy do |template|
     template.log! template.modified_by, 'template.deleted' if template.modified_by
   end
+
+
+  # -- Template => Task --
+
+  def to_task
+    modified_by.tasks.new do |task|
+      # We need this because stakeholders are not retrieved if we just used task.attributes = template.attributes
+      Template.attr_accessible.each do |attr|
+        task.send "#{attr}=", send(attr)
+      end
+      task.form = form.clone if form
+      task.owner = task.creator = modified_by
+    end
+  end
+
 end

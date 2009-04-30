@@ -22,7 +22,7 @@ module FormHelper
     if task_or_template.type == 'Template'
       form_tag forms_url(:id=>task_or_template), :method=>:post, :id=>'task', :class=>'enabled', &block
     else
-      form_tag form_url(task_or_template), :method=>:put, :id=>'task', :class=>authenticated.can_complete?(task) ? 'enabled' : 'disabled', &block
+      form_tag form_url(task_or_template), :method=>:put, :id=>'task', :class=>authenticated.can_complete?(task_or_template) ? 'enabled' : 'disabled', &block
     end
   end
 

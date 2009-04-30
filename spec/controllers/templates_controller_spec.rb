@@ -91,17 +91,17 @@ describe TemplatesController do
     should_render_template 'templates/show.html.erb'
 
     describe '(without form)' do
+      before { @template.form.update_attributes! :html=>nil }
       should_not_assign_to :iframe_url
     end
 
     describe '(with form URL)' do
       before { @template.create_form :url=>'http://localhost/form' }
-      before { @template.update_attributes! :form=>{ :url=>'http://localhost/form' } }
       should_assign_to :iframe_url, :with=>'http://localhost/form'
     end
 
     describe '(with form)' do
-      before { @template.update_attributes! :form=>{ :html=>'<input>' } }
+      before { @template.create_form :html=>'<input>' }
       should_assign_to(:iframe_url) { form_url(55) }
     end
 

@@ -22,26 +22,37 @@ class FormsController < ApplicationController #:nodoc:
   end
 
   def create
-    args = task.to_hash.merge(:data=>params['data'], :owner=>authenticated)
-    @task = authenticated.tasks.create!(args)
-    @task.update_attributes! :status=>'completed' if params['status'] == 'compeleted'
-    render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(task_url(@task))}')</script>"
+    @instance = instance.to_task
+    instance.data = params['data']
+    if params['status'] == 'completed'
+      instance.update_attributes! :status=>'completed'
+      render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(root_path)}')</script>"
+    else
+      instance.save!
+      render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(task_url(instance))}')</script>"
+    end
   end
 
   def update
-    task.update_attributes! :status=>params['status'] || task.status, :data=>params['data']
-    if task.completed? || task.cancelled?
+    instance.data = params['data']
+    if params['status'] == 'completed'
+      instance.update_attributes! :status=>'completed'
       render :text=>"<script>top.window.location.replace('#{CGI.escapeHTML(root_path)}')</script>"
     else
+      instance.save!
       redirect_to :back
     end
   end
 
 private
 
-  helper_method :task
-  def task
-    @task ||= authenticated.tasks.find(params['id']) rescue authenticated.templates.find(params['id'])
+  helper_method :instance
+  def instance
+    @instance ||= authenticated.task(params['id']) rescue authenticated.template(params['id'])
+  end
+
+  def presenter
+    @presenter ||= presenting(instance)
   end
 
 end

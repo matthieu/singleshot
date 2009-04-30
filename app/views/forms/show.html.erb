@@ -4,9 +4,9 @@
     <%= stylesheet_link_tag 'common', 'form', 'jquery-ui', :cache=>true %>
   </head>
   <body>
-    <%= javascript_tag "$(function() { Singleshot.populateForm('form', #{ActiveSupport::JSON.encode(task.data)}) });" %>
-    <% form task do %>
-      <%= sanitize(Liquid::Template.parse(task.form.html).render(task.to_hash),
+    <%= javascript_tag "$(function() { Singleshot.populateForm('form', #{ActiveSupport::JSON.encode(instance.data)}) });" %>
+    <% form instance do %>
+      <%= sanitize(Liquid::Template.parse(instance.form.html).render(instance.to_hash),
         :tags=>self.class.sanitized_allowed_tags + %w{fieldset input legend select table td textarea th tr},
         :attributes=>self.class.sanitized_allowed_attributes + %w{cols rows size type value})
       %>
