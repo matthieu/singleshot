@@ -26,7 +26,7 @@ class TaskPresenter < BasePresenter
       task.plural_roles.each do |role|
         role = role.pluralize
         if people = task.send(role)
-          hash[role] = people.map { |person| { role=>person.to_param } }
+          hash[role] = people.map { |person| person.to_param }
         end
       end
       hash['links'] = [ link_to('self', href) ]

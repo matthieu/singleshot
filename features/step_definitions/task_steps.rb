@@ -81,5 +81,5 @@ Then /^the task "([^\"]*)" should be owned by (.*)$/ do |title, name|
 end
 
 Then /^I should see be redirected with a script to (.*)$/ do |page|
-  response.should have_tag('script', "top.window.location.replace('#{path_to(page)}')")
+  response.body.should =~ /<script>top.window.location.replace\('(http:\/\/www.example.com)?#{path_to(page)}'\)<\/script>/
 end

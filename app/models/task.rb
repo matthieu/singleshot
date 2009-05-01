@@ -48,8 +48,6 @@ class Task < Base
   end
 
   attr_accessible :status, :due_on, :start_on
-  attr_readable   :title, :description, :language, :priority, :due_on, :start_on, :status, :data, :version, :created_at, :updated_at
-
 
 
   # -- Urgency --
@@ -261,6 +259,11 @@ class Task < Base
     task.log! task.modified_by, 'task.modified' unless changed.empty? || task.modified_by.nil?
   end
 
+  def log!(person, name) # :nodoc:
+    super
+    event = name.split('.').last
+    webhooks.select { |hook| hook.event == event }.each(&:send_notification)
+  end
 
 
   # Locking column used for versioning and detecting update conflicts.

@@ -27,7 +27,7 @@ class RackApp
       Thread.new do
         Rack::Handler::WEBrick.run instance, :Port=>1234, :Logger=>WEBrick::Log.new(nil, WEBrick::Log::ERROR)
       end
-      sleep 0.5
+      sleep 0.1
       @started = true
     end
   end

@@ -5,6 +5,7 @@ Features: Using templates to start new tasks
       """
       title: "Absence request"
       description: "Request leave of absence"
+      potential_owners: me
       form:
         html: "<input type='text' name='data[date]'>"
       """
@@ -18,7 +19,7 @@ Features: Using templates to start new tasks
     When I login
     And I go to the homepage
     And I follow "Absence request"
-    Then I should be on the task "Absence request"
+    Then I should be on the template "Absence request"
     And I should see "Request leave of absence"
 
   Scenario: Perfom task created from template
@@ -30,13 +31,15 @@ Features: Using templates to start new tasks
     And I press "Done"
     Then I should see be redirected with a script to the homepage
     And the task "absence request" should be completed
-    And the task "absence request" data should have accept="true"
-    And the task "absence request" data should have comment="enjoy"
-
-
+    And the task "absence request" data should have date="tomorrow"
 
   Scenario: Use template to perform task and save state
     When I login
     And I go to the homepage
     And I follow "Absence request"
-
+    And I am on the frame "frame"
+    And I fill in "data[date]" with "tomorrow"
+    And I press "Save"
+    Then I should see be redirected with a script to the task "Absence request"
+    And the task "absence request" should be active
+    And the task "absence request" data should have date="tomorrow"

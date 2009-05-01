@@ -71,11 +71,4 @@ class Activity < ActiveRecord::Base
   
   named_scope :limit, lambda { |count| { :limit=>count } }
 
-  # TODO: test this!
-  after_save do |activity|
-    activity.task.webhooks.select do |hook|
-      hook.send_notification if hook.event == activity.name.to_s
-    end
-  end
-
 end

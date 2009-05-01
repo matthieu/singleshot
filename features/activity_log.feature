@@ -228,17 +228,3 @@ Feature: activity log
       scott created the template TPS report
       scott changed the template TPS report
       """
-
-  Scenario: Deleting a template shows in the log
-    Given the template
-      """
-      title: "TPS report"
-      creator: scott
-      """
-    When scott disables the template "TPS report"
-    And scott deletes the template "TPS report"
-    Then the activity log shows the entries
-      """
-      scott created the template TPS report
-      scott deleted the template TPS report
-      """

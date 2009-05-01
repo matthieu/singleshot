@@ -21,6 +21,8 @@ module NavigationHelpers
       activity_path
     when /the task "(.*)"/
       task_path(Task.find_by_title($1))
+    when /the template "(.*)"/
+      template_path(Template.find_by_title($1))
     when /the form for "(.*)"/
       form_path(Task.find_by_title($1))
     when /the frame "(.*)"/
