@@ -38,15 +38,15 @@ describe Person do
 
   should_have_attribute :identity
   should_have_column :identity, :type=>:string
-  should_allow_mass_assignment_of :identity, :allow_nil=>true
-  should_validate_uniqueness_of :identity
+  should_allow_mass_assignment_of :identity
+  should_validate_uniqueness_of :identity, :case_sensitive=>false
   it ('should set identity from email if unspecified') { subject.valid? ; subject.identity.should == 'john.smith' }
 
   should_have_attribute :email
   should_have_column :email, :type=>:string
   should_allow_mass_assignment_of :email
   should_validate_presence_of :email, :message=>"I need a valid e-mail address."
-  should_validate_uniqueness_of :email
+  should_validate_uniqueness_of :email, :case_sensitive=>false
   should_validate_email :email
 
   should_have_attribute :fullname

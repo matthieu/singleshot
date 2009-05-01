@@ -121,7 +121,7 @@ describe '/tasks/show' do
   
   describe 'with no form' do
     before do
-      Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{}
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>nil
       template.stub!(:authenticated).and_return Person.owner
       render '/tasks/show', :layout=>'single'
     end
@@ -132,7 +132,8 @@ describe '/tasks/show' do
   
   describe 'with form' do
     before do
-      Person.owner.task(@task).update_attributes! :owner=>Person.owner, :form=>{ :html=>'<input>' }
+      @task.create_form :html=>'<input>'
+      Person.owner.task(@task).update_attributes! :owner=>Person.owner
       assigns[:iframe_url] = 'http://localhost'
       render '/tasks/show', :layout=>'single'
     end

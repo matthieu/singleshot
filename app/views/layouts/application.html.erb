@@ -2,7 +2,7 @@
   <head>
     <title><%= t('.title', :title=>@title) %></title>
     <%= javascript_include_tag :all, :cache=>true %>
-    <%= stylesheet_link_tag 'common', 'frame', :cache=>true %>
+    <%= stylesheet_link_tag 'common', 'frame', 'singleshot', :cache=>true %>
     <%= auto_discovery_link_tag :atom, @atom_feed_url if @atom_feed_url %>
     <%= tag :link, :rel=>'search', :type=>Mime::OSD, :href=>open_search_url, :title=>'Search your tasks list' %>
     <%= tag :link, :rel=>'next', :type=>Mime::HTML, :href=>@next if @next %>

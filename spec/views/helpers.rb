@@ -23,4 +23,15 @@ module Spec::Helpers #:nodoc:
   end
 end
 
+module HTML
+  class Text
+    alias :text :to_s
+  end
+  class Tag
+    def text
+      children.map(&:text).join
+    end
+  end
+end
+
 Spec::Runner.configure { |config| config.include Spec::Helpers::Views, :type=>:view }

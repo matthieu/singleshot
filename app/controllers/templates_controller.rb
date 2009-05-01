@@ -18,9 +18,14 @@ class TemplatesController < ApplicationController #:nodoc:
 
   respond_to :html, :json, :xml
 
+  def index
+    @templates = Template.listed_for(authenticated).all
+    respond_with presenting(@templates, :name=>'templates')
+  end
+
   def show
     # @template is used by controller, so must use some other word, @source in this case.
-    @instance = authenticated.templates.find(params['id'])
+    @instance = Template.listed_for(authenticated).find(params['id'])
     respond_to do |wants|
       wants.html do
         if instance.form && !instance.form.url.blank?
@@ -30,6 +35,7 @@ class TemplatesController < ApplicationController #:nodoc:
         end
         render :layout=>'single'
       end
+      wants.any { respond_with presenter }
     end
   end
 

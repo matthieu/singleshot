@@ -27,7 +27,6 @@ share_examples_for Base do
   should_have_column :title, :description, :type=>:string
   should_have_column :language, :type=>:string, :limit=>5
   should_allow_mass_assignment_of :title, :description, :language
-  should_not_validate_uniqueness_of :title
   should_validate_presence_of :title
   should_not_validate_presence_of :description, :language
 

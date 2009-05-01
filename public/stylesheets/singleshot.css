@@ -1,3 +1,17 @@
+/** Templates **/
+
+ol.templates {
+  list-style: none;
+  padding: 0;
+  padding: 0.6em 1em 2em 1em;
+}
+li.template { padding: 0; margin: 0 0 0.9em 0 }
+li.template h2 { font-size: 12pt; margin: 0 0 0.3em 0; }
+li.template .description { margin: 0 0 0.6em 0; }
+li.template .meta { font-size: 9pt; color: #888; margin: 0 }
+
+
+
 /** Feed and calendar links **/
 
 ul.alternate {
@@ -20,55 +34,6 @@ ul.alternate img {
 }
 
 
-/** Tasks list **/
-
-table.tasks {
-  table-layout: fixed;
-  width: 100%;
-  border-spacing: 0;
-  border-padding: 0;
-  border: none;
-  padding: 2em 3em 2em 3em;
-  font-size: 1.1em;
-}
-table.tasks thead th {
-  text-align: left;
-  font-weight: bold;
-  padding: 0 0 0.6em 0;
-  padding: 0 0.6em 0.6em 0;
-  margin: 0;
-  border-bottom: 1px solid #ccc;
-}
-table.tasks tbody tr:hover {
-  background-color: #ffffe8;
-  padding: 0 1em 0 1em;
-}
-table.tasks tbody td {
-  text-align: left;
-  vertical-align: top;
-  padding: 0.6em 0.6em 0.6em 0;
-  margin: 0;
-  border-bottom: 1px solid #eee;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-table.tasks tbody td img {
-  vertical-align: middle;
-}
-table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a {
-  color: #f04040;
-}
-table.tasks tbody tr.completed td, table.tasks tbody tr.completed td a,
-table.tasks tbody tr.cancelled td, table.tasks tbody tr.cancelled td a {
-  color: #888;
-}
-table.tasks tbody td .priority_1 {
-  color: #f04040;
-}
-table.tasks td .button-to input {
-  font-size: 0.7em;
-}
 
 
 /** Chronological list **/

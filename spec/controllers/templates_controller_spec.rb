@@ -19,6 +19,47 @@ require File.dirname(__FILE__) + '/helpers'
 
 describe TemplatesController do
 
+  should_route :get, '/templates', :controller=>'templates', :action=>'index'
+  describe :get=>'index' do
+    before { authenticate Person.supervisor }
+    before { @templates = Array.new(3) { mock_model(Template) } }
+    expects :listed_for, :on=>Template, :with=>lambda { Person.supervisor }, :returns=>lambda { @templates }
+
+    describe Mime::HTML do
+      should_assign_to(:templates) { @templates }
+      should_render_template 'templates/index'
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
+    end
+
+    describe Mime::JSON do
+      should_respond_with 200
+      should_respond_with_content_type Mime::JSON
+      it('should render templates object') { json.should include('templates') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+    describe Mime::XML do
+      should_respond_with 200
+      should_respond_with_content_type Mime::XML
+      it('should render templates element') { xml.should include('templates') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
+    end
+
+  end
+
+
   should_route :post, '/templates', :controller=>'templates', :action=>'create'
   describe :post=>'create' do
     before { authenticate Person.supervisor }
@@ -87,34 +128,68 @@ describe TemplatesController do
     before { @template = Template.make(:id=>55, :title=>'TPS Report') }
     before { authenticate Person.owner }
 
-    should_assign_to(:instance) { @template }
-    should_render_template 'templates/show.html.erb'
+    share_examples_for 'template.show' do
+      should_assign_to(:instance) { @template }
 
-    describe '(without form)' do
-      before { @template.form.update_attributes! :html=>nil }
-      should_not_assign_to :iframe_url
+      describe '(inaccessible)' do
+        before { authenticate Person.other }
+        should_respond_with 404
+      end
     end
 
-    describe '(with form URL)' do
-      before { @template.create_form :url=>'http://localhost/form' }
-      should_assign_to :iframe_url, :with=>'http://localhost/form'
+    describe Mime::HTML do
+      should_render_template 'templates/show.html.erb'
+
+      describe '(without form)' do
+        before { @template.form.update_attributes! :html=>nil }
+        should_not_assign_to :iframe_url
+      end
+
+      describe '(with form URL)' do
+        before { @template.create_form :url=>'http://localhost/form' }
+        should_assign_to :iframe_url, :with=>'http://localhost/form'
+      end
+
+      describe '(with form)' do
+        before { @template.create_form :html=>'<input>' }
+        should_assign_to(:iframe_url) { form_url(55) }
+      end
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_redirect_to { session_url }
+      end
     end
 
-    describe '(with form)' do
-      before { @template.create_form :html=>'<input>' }
-      should_assign_to(:iframe_url) { form_url(55) }
+    describe Mime::JSON do
+      it_should_behave_like 'template.show'
+      should_respond_with 200
+      should_respond_with_content_type Mime::JSON
+      it('should render template object') { json.should include('template') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
     end
 
-    describe '(unauthenticated)' do
-      before { authenticate nil }
-      should_redirect_to { session_url }
+    describe Mime::XML do
+      it_should_behave_like 'template.show'
+      should_respond_with 200
+      should_respond_with_content_type Mime::XML
+      it('should render template element') { xml.should include('template') }
+
+      describe '(unauthenticated)' do
+        before { authenticate nil }
+        should_respond_with 401
+      end
     end
 
-    describe '(inaccessible)' do
-      before { authenticate Person.other }
+    describe 'disabled' do
+      before { @template.update_attributes! :status=>'disabled' }
+      
       should_respond_with 404
     end
-
   end
 
 
