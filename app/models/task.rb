@@ -324,4 +324,6 @@ class Task < Base
   
   # Cancelled tasks only in reverse chronological order.
   named_scope :cancelled, :conditions=>"tasks.status = 'cancelled'", :order=>"tasks.updated_at desc"
+
+  named_scope :in_the_past, lambda { |days| { :conditions=>['tasks.updated_at >= ?', Date.today - days] } }
 end

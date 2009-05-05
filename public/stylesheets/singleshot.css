@@ -1,3 +1,50 @@
+#graphs {
+  width: 62em;
+}
+
+
+ul#graphs { margin: 4em 1em 0 1em; width: 63em; overflow: hidden }
+ul#graphs>li { }
+ul#graphs>li>div { height: 150pt; overflow: hidden }
+ol.bar-graph {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  height: 150pt;
+  position: relative;
+}
+ol.bar-graph li {
+  float: left;
+  width: 28pt;
+  margin-right: 3pt;
+  position: relative;
+  height: 100%;
+  text-align: center;
+}
+ol.bar-graph li span.bar {
+  padding-top: 1px;
+  width: 100%;
+  background-color: #A8A8A8;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+ol.bar-graph li span.bar span.number {
+  line-height: 16pt;
+  font-size: 9pt;
+  color: #fff;
+}
+ol.bar-graph li span.point {
+  font-size: 8pt;
+  color: #8A8A8A;
+  position: absolute;
+  bottom: -2em;
+  left: 0;
+  width: 100%;
+}
+
+
+
 /** Templates **/
 
 ol.templates {

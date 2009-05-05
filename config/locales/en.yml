@@ -119,3 +119,6 @@ en:
       modified:    "{{person}} changed the template {{task}}"
   sparkline:
     loading: "Loading &hellip;"
+  date:
+    formats:
+      month_day: "%m/%d"

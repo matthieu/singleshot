@@ -1,0 +1,29 @@
+<ul id='graphs'>
+  <li><h3><a href="#">Completed in the last <%= @completed.size %> Days</a></h3>
+    <% max = @completed.map { |date,count| count }.max.to_f %>
+    <% formatted = @completed.map { |date, count| [l(date, :format=>:month_day), count, (count / max) * 100] } %>
+    <div>
+      <ol class='bar-graph'>
+        <% formatted.each do |date, count, pct| %>
+          <%= bar = content_tag('span', content_tag('span', count, :class=>'number'), :class=>'bar', :style=>"height:#{pct}%")
+              point = content_tag('span', date, :class=>'point')
+              content_tag 'li', bar + point, :title=>"#{date}: #{count}" %>
+        <% end %>
+      </ol>
+    </div>
+  </li>
+  <li><h3><a href="#">Time to Complete Each Task (days:hours)</a></h3>
+    <% max = @completed_in.map { |hours, pct| pct }.max.to_f %>
+    <% h = lambda { |hours| "%d:%02d" % [hours / 60, hours % 60] } %>
+    <% formatted = @completed_in.map { |hours, count| [h[hours], count, (count / max) * 100] } %>
+    <div>
+      <ol class='bar-graph'>
+        <% formatted.each do |hours, count, pct| %>
+          <%= bar = content_tag('span', content_tag('span', count, :class=>'number'), :class=>'bar', :style=>"height:#{pct}%")
+              point = content_tag('span', hours, :class=>'point')
+              content_tag 'li', bar + point, :title=>"#{hours}: #{count}" %>
+        <% end %>
+      </ol>
+    </div>
+  </li>
+</ul>

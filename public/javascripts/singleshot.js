@@ -51,6 +51,8 @@ $(function() {
     //$(window).bind('resize load', function() { frame.height(window.innerHeight - frame.offset().top) })
   });
 
+  $("#graphs").accordion();
+
 })
 
 

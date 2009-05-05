@@ -36,23 +36,22 @@ body { position: relative; }
   float: left;
   overflow: hidden;
   width: 50em;
-  margin: 2em 2em 0 1em;
+  margin: 4em 2em 0 1em;
 }
-
 
 ul#sidebar  {
   list-style: none;
   width: 18em;
   padding: 0;
-  margin: 2em 0 0 0;
+  margin: 4em 0 0 0;
   color: #444;
-  border: 1px solid #fff;
   overflow: hidden;
 }
 #sidebar li.section {
   font-size: 10pt;
   margin: 0 0 2em 0;
   padding: 0.9em;
+  border: 1px solid #ddd;
 }
 #sidebar li.section h2 {
   color: #444;
@@ -62,10 +61,10 @@ ul#sidebar  {
 }
 #sidebar li.section a { color: #4040ff; }
 #sidebar li.section a:hover { color: #ff4040; }
-
 #sidebar li.section ol { list-style: none; padding: 0; margin: 0; }
 #sidebar li.section li { margin: 0 0 0.6em 0; }
-#sidebar li.activity .published { color: #8A8A8A; font-size: 90% }
+#sidebar li.activity .published { color: #8A8A8A; font-size: 80% }
+#sidebar li.section ol + a { display: block; margin-top: 1.5em; text-align: right }
 
 
 /** Tasks list **/
