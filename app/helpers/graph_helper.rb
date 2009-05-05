@@ -14,17 +14,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class GraphsController < ApplicationController #:nodoc:
-  def show
-    today, days = Date.today, 21.days
-    completed = authenticated.tasks.completed.in_the_past(days)
-    grouped = completed.group_by { |t| t.updated_at.to_date }
-    @completed = (today - days + 1..today).map { |date| tasks = grouped[date] ; [date, tasks ? tasks.size : 0] }
+# Methods added to this helper will be available to all templates in the application.
+module GraphHelper
 
-    slices = 20
-    timed = completed.map { |task| [(task.updated_at - task.created_at) / 1.hours, task] }
-    slice = (timed.map { |hours, task| hours }.max.to_f / slices).ceil
-    grouped = timed.group_by { |hours, task| logger.info hours ; (hours / slice).floor }
-    @completed_in = (1..slices).map { |i| tasks = grouped[i - 1] ; [i * slice, tasks ? tasks.size : 0] }
+  def graph(data)
+    max = data.map { |x, y| y }.max.to_f
+    list = data.map { |x, y, title|
+      title ||= "#{x}: #{y}"
+      bar = content_tag('span', content_tag('span', y, :class=>'value'), :class=>'bar', :style=>"height:#{(y / max) * 100}%")
+      legend = content_tag('span', x, :class=>'legend')
+      content_tag 'li', bar + legend, :title=>title
+    }
+    content_tag 'ol', list, :class=>'bar-graph'
   end
+
 end

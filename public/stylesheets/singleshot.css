@@ -4,14 +4,12 @@
 
 
 ul#graphs { margin: 4em 1em 0 1em; width: 63em; overflow: hidden }
-ul#graphs>li { }
-ul#graphs>li>div { height: 150pt; overflow: hidden }
+ul#graphs li.graph div { height: 150pt; }
 ol.bar-graph {
   margin: 0;
   padding: 0;
   list-style: none;
   height: 150pt;
-  position: relative;
 }
 ol.bar-graph li {
   float: left;
@@ -29,12 +27,12 @@ ol.bar-graph li span.bar {
   bottom: 0;
   left: 0;
 }
-ol.bar-graph li span.bar span.number {
+ol.bar-graph li span.bar span.value {
   line-height: 16pt;
   font-size: 9pt;
   color: #fff;
 }
-ol.bar-graph li span.point {
+ol.bar-graph li span.legend {
   font-size: 8pt;
   color: #8A8A8A;
   position: absolute;
