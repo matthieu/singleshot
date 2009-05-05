@@ -1,7 +1,7 @@
 <ul id='sidebar'>
   <% if sidebar.activities %>
     <li class='section'>
-    <h2><%= t('.activity.heading') %></h2>
+      <h2><%= t('.activity.heading') %></h2>
       <ol class='activities'>
         <% sidebar.activities.each do |activity| %>
           <% content_tag_for 'li', activity do %>
@@ -23,6 +23,7 @@
           <% end %>
         <% end %>
       </ol>
+      <%= link_to t('.templates.link'), templates_url %>
     </li>
   <% end %>
 </ul>
