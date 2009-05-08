@@ -121,3 +121,9 @@ Template.blueprint do
   potential_owners  { [Person.owner, Person.potential] }
   form.html = "<input name='data[foo]'>"
 end
+
+Notification.blueprint do
+  title             { 'Task completed' }
+  creator           { Person.creator }
+  recipients        { [Person.owner, Person.potential] }
+end

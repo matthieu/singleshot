@@ -3,7 +3,7 @@
 }
 
 
-ul#graphs { margin: 4em 1em 0 1em; width: 63em; overflow: hidden }
+ul#graphs { margin: 4em 2em 0 2em; width: 63em; overflow: hidden }
 ul#graphs li.graph div { height: 150pt; }
 ol.bar-graph {
   margin: 0;
@@ -56,6 +56,24 @@ li.template .description { margin: 0 0 0.6em 0; }
 li.template .meta { font-size: 9pt; color: #888; margin: 0 }
 
 
+/** Notifications **/
+
+ol.notifications { list-style: none; margin: 0; padding: 0.6em 0 2em 0;
+}
+li.notification { margin: 0 0 0.9em 0; }
+li.notification .content {
+  display: block;
+  color: #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  margin-right: 10em;
+}
+li.notification h3 { color: blue; font-size: 1em; display: inline; }
+li.notification div.description { display: inline }
+li.notification .meta { float: right; position: relative; right: 4em; top: -1.3em; font-size: 0.8em; color: #888; }
+
 
 /** Feed and calendar links **/
 
@@ -86,8 +104,10 @@ ul.alternate img {
 ol.dates {
   font-size: 1.1em;
   list-style: none;
-  margin: 2em 3em 2em 3em;
+  margin: 4em 2em 0 2em;
   padding: 0;
+  width: 63em;
+  overflow: hidden;
 }
 ol.dates li.date {
   padding: 0 0 1.2em 0;

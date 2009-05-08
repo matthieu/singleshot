@@ -3,14 +3,14 @@ body { position: relative; }
 /** Header, footer and such **/
 
 #header {
-  width: 65em;
+  width: 67em;
   overflow: hidden;
   font-size: 1.1em;
 }
 #header ol.sections {
   list-style: none;
   display: block;
-  margin: 0 1em 0 1em;
+  margin: 0 2em 0 2em;
   padding: 0;
   border-bottom: 1px solid #CCC;
 }

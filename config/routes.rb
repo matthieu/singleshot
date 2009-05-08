@@ -31,6 +31,7 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources 'forms'
   map.resources 'templates'
+  map.resources 'notifications'
   map.resources 'activities'
   map.resource  'graphs'
   

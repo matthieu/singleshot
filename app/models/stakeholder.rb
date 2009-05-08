@@ -32,38 +32,19 @@
 #
 class Stakeholder < ActiveRecord::Base
 
-  # A task will only have one stakeholder in this role:
-  # * creator         -- Person who created the task, specified at creation.
-  # * owner           -- Person who currently owns (performs) the task.
-  SINGULAR_ROLES = ['creator', 'owner']
-
-  # A task will have multiple stakeholders in this role:
-  # * potential_owner -- Person who is allowed to claim (become owner of) the task.
-  # * excluded_owner  -- Person who is not allowed to claim the task.
-  # * past_owner      -- Previous but no longer owner of the task.
-  # * supervisor      -- Supervisors are allowed to modify the task, change its status, etc.
-  # * observer        -- Watches and receives notifications about the task.
-  PLURAL_ROLES = ['potential_owner', 'excluded_owner', 'past_owner', 'observer', 'supervisor']
-
-  ROLES = SINGULAR_ROLES + PLURAL_ROLES
-  
   attr_accessible :task, :person, :role
   attr_readable :person, :role
 
   # Stakeholder associated with a task.
   belongs_to :task
-  belongs_to :template, :foreign_key=>'task_id' # TODO: spec me
+  belongs_to :template, :foreign_key=>'task_id'
+  belongs_to :notification, :foreign_key=>'task_id'
 
   # Stakeholder associated with a person.
   belongs_to :person
   validates_presence_of :person
 
-  validates_inclusion_of :role, :in=>ROLES
   validates_presence_of :role
   validates_uniqueness_of :role, :scope=>[:task_id, :person_id]
-
-  def to_hash
-    { :person=>person.to_param, :role=>role }
-  end
 
 end

@@ -130,4 +130,7 @@ en:
     loading: "Loading &hellip;"
   date:
     formats:
-      month_day: "%m/%d"
+      month_day:   "%m/%d"
+  time:
+    formats:
+      hour_minute: "%I:%M %p"

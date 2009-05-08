@@ -143,8 +143,9 @@ class Person < ActiveRecord::Base
   end
 
 
-  # -- Tasks/Templates/Activity --
+  # -- Tasks/Templates/Notifications/Activity --
 
+  has_many :stakeholders, :dependent=>:delete_all
   has_many :tasks, :through=>:stakeholders, :uniq=>true, :extend=>::Base::ModifiedByOwner
 
   # task(5) same as tasks.find(5)
@@ -159,7 +160,8 @@ class Person < ActiveRecord::Base
     templates.find(id)
   end
 
-  has_many :stakeholders, :dependent=>:delete_all
+  has_many :notifications, :through=>:stakeholders
+
   has_many :activities, :dependent=>:delete_all
 
 
