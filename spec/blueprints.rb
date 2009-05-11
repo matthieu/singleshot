@@ -127,8 +127,8 @@ Notification.blueprint do
   creator           { Person.creator }
 end
 Notification::Copy.blueprint
-def notification(attributes = {})
+def make_notification(attributes = {})
   Notification.make(attributes) do |notif|
-    notif.recipients = attributes[:recipients] || [Person.owner, Person.potential]
+    notif.recipients = attributes[:recipients] || [Person.owner, Person.observer]
   end
 end

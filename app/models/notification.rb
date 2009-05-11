@@ -55,10 +55,9 @@ class Notification < Base
     def read!
       update_attributes! :read=>true
     end
+
+    named_scope :read, :conditions=>'notification_copies.read'
+    named_scope :unread, :conditions=>'!notification_copies.read'
   end
-
-
-  named_scope :read,     { :include=>:copies, :conditions=>"notification_copies.read" }
-  named_scope :unread,   { :include=>:copies, :conditions=>"!notification_copies.read" }
 
 end

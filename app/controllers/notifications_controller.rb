@@ -18,7 +18,34 @@ class NotificationsController < ApplicationController #:nodoc:
   respond_to :html, :json, :xml
 
   def index
-    @notifications = authenticated.notifications.received.paginate(:page=>params['page'], :per_page=>50)
-#    respond_with presenting(@notifications, :name=>'notifications')
+    @copies = authenticated.notifications.paginate(:page=>params['page'], :per_page=>50)
+    respond_to do |wants|
+      wants.html
+      wants.any { respond_with presenting(@copies.map(&:notification), :name=>'notifications') }
+    end
+  end
+
+  def create
+    @notification = Notification.new :creator=>authenticated
+    @presenter = presenting(@notification)
+    @presenter.update! params['notification']
+    respond_to do |wants|
+      wants.html { redirect_to notifications_url, :status=>:see_other }
+      wants.any  { respond_with @presenter, :status=>:created, :location=>@notification }
+    end
+  end
+
+  def show
+    respond_to do |wants|
+      wants.html { instance.read! }
+      wants.any  { respond_with presenting(instance.notification) }
+    end
+  end
+
+protected
+
+  helper_method :instance
+  def instance
+    @instance ||= authenticated.notification(params['id']) or fail ActiveRecord::RecordNotFound
   end
 end

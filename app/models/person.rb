@@ -164,8 +164,13 @@ class Person < ActiveRecord::Base
     templates.find(id)
   end
 
-  has_many :notification_copies, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id'
-  has_many :notifications, :through=>:notification_copies, :order=>'tasks.created_at DESC'
+  #has_many :notification_copies, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id', :include=>:notification
+  has_many :notifications, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id', :include=>:notification
+
+  def notification(id)
+    notifications.find(:first, :conditions=>[ 'notification_id = ?', id])
+  end
+  #has_many :notifications, :through=>:notification_copies, :order=>'tasks.created_at DESC'
 
   has_many :activities, :dependent=>:delete_all
 

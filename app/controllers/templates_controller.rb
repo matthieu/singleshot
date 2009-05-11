@@ -44,7 +44,7 @@ class TemplatesController < ApplicationController #:nodoc:
     presenter.update! params['template']
     respond_to do |wants|
       wants.html { redirect_to templates_url, :status=>:see_other }
-      wants.any  { respond_with presenter, :status=>:created, :location=>instance }
+      wants.any  { respond_with presenter, :status=>:created, :location=>@instance }
     end
   end
   
