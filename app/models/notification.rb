@@ -21,13 +21,44 @@ class Notification < Base
     self[:status] = 'sent'
   end
 
-  # -- Stakeholders & Access control --
-
-  # Optional creator and list of recipients.
-  stakeholders 'creator', 'recipients'
-  validates_length_of :recipients, :minimum=>1
-
   before_validation { |notification| notification.readonly! unless notification.new_record? }
 
-  named_scope :received, { :conditions=>["stakeholders.role = 'recipient'"], :order=>'tasks.created_at DESC' }
+  # -- Creator & recipients --
+
+  stakeholders 'creator'
+  has_many :copies, :dependent=>:delete_all, :uniq=>true
+  has_many :recipients, :through=>:copies
+  attr_accessible :recipients
+
+  def copy(person) #:nodoc
+    copies.find(:first, :conditions=>['recipient_id=?', person])
+  end
+
+  # Returns true if notification read by this recipient.
+  def read?(person)
+    copy(person).try(:read?)
+  end
+
+  # Marks notification as read by this recipient.
+  def read!(person)
+    copy(person).read!
+  end
+
+  class Copy < ActiveRecord::Base
+    set_table_name :notification_copies
+    belongs_to :notification
+    belongs_to :recipient, :class_name=>'Person'
+    attr_readonly :notification, :recipient
+
+    # Make this copy as read. For example:
+    #   notif.copy(authenticated).read!
+    def read!
+      update_attributes! :read=>true
+    end
+  end
+
+
+  named_scope :read,     { :include=>:copies, :conditions=>"notification_copies.read" }
+  named_scope :unread,   { :include=>:copies, :conditions=>"!notification_copies.read" }
+
 end

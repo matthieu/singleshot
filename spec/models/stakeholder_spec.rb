@@ -37,11 +37,7 @@ describe Stakeholder do
   should_have_attribute :role
   should_have_column :role, :type=>:string
   should_validate_presence_of :role
-  should_validate_inclusion_of :role, :in=>['creator', 'owner']
-  should_validate_inclusion_of :role, :in=>['potential_owner', 'excluded_owner', 'past_owner']
-  should_validate_inclusion_of :role, :in=>['supervisor', 'observer']
   should_have_attribute :created_at
   should_have_column :created_at, :type=>:datetime
-  # TODO: Broken with Remarkable 3.0.2
-  #should_validate_uniqueness_of :role, :scope=>[:task_id, :person_id]
+  should_validate_uniqueness_of :role, :scope=>[:task_id, :person_id]
 end

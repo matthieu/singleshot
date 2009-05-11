@@ -76,6 +76,10 @@ class Person < ActiveRecord::Base
     super
   end
 
+  def <=>(other) #:nodoc:
+    fullname <=> other.fullname
+  end
+
 
   attr_accessible :identity, :fullname, :email, :locale, :timezone, :password
 
@@ -160,7 +164,8 @@ class Person < ActiveRecord::Base
     templates.find(id)
   end
 
-  has_many :notifications, :through=>:stakeholders
+  has_many :notification_copies, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id'
+  has_many :notifications, :through=>:notification_copies, :order=>'tasks.created_at DESC'
 
   has_many :activities, :dependent=>:delete_all
 

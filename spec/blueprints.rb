@@ -125,5 +125,10 @@ end
 Notification.blueprint do
   title             { 'Task completed' }
   creator           { Person.creator }
-  recipients        { [Person.owner, Person.potential] }
+end
+Notification::Copy.blueprint
+def notification(attributes = {})
+  Notification.make(attributes) do |notif|
+    notif.recipients = attributes[:recipients] || [Person.owner, Person.potential]
+  end
 end

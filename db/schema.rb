@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090421005807) do
+ActiveRecord::Schema.define(:version => 20090508224047) do
 
   create_table "activities", :force => true do |t|
     t.integer  "person_id",  :null => false
@@ -23,6 +23,15 @@ ActiveRecord::Schema.define(:version => 20090421005807) do
     t.string  "url"
     t.text    "html"
   end
+
+  create_table "notification_copies", :force => true do |t|
+    t.integer "notification_id"
+    t.integer "recipient_id"
+    t.boolean "read",            :default => false, :null => false
+  end
+
+  add_index "notification_copies", ["notification_id", "recipient_id"], :name => "index_notification_copies_on_notification_id_and_recipient_id", :unique => true
+  add_index "notification_copies", ["recipient_id", "read"], :name => "index_notification_copies_on_recipient_id_and_read"
 
   create_table "people", :force => true do |t|
     t.string   "identity",                 :null => false
