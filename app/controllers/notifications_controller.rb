@@ -25,13 +25,15 @@ class NotificationsController < ApplicationController #:nodoc:
     end
   end
 
+  verify :params=>'notification', :only=>:create, :render=>{ :status=>:bad_request }
   def create
-    @notification = Notification.new :creator=>authenticated
-    @presenter = presenting(@notification)
-    @presenter.update! params['notification']
+    creator = params['notification'].delete('creator') || authenticated
+    recipients = Array(params['notification'].delete('recipients'))
+    @notification = Notification.create!(params['notification'].merge(:creator=>Person.identify(creator),
+                                                                      :recipients=>Person.identify(recipients)))
     respond_to do |wants|
       wants.html { redirect_to notifications_url, :status=>:see_other }
-      wants.any  { respond_with @presenter, :status=>:created, :location=>@notification }
+      wants.any  { respond_with presenting(@notification), :status=>:created, :location=>@notification }
     end
   end
 

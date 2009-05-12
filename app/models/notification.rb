@@ -14,25 +14,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class Notification < Base
+class Notification < ActiveRecord::Base
 
   def initialize(*args, &block)
     super
-    self[:status] = 'sent'
+    self[:priority] ||= 2
   end
 
+  # -- Descriptive --
+  
+  attr_accessible :subject, :body, :language, :priority
+  validates_presence_of :subject 
+  validates_inclusion_of :priority, :in=>1..3
   before_validation { |notification| notification.readonly! unless notification.new_record? }
+
 
   # -- Creator & recipients --
 
-  stakeholders 'creator'
-  has_many :copies, :dependent=>:delete_all, :uniq=>true
+  belongs_to :creator, :class_name=>'Person'
   has_many :recipients, :through=>:copies
-  attr_accessible :recipients
-
-  def copy(person) #:nodoc
-    copies.find(:first, :conditions=>['recipient_id=?', person])
-  end
+  attr_accessible :creator, :recipients
 
   # Returns true if notification read by this recipient.
   def read?(person)
@@ -42,6 +43,14 @@ class Notification < Base
   # Marks notification as read by this recipient.
   def read!(person)
     copy(person).read!
+  end
+
+
+  # -- Copies --
+
+  has_many :copies, :dependent=>:delete_all, :uniq=>true
+  def copy(person) #:nodoc
+    copies.find(:first, :conditions=>['recipient_id=?', person])
   end
 
   class Copy < ActiveRecord::Base

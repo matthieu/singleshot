@@ -91,7 +91,7 @@ class Populate < ActiveRecord::Migration
     Template.create! :title=>'Absence request', :description=>'Request leave of absence', :potential_owners=>[@me] do |template|
       template.build_form :html=>"<input name='data[date]' type='text' class='date'>"
     end
-    5.times { Notification.create! :title=>Faker::Lorem.sentence, :description=>Faker::Lorem.paragraphs(3).join("\n\n"),
+    5.times { Notification.create! :subject=>Faker::Lorem.sentence, :body=>Faker::Lorem.paragraphs(5).join("\n\n"),
                                    :recipients=>[@me] }
   end
 

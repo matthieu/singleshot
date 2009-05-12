@@ -1,17 +1,17 @@
 <%  @atom_feed_url = notifications_url(:format=>:atom, :access_key=>authenticated.access_key) %>
 <ol class='dates hfeed'>
-  <% for date, notifications in @notifications.group_by{ |a| a.created_at.to_date } %>
+  <% for date, copies in @copies.group_by{ |copy| copy.notification.created_at.to_date } %>
     <li class='date'>
       <h2><%= relative_date(date).humanize %></h2>
       <ol class='notifications'>
-        <% notifications.each do |notification| %>
-          <% content_tag_for 'li', notification, :class=>'hentry' do %>
-            <% link_to notification, :class=>'content' do %>
-              <h3 class='title'><%= h(notification.title) %></h3>
-              <div class='description'><%= h(notification.description) %></div>
+        <% copies.each do |copy| %>
+          <% content_tag_for 'li', copy.notification, :class=>'hentry ' + (copy.read? ? 'read' : 'unread') do %>
+            <% link_to copy.notification, :class=>'content' do %>
+              <h3 class='subject'><%= h(copy.notification.subject) %></h3>
+              <div class='body'><%= h(copy.notification.body) %></div>
             <% end %>
-            <div class='meta'><%= link_to_person notification.creator if notification.creator %>
-              <span class='published'><%= l(notification.created_at, :format=>:hour_minute) %></span>
+            <div class='meta'><%= link_to_person copy.notification.creator if copy.notification.creator %>
+              <span class='published'><%= l(copy.notification.created_at, :format=>:hour_minute) %></span>
             </div>
           <% end %>
         <% end %>
@@ -19,4 +19,4 @@
     </li>
   <% end %>
 </ol>
-<%= will_paginate @notifications %>
+<%= will_paginate @copies %>

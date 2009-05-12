@@ -18,17 +18,20 @@ require File.dirname(__FILE__) + '/helpers'
 require File.dirname(__FILE__) + '/base_spec'
 
 describe Notification do
-  #it_should_behave_like 'Base'
   subject { make_notification }
 
-  should_be_kind_of Notification
-  should_allow_mass_assignment_of :title, :description, :language, :priority
-  should_allow_mass_assignment_of :creator, :recipients
-  it('should be readonly') { lambda { subject.save! }.should raise_error(ActiveRecord::ReadOnlyRecord) }
-
+  should_have_column :subject, :body, :type=>:string
+  should_have_column :language, :type=>:string, :limit=>5
+  should_have_column :priority, :type=>:integer, :limit=>1
+  should_belong_to :creator, :class_name=>'Person'
   should_have_many :copies, :dependent=>:delete_all, :uniq=>true
   should_have_many :recipients, :through=>:copies
-  should_allow_mass_assignment_of :recipients
+
+  should_allow_mass_assignment_of :subject, :body, :language, :priority, :creator, :recipients
+  should_validate_presence_of :subject
+  should_not_validate_presence_of :body, :language, :creator, :recipients
+
+  it('should be readonly') { lambda { subject.save! }.should raise_error(ActiveRecord::ReadOnlyRecord) }
   it('should create one copy for each recipient') { subject.copies.map(&:recipient).sort.should == [Person.observer, Person.owner] }
 
 

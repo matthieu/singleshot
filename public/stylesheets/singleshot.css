@@ -70,8 +70,10 @@ li.notification .content {
   position: relative;
   margin-right: 10em;
 }
-li.notification h3 { color: blue; font-size: 1em; display: inline; }
-li.notification div.description { display: inline }
+li.notification .subject { color: blue; font-size: 1em; display: inline; }
+li.notification.read .subject { font-weight: normal }
+li.notification.unread .subject { font-weight: bold }
+li.notification .body { display: inline }
 li.notification .meta { float: right; position: relative; right: 4em; top: -1.3em; font-size: 0.8em; color: #888; }
 
 

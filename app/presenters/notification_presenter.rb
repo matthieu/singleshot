@@ -14,13 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class NotificationPresenter < BasePresenter
+class NotificationPresenter < Presenter::Base
   
-  def update!(attrs)
-    if recipients = attrs['recipients']
-      attrs['recipients'] = Person.identify(recipients)
-    end
-    super attrs
-  end
-
 end

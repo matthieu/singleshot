@@ -72,15 +72,15 @@ describe NotificationsController do
   should_route :post, '/notifications', :controller=>'notifications', :action=>'create'
   describe :post=>'create' do
     before { authenticate Person.creator }
-    params 'notification'=>{ 'title'=>'Completed', 'description'=>'TPS Report completed', 'recipients'=>[Person.observer.to_param] }
+    params 'notification'=>{ 'subject'=>'Completed', 'body'=>'TPS Report completed', 'recipients'=>[Person.observer.to_param] }
 
     share_examples_for 'notification.create' do
-      it('should create new notification')      { new_notification.title.should == 'Completed' }
+      it('should create new notification')      { new_notification.subject.should == 'Completed' }
       it('should assign notification creator')  { new_notification.creator.should == Person.creator }
       it('should assign recipients')            { new_notification.recipients.should == [Person.observer] }
       should_assign_to(:notification)           { new_notification }
 
-      describe '(no title)' do
+      describe '(no subject)' do
         params 'notification'=>{}
         should_respond_with 422
       end

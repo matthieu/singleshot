@@ -33,6 +33,16 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
   add_index "notification_copies", ["notification_id", "recipient_id"], :name => "index_notification_copies_on_notification_id_and_recipient_id", :unique => true
   add_index "notification_copies", ["recipient_id", "read"], :name => "index_notification_copies_on_recipient_id_and_read"
 
+  create_table "notifications", :force => true do |t|
+    t.string   "subject",                 :null => false
+    t.string   "body"
+    t.string   "language",   :limit => 5
+    t.integer  "creator_id"
+    t.integer  "priority",   :limit => 1, :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "people", :force => true do |t|
     t.string   "identity",                 :null => false
     t.string   "fullname",                 :null => false

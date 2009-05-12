@@ -123,7 +123,7 @@ Template.blueprint do
 end
 
 Notification.blueprint do
-  title             { 'Task completed' }
+  subject           { 'Task completed' }
   creator           { Person.creator }
 end
 Notification::Copy.blueprint
