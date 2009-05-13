@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: notifications
+#
+#  id         :integer(4)      not null, primary key
+#  subject    :string(200)     not null
+#  body       :string(4000)
+#  language   :string(5)
+#  creator_id :integer(4)
+#  task_id    :integer(4)
+#  priority   :integer(1)      not null
+#  created_at :datetime
+#  updated_at :datetime
+#
+
 # Singleshot  Copyright (C) 2008-2009  Intalio, Inc
 #
 # This program is free software: you can redistribute it and/or modify

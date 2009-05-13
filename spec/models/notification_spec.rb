@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: notifications
+#
+#  id         :integer(4)      not null, primary key
+#  subject    :string(200)     not null
+#  body       :string(4000)
+#  language   :string(5)
+#  creator_id :integer(4)
+#  task_id    :integer(4)
+#  priority   :integer(1)      not null
+#  created_at :datetime
+#  updated_at :datetime
+#
+
 # Singleshot  Copyright (C) 2008-2009  Intalio, Inc
 #
 # This program is free software: you can redistribute it and/or modify
@@ -37,7 +52,8 @@ describe Notification do
 
   # TODO: size of subject and body
   # 
-  should_have_column :subject, :body, :type=>:string
+  should_have_column :subject, :type=>:string, :limit=>200
+  should_have_column :body, :type=>:string, :limit=>4000
   should_have_column :language, :type=>:string, :limit=>5
   should_have_column :priority, :type=>:integer, :limit=>1
   should_belong_to :creator, :class_name=>'Person'

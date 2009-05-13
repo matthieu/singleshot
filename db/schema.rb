@@ -25,8 +25,8 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
   end
 
   create_table "notification_copies", :force => true do |t|
-    t.integer "notification_id"
-    t.integer "recipient_id"
+    t.integer "notification_id",                    :null => false
+    t.integer "recipient_id",                       :null => false
     t.boolean "read",            :default => false, :null => false
   end
 
@@ -34,12 +34,12 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
   add_index "notification_copies", ["recipient_id", "read"], :name => "index_notification_copies_on_recipient_id_and_read"
 
   create_table "notifications", :force => true do |t|
-    t.string   "subject",                 :null => false
-    t.string   "body"
+    t.string   "subject",    :limit => 200,  :null => false
+    t.string   "body",       :limit => 4000
     t.string   "language",   :limit => 5
     t.integer  "creator_id"
     t.integer  "task_id"
-    t.integer  "priority",   :limit => 1, :null => false
+    t.integer  "priority",   :limit => 1,    :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
