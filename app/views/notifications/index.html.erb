@@ -1,17 +1,23 @@
-<%  @atom_feed_url = notifications_url(:format=>:atom, :access_key=>authenticated.access_key) %>
+<% @title = 'Inbox' %>
+<% @atom_feed_url = notifications_url(:format=>:atom, :access_key=>authenticated.access_key) %>
 <ol class='dates hfeed'>
   <% for date, copies in @copies.group_by{ |copy| copy.notification.created_at.to_date } %>
     <li class='date'>
       <h2><%= relative_date(date).humanize %></h2>
       <ol class='notifications'>
-        <% copies.each do |copy| %>
-          <% content_tag_for 'li', copy.notification, :class=>'hentry ' + (copy.read? ? 'read' : 'unread') do %>
-            <% link_to copy.notification, :class=>'content' do %>
-              <h3 class='subject'><%= h(copy.notification.subject) %></h3>
-              <div class='body'><%= h(copy.notification.body) %></div>
-            <% end %>
-            <div class='meta'><%= link_to_person copy.notification.creator if copy.notification.creator %>
-              <span class='published'><%= l(copy.notification.created_at, :format=>:hour_minute) %></span>
+        <% copies.each do |copy| ; notification = copy.notification %>
+          <% content_tag_for 'li', notification, :class=>'hentry ' + (copy.read? ? 'read' : 'unread') do %>
+            <div class='summary'>
+              <h3><% link_to notification do %>
+                <span class='subject'><%= h(notification.subject) %></span>
+                <span class='body'><%= h(truncate(notification.body, :length=>500)) %></span>
+              <% end %></h3>
+              <p class='meta'><%= link_to_person notification.creator if notification.creator %>
+                <span class='published'><%= l(notification.created_at, :format=>:hour_minute) %></span>
+              </p>
+            </div>
+            <div class='expanded hidden'>
+              <%= render :partial=>'notification', :object=>notification %>
             </div>
           <% end %>
         <% end %>

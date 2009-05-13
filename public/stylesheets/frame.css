@@ -3,14 +3,15 @@ body { position: relative; }
 /** Header, footer and such **/
 
 #header {
-  width: 67em;
+  width: 950px;
+  margin: 0 2em 0 2em;
   overflow: hidden;
-  font-size: 1.1em;
 }
 #header ol.sections {
+  font-size: 1.1em;
   list-style: none;
   display: block;
-  margin: 0 2em 0 2em;
+  margin: 0;
   padding: 0;
   border-bottom: 1px solid #CCC;
 }
@@ -35,8 +36,9 @@ body { position: relative; }
 #main {
   float: left;
   overflow: hidden;
-  width: 50em;
-  margin: 4em 2em 0 1em;
+  width: 950px;
+  margin: 4em 2em 0 2em;
+  padding: 0;
 }
 
 ul#sidebar  {

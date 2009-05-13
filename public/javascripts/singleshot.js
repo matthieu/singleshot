@@ -53,6 +53,20 @@ $(function() {
 
   $("#graphs").accordion();
 
+  $('ol.notifications li.notification').each(function() {
+    $(this).find('.summary>h3>a').live('click', function() {
+      $(this).closest('li').find('.summary').hide();
+      $(this).closest('li').find('.expanded').fadeIn(250);
+      return false;
+    });
+    $(this).find('.expanded>h3>a').live('click', function() {
+      $(this).closest('li').find('.expanded').fadeOut(250, function() {
+        $(this).closest('li').find('.summary').show();
+      });
+      return false;
+    });
+  });
+
 })
 
 

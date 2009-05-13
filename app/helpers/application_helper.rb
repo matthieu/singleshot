@@ -38,6 +38,10 @@ module ApplicationHelper
       content_tag('span', fullname, options)
   end
 
+  def rich_text(content)
+    auto_link(sanitize(simple_format(content)))
+  end
+
 
   def relative_date(date)
     date = date.to_date

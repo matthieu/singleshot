@@ -1,9 +1,4 @@
-#graphs {
-  width: 62em;
-}
-
-
-ul#graphs { margin: 4em 2em 0 2em; width: 63em; overflow: hidden }
+ul#graphs { }
 ul#graphs li.graph div { height: 150pt; }
 ol.bar-graph {
   margin: 0;
@@ -58,23 +53,35 @@ li.template .meta { font-size: 9pt; color: #888; margin: 0 }
 
 /** Notifications **/
 
-ol.notifications { list-style: none; margin: 0; padding: 0.6em 0 2em 0;
-}
-li.notification { margin: 0 0 0.9em 0; }
-li.notification .content {
+ol.notifications { list-style: none; margin: 0; padding: 0.6em 0 2em 0; }
+li.notification { margin: 0 0 0.9em 0; position: relative; }
+li.notification .summary h3 {
   display: block;
-  color: #000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   position: relative;
   margin-right: 10em;
+  font-size: 11pt;
 }
-li.notification .subject { color: blue; font-size: 1em; display: inline; }
-li.notification.read .subject { font-weight: normal }
-li.notification.unread .subject { font-weight: bold }
-li.notification .body { display: inline }
-li.notification .meta { float: right; position: relative; right: 4em; top: -1.3em; font-size: 0.8em; color: #888; }
+li.notification .summary h3 .subject { color: blue; font-size: 1em; display: inline; }
+li.notification.read .summary h3 .subject { font-weight: normal }
+li.notification .summary .body { display: inline; font-weight: normal; color: #000; }
+li.notification .summary .meta { position: absolute; right: 0; top: 0; }
+.notification .meta { margin: 0; font-size: 9pt; color: #888; }
+
+.notification .expanded {
+  background-color: #f3f3f3;
+  padding: 1em;
+  border: 1px solid #d3d3d3;
+}
+.notification .expanded h3 { margin: 0 0 0.9em }
+.notification .expanded h3 a { color: black; }
+.notification .expanded .task { font-style: italic; margin: 0 0 0.3em }
+.notification .expanded .meta { margin: 0 }
+.notification .expanded .body { }
+.notification .expanded .back { text-align: right; margin: 2em 0 0 0; }
+
 
 
 /** Feed and calendar links **/
@@ -106,10 +113,7 @@ ul.alternate img {
 ol.dates {
   font-size: 1.1em;
   list-style: none;
-  margin: 4em 2em 0 2em;
   padding: 0;
-  width: 63em;
-  overflow: hidden;
 }
 ol.dates li.date {
   padding: 0 0 1.2em 0;

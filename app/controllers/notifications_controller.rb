@@ -39,15 +39,20 @@ class NotificationsController < ApplicationController #:nodoc:
 
   def show
     respond_to do |wants|
-      wants.html { instance.read! }
-      wants.any  { respond_with presenting(instance.notification) }
+      wants.html { copy.read! }
+      wants.any  { respond_with presenting(notification) }
     end
   end
 
 protected
 
-  helper_method :instance
-  def instance
-    @instance ||= authenticated.notification(params['id']) or fail ActiveRecord::RecordNotFound
+  helper_method :notification, :copy
+  def notification
+    @notification ||= copy.notification
   end
+
+  def copy
+    @copy ||= authenticated.notification(params['id']) or fail ActiveRecord::RecordNotFound
+  end
+
 end
