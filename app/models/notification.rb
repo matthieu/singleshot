@@ -69,4 +69,12 @@ class Notification < ActiveRecord::Base
     named_scope :unread, :conditions=>'!notification_copies.read'
   end
 
+
+  # -- E-mail --
+
+  after_save do |notification|
+    notification.recipients.each do |recipient|
+      NotificationMailer.deliver_notification notification, recipient
+    end
+  end
 end

@@ -58,4 +58,7 @@ Rails::Initializer.run do |config|
   config.active_record.partial_updates = true
 
   config.active_record.observers = []
+
+  # TODO: set this before going to production.
+  config.action_mailer.default_url_options = { :host=> 'localhost' }
 end

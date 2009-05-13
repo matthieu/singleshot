@@ -14,21 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require File.dirname(__FILE__) + '/../spec_helper'
-
-
-module Spec::Helpers #:nodoc:
-  # These helper methods and matchers are available only when speccing AR models.
-  module Models
-
-  end
-end
-
-Spec::Runner.configure do |config|
-  config.include Spec::Helpers::Models, :type=>:model
-  config.before :each do
-    ActionMailer::Base.delivery_method = :test  
-    ActionMailer::Base.perform_deliveries = true  
-    ActionMailer::Base.deliveries = []  
+class NotificationMailer < ActionMailer::Base
+  def notification(notification, recipient)
+    subject      notification.subject
+    from         "Notifications <notifications@#{default_url_options[:host]}>"
+    reply_to     "Do not reply <noreply@#{default_url_options[:host]}>"
+    recipients   "#{recipient.fullname} <#{recipient.email}>"
+    body         :body => notification.body
+    content_type 'text/html'
   end
 end

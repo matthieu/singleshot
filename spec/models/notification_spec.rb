@@ -18,7 +18,7 @@ require File.dirname(__FILE__) + '/helpers'
 require File.dirname(__FILE__) + '/base_spec'
 
 describe Notification do
-  subject { make_notification }
+  subject { Notification.make }
 
   should_have_column :subject, :body, :type=>:string
   should_have_column :language, :type=>:string, :limit=>5
@@ -35,22 +35,12 @@ describe Notification do
   it('should create one copy for each recipient') { subject.copies.map(&:recipient).sort.should == [Person.observer, Person.owner] }
 
 
-  describe '.read!' do
-    before { subject.read!(Person.owner) }
-    it('should mark notification as read')      { subject.copy(Person.owner).should be_read }
-    it('should not modify other notifications') { subject.copy(Person.observer).should_not be_read } 
-  end
-
-  describe '.read?' do
-    before { subject.copy(Person.owner).read! }
-    it('should return true if notification read')      { subject.read?(Person.owner).should be_true }
-    it('should return false if notification not read') { subject.read?(Person.observer).should be_false }
-  end
+  # -- Notification received by person, read & unread --
 
   describe 'for person' do
     before do
-      2.times { |i| make_notification :id=>i + 1, :recipients=>[Person.observer] }
-      3.times { |i| make_notification :id=>i + 3, :created_at=>Time.now - (i - 3).minutes }
+      2.times { |i| Notification.make :id=>i + 1, :recipients=>[Person.observer] }
+      3.times { |i| Notification.make :id=>i + 3, :created_at=>Time.now - (i - 3).minutes }
     end
     subject { Person.owner.notifications }
 
@@ -60,7 +50,7 @@ describe Notification do
 
   describe '.read' do
     before do
-      3.times { |i| make_notification :id=>i + 1, :created_at=>Time.now - (i -3).minutes }
+      3.times { |i| Notification.make :id=>i + 1, :created_at=>Time.now - (i -3).minutes }
       Notification.find(2).read! Person.observer
       Notification.find(3).read! Person.owner
     end
@@ -72,7 +62,7 @@ describe Notification do
 
   describe '.unread' do
     before do
-      3.times { |i| make_notification :id=>i + 1, :created_at=>Time.now - (i -3).minutes }
+      3.times { |i| Notification.make :id=>i + 1, :created_at=>Time.now - (i -3).minutes }
       Notification.find(2).read! Person.observer
       Notification.find(3).read! Person.owner
     end
@@ -83,8 +73,10 @@ describe Notification do
   end
 
 
+  # -- Notification copy --
+
   describe 'Copy' do
-    subject { make_notification.copies.last }
+    subject { Notification.make.copies.last }
     should_belong_to :notification
     should_belong_to :recipient
     should_have_readonly_attributes :notification, :recipient
@@ -97,5 +89,10 @@ describe Notification do
     end
   end
 
-  # TODO: Send e-mail after creation
+
+  # -- Notification e-mail --
+
+  it('should send email to all recipients')             { subject ; ActionMailer::Base.deliveries.map(&:to).flatten.sort.should == subject.recipients.map(&:email).sort }
+  it('should send individual email to each recipient')  { subject ; ActionMailer::Base.deliveries.all? { |d| d.to.size.should == 1 } }
+
 end
