@@ -25,8 +25,8 @@ describe NotificationsController do
   describe :get=>'index' do
     before { authenticate Person.observer }
     before do
-      2.times { make_notification :recipients=>[Person.other] }
-      @notifications = Array.new(3) { make_notification }
+      2.times { Notification.make :recipients=>[Person.other] }
+      @notifications = Array.new(3) { Notification.make }
     end
 
 
@@ -79,6 +79,7 @@ describe NotificationsController do
       it('should assign notification creator')  { new_notification.creator.should == Person.creator }
       it('should assign recipients')            { new_notification.recipients.should == [Person.observer] }
       should_assign_to(:notification)           { new_notification }
+      it('should e-mail recipients')            { run_action! ; ActionMailer::Base.deliveries.first.to.should == [Person.observer.email] }
 
       describe '(no subject)' do
         params 'notification'=>{}
@@ -133,7 +134,7 @@ describe NotificationsController do
 
   should_route :get, '/notifications/93', :controller=>'notifications', :action=>'show', :id=>93
   describe :get=>'show' do
-    before { make_notification(:id=>93, :recipients=>[Person.observer]) }
+    before { Notification.make :id=>93, :recipients=>[Person.observer] }
     before { authenticate Person.observer }
     params 'id'=>93
 
