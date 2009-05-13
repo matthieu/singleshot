@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
     t.string   "body"
     t.string   "language",   :limit => 5
     t.integer  "creator_id"
+    t.integer  "task_id"
     t.integer  "priority",   :limit => 1, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"

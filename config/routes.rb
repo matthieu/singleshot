@@ -42,7 +42,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect ':controller/:action/:id.:format'
 end
 #== Route Map
-# Generated on 24 Apr 2009 15:44
+# Generated on 13 May 2009 14:13
 #
 #             new_session GET    /session/new(.:format)             {:action=>"new", :controller=>"sessions"}
 #            edit_session GET    /session/edit(.:format)            {:action=>"edit", :controller=>"sessions"}
@@ -80,6 +80,13 @@ end
 #                template GET    /templates/:id(.:format)           {:action=>"show", :controller=>"templates"}
 #                         PUT    /templates/:id(.:format)           {:action=>"update", :controller=>"templates"}
 #                         DELETE /templates/:id(.:format)           {:action=>"destroy", :controller=>"templates"}
+#           notifications GET    /notifications(.:format)           {:action=>"index", :controller=>"notifications"}
+#                         POST   /notifications(.:format)           {:action=>"create", :controller=>"notifications"}
+#        new_notification GET    /notifications/new(.:format)       {:action=>"new", :controller=>"notifications"}
+#       edit_notification GET    /notifications/:id/edit(.:format)  {:action=>"edit", :controller=>"notifications"}
+#            notification GET    /notifications/:id(.:format)       {:action=>"show", :controller=>"notifications"}
+#                         PUT    /notifications/:id(.:format)       {:action=>"update", :controller=>"notifications"}
+#                         DELETE /notifications/:id(.:format)       {:action=>"destroy", :controller=>"notifications"}
 #              activities GET    /activities(.:format)              {:action=>"index", :controller=>"activities"}
 #                         POST   /activities(.:format)              {:action=>"create", :controller=>"activities"}
 #            new_activity GET    /activities/new(.:format)          {:action=>"new", :controller=>"activities"}
@@ -87,6 +94,12 @@ end
 #                activity GET    /activities/:id(.:format)          {:action=>"show", :controller=>"activities"}
 #                         PUT    /activities/:id(.:format)          {:action=>"update", :controller=>"activities"}
 #                         DELETE /activities/:id(.:format)          {:action=>"destroy", :controller=>"activities"}
+#              new_graphs GET    /graphs/new(.:format)              {:action=>"new", :controller=>"graphs"}
+#             edit_graphs GET    /graphs/edit(.:format)             {:action=>"edit", :controller=>"graphs"}
+#                  graphs GET    /graphs(.:format)                  {:action=>"show", :controller=>"graphs"}
+#                         PUT    /graphs(.:format)                  {:action=>"update", :controller=>"graphs"}
+#                         DELETE /graphs(.:format)                  {:action=>"destroy", :controller=>"graphs"}
+#                         POST   /graphs(.:format)                  {:action=>"create", :controller=>"graphs"}
 #                    root        /                                  {:action=>"index", :controller=>"tasks"}
 #                                /:controller/:action/:id           
 #                                /:controller/:action/:id(.:format) 

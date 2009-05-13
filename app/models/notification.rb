@@ -14,6 +14,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# == Schema Information
+#
+# Table name: notifications
+#
+#  id         :integer(4)      not null, primary key
+#  subject    :string(255)     not null
+#  body       :string(255)
+#  language   :string(5)
+#  creator_id :integer(4)
+#  task_id    :integer(4)
+#  priority   :integer(1)      not null
+#  created_at :datetime
+#  updated_at :datetime
+#
 class Notification < ActiveRecord::Base
 
   def initialize(*args, &block)
@@ -23,7 +37,8 @@ class Notification < ActiveRecord::Base
 
   # -- Descriptive --
   
-  attr_accessible :subject, :body, :language, :priority
+  attr_accessible :subject, :body, :language, :priority, :task
+  belongs_to :task
   validates_presence_of :subject 
   validates_inclusion_of :priority, :in=>1..3
   before_validation { |notification| notification.readonly! unless notification.new_record? }
@@ -34,6 +49,7 @@ class Notification < ActiveRecord::Base
   belongs_to :creator, :class_name=>'Person'
   has_many :recipients, :through=>:copies
   attr_accessible :creator, :recipients
+  validates_length_of :recipients, :minimum=>1
 
   # Returns true if notification read by this recipient.
   def read?(person)

@@ -98,6 +98,14 @@ en:
       due_on:     "Due on {{date}}"
       this:       "this task"
       more:       "See more task details (description, priority, activity)"
+  # Models
+  activerecord:
+    errors:
+      models:
+        notification:
+          attributes:
+            recipients:
+              too_short:  "Notification requires at least one recipient."
   # Everything else.
   task:
     priority:

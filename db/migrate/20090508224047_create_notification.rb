@@ -1,10 +1,11 @@
-class Notification < ActiveRecord::Migration
+class CreateNotification < ActiveRecord::Migration
   def self.up
     create_table :notifications do |t|
       t.string      :subject,      :null => false
       t.string      :body
       t.string      :language,     :limit => 5
       t.belongs_to  :creator
+      t.belongs_to  :task
       t.integer     :priority,     :limit => 1,  :null => false
       t.timestamps
     end
