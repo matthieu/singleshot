@@ -18,7 +18,7 @@
       </ol>
     </div>
     <div id='details' class='dropdown'>
-      <div class='description'><%= auto_link(sanitize(simple_format(instance.description))) %></div>
+      <div class='description'><%= rich_text instance.description %></div>
       <%= dropdown = yield(:dropdown) ; "<hr>#{dropdown}" if dropdown %>
     </div>
     <%= content_tag 'iframe', nil, :id=>'frame', :noresize=>'noresize', :src=>@iframe_url if @iframe_url %>

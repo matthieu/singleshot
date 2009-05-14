@@ -38,6 +38,8 @@ module ApplicationHelper
       content_tag('span', fullname, options)
   end
 
+  # Turns text content into HTML suitable for rendering. The original content can be HTML, sanitized for good measure,
+  # but can also be plain text: URLs transformed to links and paragraphs (separated by empty line) properly formatted.
   def rich_text(content)
     auto_link(sanitize(simple_format(content)))
   end
