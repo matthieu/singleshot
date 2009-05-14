@@ -21,3 +21,6 @@ config.action_controller.consider_all_requests_local = true
 config.action_controller.perform_caching             = false
 config.action_controller.allow_forgery_protection    = false
 config.action_mailer.delivery_method = :test
+
+
+config.gem 'test-unit',         :version=>'1.2.3', :lib=>false if RUBY_VERSION >= '1.9.0' # RSpec insists.
