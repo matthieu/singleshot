@@ -65,7 +65,7 @@ share_examples_for Base do
   # -- Access control --
 
   should_not_have_attribute :modified_by
-  it('should have accessor modified_by') { subject.methods.should include('modified_by', 'modified_by=') }
+  it('should have accessor modified_by') { subject.methods.map(&:to_s).should include('modified_by', 'modified_by=') }
 
 
   # -- Activity --
