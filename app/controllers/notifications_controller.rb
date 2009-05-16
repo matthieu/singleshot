@@ -44,6 +44,11 @@ class NotificationsController < ApplicationController #:nodoc:
     end
   end
 
+  def update
+    copy.read! if params['read']
+    head :ok
+  end
+
 protected
 
   helper_method :notification, :copy

@@ -9,6 +9,7 @@
     <%= tag :link, :rel=>'previous', :type=>Mime::HTML, :href=>@previous if @previous %>
   </head>
   <body>
+    <%= javascript_tag "window._token = '#{form_authenticity_token}'" %>
 	  <div id='header'>
       <ol class='sections'>
         <li class='section logo'><%= link_to image_tag('singleshot-100-20.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>

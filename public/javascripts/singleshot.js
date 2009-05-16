@@ -15,6 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+jQuery.extend({
+  put: function(url, data, func, type) {
+    data = $.extend({ authenticity_token: window._token, _method: 'put' }, data);
+    return $.post(url, data, func, type);
+  }
+});
+  
 
 $(function() {
   // Form fields watermark and auto focus.
@@ -53,19 +60,19 @@ $(function() {
 
   $("#graphs").accordion();
 
-  $('ol.notifications li.notification').each(function() {
-    $(this).find('.summary>h3>a').live('click', function() {
-      $(this).closest('li').find('.summary').hide();
-      $(this).closest('li').find('.expanded').fadeIn(250);
+  // Notifications in-place expansion.
+  $('ol.notifications li.notification').
+    find('.summary>h3>a').live('click', function() {
+      var li = $(this).closest('li');
+      li.find('.summary').hide().end().find('.expanded').slideDown(250);
+      if (!li.hasClass('read'))
+        $.put($(this).attr('href'), { read: 'true' }, function() { li.addClass('read').removeClass('unread') });
+      return false;
+    }).end().find('.expanded>h3>a').live('click', function() {
+      var li = $(this).closest('li');
+      li.find('.expanded').slideUp(250, function() { li.find('.summary').show(); });
       return false;
     });
-    $(this).find('.expanded>h3>a').live('click', function() {
-      $(this).closest('li').find('.expanded').fadeOut(250, function() {
-        $(this).closest('li').find('.summary').show();
-      });
-      return false;
-    });
-  });
 
 })
 

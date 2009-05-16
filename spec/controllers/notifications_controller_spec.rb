@@ -139,7 +139,7 @@ describe NotificationsController do
     params 'id'=>93
 
     share_examples_for 'notification.show' do
-      should_assign_to(:instance) { Notification::Copy.last }
+      should_assign_to(:copy) { Notification::Copy.last }
 
       describe '(inaccessible)' do
         before { authenticate Person.other }
@@ -149,7 +149,7 @@ describe NotificationsController do
 
     describe Mime::HTML do
       it_should_behave_like 'notification.show'
-      it('should make notification as read') { run_action! ; Notification::Copy.last.should be_read }
+      it('should mark notification as read') { run_action! ; Notification::Copy.last.should be_read }
       should_render_template 'notifications/show.html.erb'
 
       describe '(unauthenticated)' do
@@ -178,6 +178,27 @@ describe NotificationsController do
         before { authenticate nil }
         should_respond_with 401
       end
+    end
+  end
+
+
+  # -- Mark notification as read --
+
+  should_route :put, '/notifications/93', :controller=>'notifications', :action=>'update', :id=>93
+  describe :put=>'update' do
+    before { Notification.make :id=>93, :recipients=>[Person.observer] }
+    before { authenticate Person.observer }
+    params 'id'=>93
+
+    describe '(marked read)' do
+      params 'read'=>true
+      it('should mark notification as read') { run_action! ; Notification::Copy.last.should be_read }
+      should_respond_with 200
+    end
+
+    describe '(inaccessible)' do
+      before { authenticate Person.other }
+      should_respond_with 404
     end
   end
 
