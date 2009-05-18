@@ -186,14 +186,15 @@ describe NotificationsController do
 
   should_route :put, '/notifications/93', :controller=>'notifications', :action=>'update', :id=>93
   describe :put=>'update' do
+    before { Notification.make :id=>91 ; Notification.make :id=>92 }
     before { Notification.make :id=>93, :recipients=>[Person.observer] }
     before { authenticate Person.observer }
-    params 'id'=>93
+    params 'id'=>93, 'read'=>'true'
 
     describe '(marked read)' do
-      params 'read'=>true
       it('should mark notification as read') { run_action! ; Notification::Copy.last.should be_read }
       should_respond_with 200
+      should_respond_with_body "2"
     end
 
     describe '(inaccessible)' do
