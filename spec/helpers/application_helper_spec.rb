@@ -35,4 +35,19 @@ describe ApplicationHelper do
     it('should transform links')              { rich_text("http://cool").should =~ /<a href="http:\/\/cool">http:\/\/cool<\/a>/ }
   end
 
+  describe 'inbox_count' do
+    subject { inbox_count }
+
+    describe '(unauthenticated)' do
+      it('should return empty string if not authenticated') { subject.should == '' }
+    end
+    describe '(authenticated)' do
+      before { stub!(:authenticated).and_return { Person.owner } }
+      before { Notification.make :recipients=>[Person.other] }
+      before { Notification.make }
+      it('should return count of unread notifications') { should have_tag('span.count', '1') }
+      it('should return empty string if no unread notifiactions') { Notification::Copy.update_all :read=>true ; subject.should == '' }
+    end
+  end
+
 end

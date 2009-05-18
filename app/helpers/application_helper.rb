@@ -44,6 +44,7 @@ module ApplicationHelper
     auto_link(sanitize(simple_format(content)))
   end
 
+  # Used in the layout to display number of unread notifications.
   def inbox_count
     if authenticated
       unread = authenticated.notifications.unread.count

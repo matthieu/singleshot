@@ -22,7 +22,7 @@ describe FormHelper do
   describe 'form' do
 
     describe '(with active task)' do
-      before {  stub!(:authenticated).and_return { Person.owner } }
+      before  { stub!(:authenticated).and_return { Person.owner } }
       subject { form Task.make(:id=>58, :owner=>Person.owner) }
 
       it('should be form to update existing task') do
