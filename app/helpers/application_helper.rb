@@ -44,6 +44,15 @@ module ApplicationHelper
     auto_link(sanitize(simple_format(content)))
   end
 
+  def inbox_count
+    if authenticated
+      unread = authenticated.notifications.unread.count
+      unread > 0 ?  content_tag('span', unread, :class=>'count') : ''
+    else
+      ''
+    end
+  end
+
 
   def relative_date(date)
     date = date.to_date

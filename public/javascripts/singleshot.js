@@ -66,7 +66,14 @@ $(function() {
       var li = $(this).closest('li');
       li.find('.summary').hide().end().find('.expanded').slideDown(250);
       if (!li.hasClass('read'))
-        $.put($(this).attr('href'), { read: 'true' }, function() { li.addClass('read').removeClass('unread') });
+        $.put($(this).attr('href'), { read: 'true' }, function(data) {
+          li.addClass('read').removeClass('unread')
+          var count = $('#header .section.nav .tab .count');
+          if (data == 0)
+            count.remove();
+          else
+            count.html(data);
+        });
       return false;
     }).end().find('.expanded>h3>a').live('click', function() {
       var li = $(this).closest('li');

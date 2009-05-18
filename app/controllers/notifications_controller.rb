@@ -46,7 +46,7 @@ class NotificationsController < ApplicationController #:nodoc:
 
   def update
     copy.read! if params['read']
-    head :ok
+    render :text=>authenticated.notifications.unread.count
   end
 
 protected
