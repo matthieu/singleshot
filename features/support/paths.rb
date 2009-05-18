@@ -26,10 +26,12 @@ module NavigationHelpers
     when /the form for "(.*)"/
       form_path(Task.find_by_title($1))
     when /the frame "(.*)"/
-     frame_id = $1
-     frame = Webrat::XML.xpath_search(current_dom, ".//iframe|frame").find { |elem| Webrat::XML.attribute(elem, 'id') == frame_id }
-     fail "Did not find frame/iframe with ID #{frame_id}" unless frame
-     Webrat::XML.attribute(frame, 'src')
+      frame_id = $1
+      frame = Webrat::XML.xpath_search(current_dom, ".//iframe|frame").find { |elem| Webrat::XML.attribute(elem, 'id') == frame_id }
+      fail "Did not find frame/iframe with ID #{frame_id}" unless frame
+      Webrat::XML.attribute(frame, 'src')
+    when /the inbox/
+      notifications_path
     else
       raise "Can't find mapping from \"#{page_name}\" to a path.\n" +
         "Now, go and add a mapping in features/support/paths.rb"
