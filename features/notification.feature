@@ -68,7 +68,6 @@ Features: Sending notification
     And I follow "Mark your calendar"
     Then I should see "Mark your calendar"
     And I should see "Cool event coming up"
-    #And I should see "High priority"
     Then I should receive the email
     """
     From:     notifications@localhost

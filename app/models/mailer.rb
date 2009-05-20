@@ -14,7 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-class NotificationMailer < ActionMailer::Base
+class Mailer < ActionMailer::Base
+
+  helper :application
+  layout 'mailer'
+
   def notification(notification, recipient)
     subject      notification.subject
     from         "Notifications <notifications@#{default_url_options[:host]}>"
@@ -23,4 +27,5 @@ class NotificationMailer < ActionMailer::Base
     body         :body => notification.body
     content_type 'text/html'
   end
+
 end

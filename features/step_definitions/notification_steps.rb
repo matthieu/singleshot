@@ -29,7 +29,10 @@ end
 Then /^I should receive the email$/ do |yaml|
   email = ActionMailer::Base.deliveries.first
   email.should_not be_nil
-  YAML.load(yaml).each do |name, value|
+  expects = YAML.load(yaml)
+  body = expects.delete('Body')
+  expects.each do |name, value|
     Array(email.send(name.downcase.underscore)).join.strip.should == value
   end
+  email.body.should include(body)
 end
