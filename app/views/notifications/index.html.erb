@@ -1,5 +1,4 @@
-<% @title = 'Inbox' %>
-<% @atom_feed_url = notifications_url(:format=>:atom, :access_key=>authenticated.access_key) %>
+<% @title = t('.title') %>
 <ol class='dates hfeed'>
   <% for date, copies in @copies.group_by{ |copy| copy.notification.created_at.to_date } %>
     <li class='date'>
@@ -12,9 +11,8 @@
                 <span class='subject'><%= h(notification.subject) %></span>
                 <span class='body'><%= h(truncate(notification.body, :length=>500)) %></span>
               <% end %></h3>
-              <p class='meta'><%= link_to_person notification.creator if notification.creator %>
-                <span class='published'><%= l(notification.created_at, :format=>:hour_minute) %></span>
-              </p>
+              <p class='meta'><%=t '.meta', :published=>l(notification.created_at, :format=>:hour_minute),
+                                            :creator=>(notification.creator && link_to_person(notification.creator)) %></p>
             </div>
             <div class='expanded hidden'>
               <%= render :partial=>'notification', :object=>notification %>

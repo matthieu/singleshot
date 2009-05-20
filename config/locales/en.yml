@@ -46,10 +46,22 @@ en:
         button:   "Save"
         hint:     "Save & continue"
   templates:
+    index:
+      title:      "Start &hellip;"
+      meta:       "Created {{published}} {{author}}"
     show:
       title:      "Singleshot &mdash; {{title}}"
       back:       "Back to your task list"
       more:       "See more task details (description, priority, etc)"
+  notifications:
+    index:
+      title:      "Inbox"
+      meta:       "{{creator}} {{published}}"
+    show:
+      back:       "Back to your inbox"
+    notification:
+      also:       "See also: "
+      meta:       "Sent on {{published}} {{creator}}"
   graphs:
     show:
       completed:
@@ -79,6 +91,9 @@ en:
       back:       "Back to your task list"
       tasklist:
         link:     "Tasks"
+        hint:     ""
+      start:
+        link:     "Start &hellip;"
         hint:     ""
       activity:
         link:     "Activity"

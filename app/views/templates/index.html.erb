@@ -1,10 +1,10 @@
+<% @title = t('.title') %>
 <ol class='templates'>
   <% @templates.each do |template| %>
     <% content_tag_for 'li', template do %>
       <h2 class='title'><%= link_to h(template.title), url_for(template) %></h2>
       <div class='description'><%= h template.description %></div>
-      <p class='meta'><span class='published'><%= l template.created_at, :format=>:long %></span>
-      <span class='author'><%= link_to_person template.creator if template.creator %></span></p>
+      <p class='meta'><%=t '.meta', :author=>(template.creator && link_to_person(template.creator)), :published=>l(template.created_at, :format=>:long) %></p>
     <% end %>
   <% end %>
 </ol>
