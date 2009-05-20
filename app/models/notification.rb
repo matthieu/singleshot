@@ -35,6 +35,8 @@ class Notification < ActiveRecord::Base
     self[:priority] ||= 2
   end
 
+  default_scope :order=>'created_at DESC'
+
   # -- Descriptive --
   
   attr_accessible :subject, :body, :language, :priority, :task

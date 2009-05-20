@@ -165,7 +165,7 @@ class Person < ActiveRecord::Base
   end
 
   #has_many :notification_copies, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id', :include=>:notification
-  has_many :notifications, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id', :include=>:notification
+  has_many :notifications, :class_name=>'Notification::Copy', :foreign_key=>'recipient_id', :include=>:notification, :order=>'notifications.created_at DESC'
 
   def notification(id)
     notifications.find(:first, :conditions=>[ 'notification_id = ?', id])
