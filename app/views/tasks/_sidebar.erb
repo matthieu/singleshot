@@ -1,29 +1,4 @@
 <ul id='sidebar'>
-  <% if sidebar.activities %>
-    <li class='section'>
-      <h2><%= t('.activity.heading') %></h2>
-      <ol class='activities'>
-        <% sidebar.activities.each do |activity| %>
-          <% content_tag_for 'li', activity do %>
-            <%= translate "activity.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to(h(activity.task.title), url_for(activity.task)) %>
-            <%= content_tag 'span', time_ago_in_words(activity.created_at), :title=>l(activity.created_at), :class=>'published' %>
-          <% end %>
-        <% end %>
-      </ol>
-      <%= link_to t('.activity.link'), activities_url %>
-    </li>
-  <% end %>
-  <% if sidebar.templates %>
-    <li class='section'>
-      <h2><%= t('.templates.heading') %></h2>
-      <ol class='templates'>
-        <% sidebar.templates.each do |template| %>
-          <% content_tag_for 'li', template do %>
-            <%= link_to template.title, template_url(template), :title=>template.description %>
-          <% end %>
-        <% end %>
-      </ol>
-      <%= link_to t('.templates.link'), templates_url %>
-    </li>
-  <% end %>
+  <%= render :partial=>'activities/sidebar', :locals=>{ :activities=>sidebar.activities } if sidebar.activities %>
+  <%= render :partial=>'templates/sidebar', :locals=>{ :templates=>sidebar.templates } if sidebar.templates %>
 </ul>

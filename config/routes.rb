@@ -42,7 +42,7 @@ ActionController::Routing::Routes.draw do |map|
   map.connect ':controller/:action/:id.:format'
 end
 #== Route Map
-# Generated on 13 May 2009 14:13
+# Generated on 20 May 2009 16:20
 #
 #             new_session GET    /session/new(.:format)             {:action=>"new", :controller=>"sessions"}
 #            edit_session GET    /session/edit(.:format)            {:action=>"edit", :controller=>"sessions"}

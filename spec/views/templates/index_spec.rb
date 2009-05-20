@@ -31,7 +31,7 @@ describe '/templates/index' do
     it('should link to template')                   { @templates.each { |t| should have_tag("li#template_#{t.id}>.title>a[href]" ) } }
     it('should show description of each template')  { @templates.each { |t| should have_tag("li#template_#{t.id}>div.description", t.description) } }
     it('should show template creation date/time')   { should have_tag('li.template>p.meta>span.published', 'April 28, 2009 09:30') }
-    it('should link to template creator')           { should have_tag('li.template>p.meta>span.author>a', 'Creator') }
+    it('should link to template creator')           { should have_tag('li.template>p.meta>a', 'Creator') }
   end
 
   describe '(without creator)' do
@@ -41,7 +41,7 @@ describe '/templates/index' do
       render 'templates/index'
     end
 
-    it('should show template creation date/time')   { should have_tag('li.template>p.meta>span.published', 'April 28, 2009 09:30') }
+    it('should show template creation date/time')   { should have_tag('li.template>p.meta>.published', 'April 28, 2009 09:30') }
     it('should not link to anyone')                 { should_not have_tag('li.template .meta a') }
   end
 end

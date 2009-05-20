@@ -1,0 +1,12 @@
+<li class='section'>
+  <h2><%= t('.heading') %></h2>
+  <ol class='activities'>
+    <% activities.each do |activity| %>
+      <% content_tag_for 'li', activity do %>
+        <%= translate "activity.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to(h(activity.task.title), url_for(activity.task)) %>
+        <%= content_tag 'span', time_ago_in_words(activity.created_at), :title=>l(activity.created_at), :class=>'published' %>
+      <% end %>
+    <% end %>
+  </ol>
+  <%= link_to t('.link'), activities_url %>
+</li>

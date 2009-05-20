@@ -21,9 +21,8 @@ describe TemplatesController do
 
   should_route :get, '/templates', :controller=>'templates', :action=>'index'
   describe :get=>'index' do
-    before { authenticate Person.supervisor }
-    before { @templates = Array.new(3) { mock_model(Template) } }
-    expects :listed_for, :on=>Template, :with=>lambda { Person.supervisor }, :returns=>lambda { @templates }
+    before { authenticate Person.owner }
+    before { @templates = Array.new(3) { Template.make } }
 
     describe Mime::HTML do
       should_assign_to(:templates) { @templates }
@@ -137,30 +136,6 @@ describe TemplatesController do
       end
     end
 
-    describe Mime::HTML do
-      should_render_template 'templates/show.html.erb'
-
-      describe '(without form)' do
-        before { @template.form.update_attributes! :html=>nil }
-        should_not_assign_to :iframe_url
-      end
-
-      describe '(with form URL)' do
-        before { @template.create_form :url=>'http://localhost/form' }
-        should_assign_to :iframe_url, :with=>'http://localhost/form'
-      end
-
-      describe '(with form)' do
-        before { @template.create_form :html=>'<input>' }
-        should_assign_to(:iframe_url) { form_url(55) }
-      end
-
-      describe '(unauthenticated)' do
-        before { authenticate nil }
-        should_redirect_to { session_url }
-      end
-    end
-
     describe Mime::JSON do
       it_should_behave_like 'template.show'
       should_respond_with 200
@@ -183,12 +158,6 @@ describe TemplatesController do
         before { authenticate nil }
         should_respond_with 401
       end
-    end
-
-    describe 'disabled' do
-      before { @template.update_attributes! :status=>'disabled' }
-      
-      should_respond_with 404
     end
   end
 

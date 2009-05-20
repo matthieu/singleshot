@@ -1,0 +1,11 @@
+<li class='section'>
+  <h2><%= t('.heading') %></h2>
+  <ol class='templates'>
+    <% templates.each do |template| %>
+      <% content_tag_for 'li', template do %>
+        <%= link_to template.title, task_url(template), :title=>template.description %>
+      <% end %>
+    <% end %>
+  </ol>
+  <%= link_to t('.link'), templates_url %>
+</li>

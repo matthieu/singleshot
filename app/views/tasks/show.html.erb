@@ -1,9 +1,22 @@
-<% content_for :actions do %>
-  <%= button_to t('.claim.button'), task_url(instance, 'task[owner]'=>authenticated), :title=>t('.claim.title') if authenticated.can_claim?(instance) %>
-  <%= button_to t('.done.button'), task_url(instance, 'task[status]'=>'completed'), :title=>t('.done.title') if !@iframe_url && authenticated.can_complete?(instance) %>
-  <%= button_to t('.cancel.button'), task_url(instance, 'task[status]'=>'cancelled'), :confirm=>t('.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(instance) %>
-<% end %>
-<% content_for :dropdown do %>
+<div id='header'>
+  <ol class='sections'>
+    <li class='section logo'><%= link_to image_tag('singleshot-100-20.png', :alt=>'Singleshot'), tasks_url, :title=>t('.back') %></li>
+    <li class='section meta'>
+      <%= content_tag 'span', h(instance.title), :title=>"#{instance.title}\n\n#{instance.description}", :class=>'title' %>
+      <%= link_to image_tag('blue_down.png'), '#details', :class=>'dropdown', :title=>t('.more') %>
+    </li>
+    <% if Task === instance %>
+      <li class='section actions'>
+        <%= button_to t('.claim.button'), task_url(instance, 'task[owner]'=>authenticated), :title=>t('.claim.title') if authenticated.can_claim?(instance) %>
+        <%= button_to t('.done.button'), task_url(instance, 'task[status]'=>'completed'), :title=>t('.done.title') if !@iframe_url && authenticated.can_complete?(instance) %>
+        <%= button_to t('.cancel.button'), task_url(instance, 'task[status]'=>'cancelled'), :confirm=>t('.cancel.confirm'), :title=>t('task.actions.cancel.title') if authenticated.can_cancel?(instance) %>
+      </li>
+    <% end %>
+  </ol>
+</div>
+<div id='details' class='dropdown'>
+  <div class='description'><%= rich_text instance.description %></div>
+  <hr>
   <ul class='meta'>
     <%= content_tag 'li', t("task.priority.#{instance.priority}"), :class=>"priority priority-#{instance.priority}" %>
     <%= content_tag 'li', t('.due_on', :date=>l(instance.due_on, :format=>:long)), :class=>'due_on' if instance.due_on %>
@@ -16,4 +29,5 @@
       </li>
     <% end %>
   </ol>
-<% end %>
+</div>
+<%= content_tag 'iframe', nil, :id=>'frame', :noresize=>'noresize', :src=>@iframe_url if @iframe_url %>

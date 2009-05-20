@@ -43,6 +43,7 @@ class TasksController < ApplicationController #:nodoc:
   def show
     respond_to do |wants|
       wants.html do
+        @instance = authenticated.task(params['id']) rescue authenticated.template(params['id'])
         if instance.form && !instance.form.url.blank?
           @iframe_url = instance.form.url
         elsif instance.form && !instance.form.html.blank?
@@ -64,19 +65,11 @@ class TasksController < ApplicationController #:nodoc:
     end
   end
 
-=begin
-  def completed
-    @tasks = authenticated.tasks.completed.with_stakeholders
-    @datapoints = lambda { authenticated.tasks.completed.group_by { |task| task.updated_at.to_date }.map { |date, entries| entries.size } }
-    respond_with presenting(:task_list, @tasks), :action=>'completed', :to=>[:html, :json, :xml, :atom]
-  end
-=end
-
 protected
 
   helper_method :instance
   def instance
-    @instance ||= authenticated.tasks.find(params['id'])
+    @instance ||= authenticated.task(params['id'])
   end
 
   def sidebar
