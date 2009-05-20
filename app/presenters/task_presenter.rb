@@ -16,6 +16,12 @@
 
 class TaskPresenter < BasePresenter
 
+  module ToXML
+    def to_xml
+      to_param
+    end
+  end
+
   def to_hash
     super do |hash|
       task.singular_roles.each do |role|
@@ -23,12 +29,14 @@ class TaskPresenter < BasePresenter
           hash[role] = person.to_param
         end
       end
+=begin
       task.plural_roles.each do |role|
         role = role.pluralize
         if people = task.send(role)
-          hash[role] = people.map { |person| person.to_param }
+          hash[role] = people.map { |person| person.extend(ToXML) }
         end
       end
+=end
       hash['links'] = [ link_to('self', href) ]
       hash['actions'] = []
       hash['actions'] << action('claim', url_for(:id=>task, 'task[owner]'=>authenticated)) if authenticated.can_claim?(task)
