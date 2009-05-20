@@ -44,27 +44,29 @@ body { position: relative; }
   margin-left: 3px;
 }
 
-
-#main {
-  float: left;
-  overflow: hidden;
-  width: 950px;
+#container {
+  position: relative; 
   margin: 4em 2em 0 2em;
-  padding: 0;
+  width: 950px;
 }
 
+
+#main { width: 635px; }
 ul#sidebar  {
   list-style: none;
-  width: 18em;
+  width: 285px;
   padding: 0;
-  margin: 4em 0 0 0;
+  margin: 0;
   color: #444;
-  overflow: hidden;
+  position: absolute;
+  left: 665px;
+  top: 0;
 }
 #sidebar li.section {
   font-size: 10pt;
   margin: 0 0 2em 0;
   padding: 0.9em;
+  background-color: #f4f4f4;
   border: 1px solid #ddd;
 }
 #sidebar li.section h2 {
@@ -81,51 +83,11 @@ ul#sidebar  {
 #sidebar li.section ol + a { display: block; margin-top: 1.5em; text-align: right }
 
 
-/** Tasks list **/
+/** Pagination **/
 
-table.tasks {
-  table-layout: fixed;
-  width: 100%;
-  border-spacing: 0;
-  border-padding: 0;
-  border: none;
-  padding: 0.6em 1em 2em 1em;
-  font-size: 1em;
-}
-table.tasks thead th {
-  text-align: left;
-  font-weight: bold;
-  padding: 0 0 0.6em 0;
-  padding: 0 0.6em 0.6em 0;
-  margin: 0;
-  border-bottom: 1px solid #bbb;
-}
-table.tasks tbody tr:hover-disable {
-  background-color: #ffffcc;
-  padding: 0 1em 0 1em;
-}
-table.tasks tbody td {
-  text-align: left;
-  vertical-align: top;
-  padding: 0.6em 0.6em 0.6em 0;
-  margin: 0;
-  border-bottom: 1px solid #eee;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-table.tasks tbody td img { vertical-align: middle; }
-table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a { color: #f04040; }
-table.tasks tbody tr.completed td, table.tasks tbody tr.completed td a,
-table.tasks tbody tr.cancelled td, table.tasks tbody tr.cancelled td a { color: #888; }
-table.tasks tbody td .priority_1 { color: #f04040; }
-table.tasks td .button-to input { font-size: 0.7em; }
-
-/** Login **/
-form.login fieldset {
-  width: 35em;
-  margin: 2em auto 2em auto;
-}
-form.login dt {
-  width: 8em;
-}
+div.pagination { margin: 0 auto 0 auto; text-align: center; margin-bottom: 3em; }
+div.pagination a, div.pagination span { margin-left: 0.3em; padding: 0.1em 0.3em 0.2em 0.3em; }
+div.pagination a { border: 1px solid #ccc; }
+div.pagination span { border: 1px solid #ccc; }
+div.pagination a:hover { color: #fff; background-color: #055da4;; }
+div.pagination span.prev_page, div.pagination span.next_page { color: #888; display: none; }

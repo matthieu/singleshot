@@ -1,3 +1,134 @@
+/** Tasks list **/
+
+table.tasks {
+  table-layout: fixed;
+  width: 100%;
+  border-spacing: 0;
+  border-padding: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1em;
+}
+table.tasks thead th {
+  text-align: left;
+  font-weight: bold;
+  padding: 0 0.6em 0.6em 0;
+  margin: 0;
+  border-bottom: 1px solid #bbb;
+}
+table.tasks tbody tr:hover-disable {
+  background-color: #ffffcc;
+  padding: 0 1em 0 1em;
+}
+table.tasks tbody td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.6em 0.6em 0.6em 0;
+  margin: 0;
+  border-bottom: 1px solid #eee;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+table.tasks tbody td img { vertical-align: middle; }
+table.tasks tbody tr.overdue td, table.tasks tbody .overdue td a { color: #f04040; }
+table.tasks tbody tr.completed td, table.tasks tbody tr.completed td a,
+table.tasks tbody tr.cancelled td, table.tasks tbody tr.cancelled td a { color: #888; }
+table.tasks tbody td .priority_1 { color: #f04040; }
+table.tasks td .button-to input { font-size: 0.7em; }
+
+
+/** Templates **/
+
+ol.templates { list-style: none; padding: 0; }
+li.template { padding: 0; margin: 0 0 0.9em 0 }
+li.template h2 { font-size: 12pt; margin: 0 0 0.3em 0; }
+li.template .description { margin: 0 0 0.6em 0; }
+li.template .meta { font-size: 9pt; color: #888; margin: 0 }
+
+
+/** Notifications **/
+
+ol.notifications { list-style: none; margin: 0; padding: 0; }
+li.notification { margin: 0 0 0.9em 0; position: relative; }
+li.notification .summary h3 {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  margin-right: 10em;
+  font-size: 11pt;
+}
+li.notification .summary h3 .subject { color: blue; font-size: 1em; display: inline; }
+li.notification.read .summary h3 .subject { font-weight: normal }
+li.notification .summary .body { display: inline; font-weight: normal; color: #000; }
+li.notification .summary .meta { position: absolute; right: 0; top: 0; }
+.notification .meta { margin: 0; font-size: 9pt; color: #888; }
+
+.notification .expanded {
+  background-color: #f3f3f3;
+  padding: 1em;
+  border: 1px solid #d3d3d3;
+}
+.notification .expanded h3 { margin: 0 0 0.9em }
+.notification .expanded h3 a { color: black; }
+.notification .expanded .task { font-style: italic; margin: 0 0 0.3em }
+.notification .expanded .meta { margin: 0 }
+.notification .expanded .body { }
+.notification .expanded .back { text-align: right; margin: 2em 0 0 0; }
+
+
+/** Chronological list **/
+
+ol.dates { font-size: 1.1em; list-style: none; padding: 0; }
+ol.dates li.date { padding: 0 0 1.2em 0; margin: 0; }
+ol.dates li.date h2 { font-size: 1.0em; padding: 0 0 0.6em 0; margin: 0 0 0.6em 0; border-bottom: 1px solid #ccc; }
+ol.dates li.date ol.tasks { list-style: none; margin: 0; padding: 0; }
+ol.dates li.date ol.tasks li.task { margin: 0 0 0.6em 0; }
+ol.dates li.date abbr.updated { color: #666; font-size: 0.7em; margin-right: 1.2em; }
+
+/** Activities **/
+
+ol.activities { list-style: none; padding: 0; }
+ol.activities li.activity { margin: 0 0 0.6em 0; }
+ol.activities li.activity .published { color: #666; font-size: 0.7em; margin-right: 1.2em; }
+
+
+
+
+
+
+/** Footer **/
+
+div.right {
+  float: right;
+  margin-right: 3em;
+}
+
+/* Nothing semantic about this one, but the sparklines seem to not display properly any other way */
+.right-shifted {
+  margin: 2em 3.6em -3.2em 0;
+  text-align: right;
+}
+.sparkline {
+}
+
+
+
+/** Login **/
+form.login fieldset {
+  width: 35em;
+  margin: 2em auto 2em auto;
+}
+form.login dt {
+  width: 8em;
+}
+
+
+
+
 ul#graphs { }
 ul#graphs li.graph div { height: 150pt; }
 ol.bar-graph {
@@ -34,180 +165,4 @@ ol.bar-graph li span.legend {
   bottom: -2em;
   left: 0;
   width: 100%;
-}
-
-
-
-/** Templates **/
-
-ol.templates {
-  list-style: none;
-  padding: 0;
-  padding: 0.6em 1em 2em 1em;
-}
-li.template { padding: 0; margin: 0 0 0.9em 0 }
-li.template h2 { font-size: 12pt; margin: 0 0 0.3em 0; }
-li.template .description { margin: 0 0 0.6em 0; }
-li.template .meta { font-size: 9pt; color: #888; margin: 0 }
-
-
-/** Notifications **/
-
-ol.notifications { list-style: none; margin: 0; padding: 0.6em 0 2em 0; }
-li.notification { margin: 0 0 0.9em 0; position: relative; }
-li.notification .summary h3 {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-  margin-right: 10em;
-  font-size: 11pt;
-}
-li.notification .summary h3 .subject { color: blue; font-size: 1em; display: inline; }
-li.notification.read .summary h3 .subject { font-weight: normal }
-li.notification .summary .body { display: inline; font-weight: normal; color: #000; }
-li.notification .summary .meta { position: absolute; right: 0; top: 0; }
-.notification .meta { margin: 0; font-size: 9pt; color: #888; }
-
-.notification .expanded {
-  background-color: #f3f3f3;
-  padding: 1em;
-  border: 1px solid #d3d3d3;
-}
-.notification .expanded h3 { margin: 0 0 0.9em }
-.notification .expanded h3 a { color: black; }
-.notification .expanded .task { font-style: italic; margin: 0 0 0.3em }
-.notification .expanded .meta { margin: 0 }
-.notification .expanded .body { }
-.notification .expanded .back { text-align: right; margin: 2em 0 0 0; }
-
-
-
-/** Feed and calendar links **/
-
-ul.alternate {
-  margin: 0;
-  list-style: none;
-  float: right;
-  position: relative;
-}
-ul.alternate li {
-  display: inline;
-}
-ul.alternate a {
-  padding-left: 1em;
-  text-decoration: none;
-}
-ul.alternate img {
-  border: none;
-  vertical-align: bottom;
-  margin: 0.1em;
-}
-
-
-
-
-/** Chronological list **/
-
-ol.dates {
-  font-size: 1.1em;
-  list-style: none;
-  padding: 0;
-}
-ol.dates li.date {
-  padding: 0 0 1.2em 0;
-  margin: 0;
-}
-ol.dates li.date h2 {
-  font-size: 1.0em;
-  padding: 0 0 0.6em 0;
-  margin: 0 0 0.6em 0;
-  border-bottom: 1px solid #ccc;
-}
-ol.dates li.date ol.tasks {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-ol.dates li.date ol.tasks li.task {
-  margin: 0 0 0.6em 0;
-}
-ol.dates li.date abbr.updated {
-  color: #666;
-  font-size: 0.7em;
-  margin-right: 1.2em;
-}
-
-
-/** Activities **/
-
-ol.activities {
-  list-style: none;
-  padding: 0;
-}
-ol.activities li.activity {
-  margin: 0 0 0.6em 0;
-}
-ol.activities li.activity .published {
-  color: #666;
-  font-size: 0.7em;
-  margin-right: 1.2em;
-}
-
-
-/** Navigation **/
-
-div.pagination {
-  margin: 0 auto 0 auto;
-  text-align: center;
-  margin-bottom: 3em;
-}
-div.pagination a, div.pagination span {
-  margin-left: 0.3em;
-  padding: 0.1em 0.3em 0.2em 0.3em;
-}
-div.pagination a {
-  border: 1px solid #ccc;
-}
-div.pagination span {
-  border: 1px solid #ccc;
-}
-div.pagination a:hover {
-  color: #fff;
-  background-color: #055da4;;
-}
-div.pagination span.prev_page, div.pagination span.next_page {
-  color: #888;
-  display: none;
-}
-
-/** Footer **/
-
-#footer {
-}
-
-
-div.right {
-  float: right;
-  margin-right: 3em;
-}
-
-/* Nothing semantic about this one, but the sparklines seem to not display properly any other way */
-.right-shifted {
-  margin: 2em 3.6em -3.2em 0;
-  text-align: right;
-}
-.sparkline {
-}
-
-
-
-/** Login **/
-form.login fieldset {
-  width: 35em;
-  margin: 2em auto 2em auto;
-}
-form.login dt {
-  width: 8em;
 }
