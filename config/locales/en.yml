@@ -30,13 +30,6 @@ en:
       done:
         button:   "Done"
         title:    "Complete task"
-    sidebar:
-      activity:
-        heading:  "Activity"
-        link:     "More &hellip;"
-      templates:
-        heading:  "Start &hellip;"
-        link:     "More &hellip;"
   forms:
     show:
       done:
@@ -45,23 +38,6 @@ en:
       save:
         button:   "Save"
         hint:     "Save & continue"
-  templates:
-    index:
-      title:      "Start &hellip;"
-      meta:       "Created {{published}} {{author}}"
-    show:
-      title:      "Singleshot &mdash; {{title}}"
-      back:       "Back to your task list"
-      more:       "See more task details (description, priority, etc)"
-  notifications:
-    index:
-      title:      "Inbox"
-      meta:       "{{creator}} {{published}}"
-    show:
-      back:       "Back to your inbox"
-    notification:
-      also:       "See also: "
-      meta:       "Sent on {{published}} {{creator}}"
   graphs:
     show:
       completed:
@@ -117,10 +93,6 @@ en:
   activerecord:
     errors:
       models:
-        notification:
-          attributes:
-            recipients:
-              too_short:  "Notification requires at least one recipient."
   # Everything else.
   task:
     priority:
@@ -130,25 +102,6 @@ en:
   person:
     link:
       title:      "{{fullname}}'s profile"
-  activity:
-    show:
-      title: "Activities"
-      subtitle: "Activity from all tasks you own or observe"
-    task:
-      created:    "{{person}} created {{task}}"
-      claimed:    "{{person}} is owner of {{task}}"
-      delegated:  "{{person}} delegated {{task}}"
-      modified:   "{{person}} modified {{task}}"
-      suspended:  "{{person}} suspended {{task}}"
-      resumed:    "{{person}} resumed {{task}}"
-      released:   "{{person}} no longer owner of {{task}}"
-      cancelled:  "{{person}} cancelled {{task}}"
-      completed:  "{{person}} completed {{task}}"
-    template:
-      created:    "{{person}} created the template {{task}}"
-      enabled:    "{{person}} enabled the template {{task}}"
-      disabled:   "{{person}} disabled the template {{task}}"
-      modified:    "{{person}} changed the template {{task}}"
   sparkline:
     loading: "Loading &hellip;"
   date:

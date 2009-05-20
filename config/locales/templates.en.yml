@@ -1,0 +1,8 @@
+en:
+  templates: # Views
+    index:
+      title:      "Start &hellip;"
+      meta:       "Introduced <span class='published'>{{published}}</span> {{author}}"
+    sidebar:
+      heading:    "Start &hellip;"
+      link:       "More &hellip;"

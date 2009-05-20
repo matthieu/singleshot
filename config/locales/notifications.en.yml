@@ -1,0 +1,17 @@
+en:
+  notifications: # Views
+    index:
+      title:      "Inbox"
+      meta:       "{{creator}} {{published}}"
+    show:
+      back:       "Back to your inbox"
+    notification:
+      also:       "See also: "
+      meta:       "Sent on {{published}} {{creator}}"
+  activerecord: # AR
+    errors:
+      models:
+        notification:
+          attributes:
+            recipients:
+              too_short:  "Notification requires at least one recipient."
