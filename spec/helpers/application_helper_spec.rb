@@ -29,8 +29,7 @@ describe ApplicationHelper do
   describe 'rich_text' do
     before { self.class.extend ActionView::Helpers::SanitizeHelper::ClassMethods }
     it('should return simple text verbatim')  { rich_text("TPS report").should =~ /TPS report/ }
-    it('should return most HTML verbatim')    { rich_text("<b>TPS</b> report<br>").should =~ /<b>TPS<\/b> report<br>/ }
-    it('should sanitize HTML')                { rich_text("<script>boo!</script><a href=\"javascript:void\">link</a>").should == "<p><a>link</a></p>" }
+    it('should escape HTML')                  { rich_text("<b>TPS</b> report<br>").should =~ /&lt;b&gt;TPS&lt;\/b&gt; report&lt;br&gt;/ }
     it('should format paragraphs')            { rich_text("yes\n\nno").should =~ /<p>yes<\/p>\s*<p>no<\/p>/ }
     it('should transform links')              { rich_text("http://cool").should =~ /<a href="http:\/\/cool">http:\/\/cool<\/a>/ }
   end
