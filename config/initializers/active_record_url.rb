@@ -1,5 +1,4 @@
-# Singleshot
-# Copyright (C) 2008-2009  Intalio, Inc
+# Singleshot  Copyright (C) 2008-2009  Intalio, Inc
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -15,13 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-config.cache_classes = true
-config.whiny_nils = true
-config.action_controller.consider_all_requests_local = true
-config.action_controller.perform_caching             = false
-config.action_controller.allow_forgery_protection    = false
-config.action_mailer.delivery_method = :test
-
-config.action_mailer.default_url_options = { :host=>'example.com' }
-
-config.gem 'test-unit',         :version=>'1.2.3', :lib=>false if RUBY_VERSION >= '1.9.0' # RSpec insists.
+class ActiveRecord::Base
+  # Need these to generate IDs and resource URLs (e.g Webhooks).
+  include  ActionController::UrlWriter
+  default_url_options.update ActionMailer::Base.default_url_options
+end
+Presenter::Base.default_url_options = ActionMailer::Base.default_url_options

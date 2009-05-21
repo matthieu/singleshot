@@ -17,7 +17,7 @@
 class BasePresenter < Presenter::Base # Shared by Task and Template.
   # Returns authenticated user. Use this to determine which attributes to update/show.
   def authenticated
-    controller.send(:authenticated)
+    controller && controller.send(:authenticated)
   end
 
   def update!(attrs)

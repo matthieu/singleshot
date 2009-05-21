@@ -65,7 +65,7 @@ module Presenter
       CGI::escapeHTML(text)
     end
 
-    include ActionController::UrlWriter
+    include ActionController::UrlWriter, ActionController::PolymorphicRoutes
     # TODO: do we need this?
     # default_url_options[:host] = 'test.host' if defined?(RAILS_ENV) && RAILS_ENV == 'test'
 =begin
@@ -77,19 +77,19 @@ module Presenter
       end
     end
     alias_method_chain :url_for, :controller
-=end
     def url_for(options = {})
       controller.url_for(options)
     end
+=end
     
     def href
-      url_for(object)
+      polymorphic_url(object)
     end
 
     # Request to which this controller is responding.
-    def request
-      controller && controller.request
-    end
+    #def request
+    #  controller && controller.request
+    #end
     
     # Converts object into a hash.  JSON, XML and other output formats use this
     # before serializing the result into the respective content type.
@@ -110,17 +110,18 @@ module Presenter
     
     # Returns an ID using the host name, object class and object identifier.
     def gid_for(object)
-      "tag:#{request.host},#{2009}:#{self.class.object_name}/#{object.id}"
+      "tag:#{self.class.default_url_options[:host]},#{2009}:#{self.class.object_name}/#{object.id}"
     end
 
     def link_to(rels, url_options, options = {})
-      { :rel=>Array(rels).join(' '), :href=>url_for(url_options) }.merge(options.slice(:title, :type))
+      { :rel=>Array(rels).join(' '), :href=>url_options }.merge(options.slice(:title, :type))
     end
 
     def action(name, url_options, *args)
+      url = url_options.kind_of?(String) ? url_options : url_for(url_options)
       options = args.extract_options!
       method = args.shift || 'post'
-      { :name=>name, :url=>url_for(url_options), :method=>method }.merge(options.slice(:method, :title, :enctype))
+      { :name=>name, :url=>url, :method=>method }.merge(options.slice(:method, :title, :enctype))
     end
   end
 end

@@ -56,7 +56,14 @@ class Webhook < ActiveRecord::Base
   def send_notification
     uri = URI.parse(url)
     Net::HTTP.start(uri.host, uri.port) do |http|
-      http.post uri.path, task.to_xml, 'Content-Type'=>enctype
+      case enctype
+      when Mime::XML
+        http.post uri.path, TaskPresenter.new(nil, task).to_xml, 'Content-Type'=>Mime::XML
+      when Mime::JSON
+        http.post uri.path, TaskPresenter.new(nil, task).to_json, 'Content-Type'=>Mime::JSON
+      else
+        http.post uri.path, { 'id'=>task.id, 'url'=>task_url(task) }.to_query, 'Content-Type'=>Mime::URL_ENCODED_FORM
+      end
     end 
   end
 

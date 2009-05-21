@@ -39,9 +39,11 @@ class TaskPresenter < BasePresenter
 =end
       hash['links'] = [ link_to('self', href) ]
       hash['actions'] = []
-      hash['actions'] << action('claim', url_for(:id=>task, 'task[owner]'=>authenticated)) if authenticated.can_claim?(task)
-      hash['actions'] << action('complete', url_for(:id=>task, 'task[status]'=>'completed')) if authenticated.can_complete?(task)
-      hash['actions'] << action('cancel', url_for(:id=>task, 'task[status]'=>'cancelled')) if authenticated.can_cancel?(task)
+      if authenticated
+        hash['actions'] << action('claim', task_url(task, 'task[owner]'=>authenticated)) if authenticated.can_claim?(task)
+        hash['actions'] << action('complete', task_url(task, 'task[status]'=>'completed')) if authenticated.can_complete?(task)
+        hash['actions'] << action('cancel', task_url(task, 'task[status]'=>'cancelled')) if authenticated.can_cancel?(task)
+      end
     end
   end
 

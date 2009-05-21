@@ -59,4 +59,38 @@ describe Webhook do
   should_not_validate_presence_of :hmac_key
 
   should_allow_mass_assignment_of :event, :url, :http_method, :enctype, :hmac_key
+
+  describe '.send_notification' do
+    before do
+      @request = {}
+      Net::HTTP.should_receive(:start).with('example.com', 80).and_yield(http = mock(Net::HTTP)).and_return do |host, port|
+        @request[:url] = "http://#{host}:#{port}#{@request[:url]}" # and_yield => http.post => here
+      end
+      http.should_receive(:post) { |path, data, headers| @request.update(:url=>path, :body=>data).update(headers) }
+      @task = Task.make :id=>78
+      @webhook = Webhook.make :task=>@task
+    end
+    subject { @webhook.send_notification ; @request }
+
+    it('should send notification to webhook URL')    { subject[:url].should == 'http://example.com:80/completed' }
+
+    describe 'XML' do
+      before { @webhook.update_attributes! :enctype=>Mime::XML }
+      it('should use content type application/xml')  { subject['Content-Type'].should == 'application/xml' }
+      it('should send XML representation')           { Hash.from_xml(subject[:body]).should include('task') }
+    end
+
+    describe 'JSON' do
+      before { @webhook.update_attributes! :enctype=>Mime::JSON }
+      it('should use content type application/json') { subject['Content-Type'].should == 'application/json'}
+      it('should send JSON representation')          { ActiveSupport::JSON.decode(subject[:body]).should include('task') }
+    end
+
+    describe 'URL-encoded' do
+      before { @webhook.update_attributes! :enctype=>Mime::URL_ENCODED_FORM }
+      it('should use content type URL encoded')      { subject['Content-Type'].should == 'application/x-www-form-urlencoded' }
+      it('should send ID and URL')                   { CGI::parse(subject[:body]).should == { 'id'=>[@task.id.to_s],
+                                                                                              'url'=>['http://example.com/tasks/78'] } }
+    end
+  end
 end
