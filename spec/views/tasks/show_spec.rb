@@ -40,7 +40,7 @@ describe '/tasks/show' do
   should_have_tag '#details div.description', "Employee wants their leave of absence approved"
   should_have_tag '#details ul.meta li.priority.priority-2', "Normal priority"
   should_not_have_tag '#details ul.meta li.due_on'
-  should_have_tag '#details ol.activities li span.title + span.created'
+  should_have_tag '#details ol.activities li span.title + span.published'
   should_have_tag '#details ol.activities li span.title a.fn.url'
   should_have_tag '#details ol.activities li', /Creator created this task/
   

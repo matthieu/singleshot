@@ -1,5 +1,8 @@
 en:
   tasks: # Views
+    index:
+      title:      "Tasks list"
+      subtitle:   ""
     show:
       due_on:     "Due on {{date}}"
       this:       "this task"

@@ -1,6 +1,6 @@
 atom_feed :root_url=>@alternate[Mime::HTML] do |feed|
-  feed.title "Singleshot: #{@title}"
-  feed.subtitle @subtitle
+  feed.title "Singleshot: #{t('.title')}"
+  feed.subtitle t('.title')
   feed.updated @tasks.map(&:updated_at).max
   feed.link :href=>@next, :rel=>'next', :type=>Mime::ATOM if @next
   feed.link :href=>@previous, :rel=>'previous', :type=>Mime::ATOM if @previous

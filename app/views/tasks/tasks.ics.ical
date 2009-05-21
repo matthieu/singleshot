@@ -1,6 +1,6 @@
 calendar.prodid '-//Apache.org//Singleshot//EN'
-calendar.x_wr_calname 'Singleshot - ' + @title
-calendar.x_wr_caldesc @subtitle
+calendar.x_wr_calname 'Singleshot - ' + t('.title')
+calendar.x_wr_caldesc t('.subtitle')
 for task in @tasks
   calendar.todo task do |todo|
     todo.summary task.title
