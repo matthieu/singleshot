@@ -77,8 +77,8 @@ protected
   end
 
   helper_method :sidebar
-  # No sidebar by default.
   def sidebar
+    ApplicationHelper::Sidebar.new @activities, @templates
   end
 
 end

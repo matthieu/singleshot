@@ -18,7 +18,7 @@ class NotificationsController < ApplicationController #:nodoc:
   respond_to :html, :json, :xml
 
   def index
-    @copies = authenticated.notifications.paginate(:page=>params['page'], :per_page=>50)
+    @copies = authenticated.notifications.paginate(:page=>params['page'])
     respond_to do |wants|
       wants.html
       wants.any { respond_with presenting(@copies.map(&:notification), :name=>'notifications') }

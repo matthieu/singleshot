@@ -1,0 +1,29 @@
+en:
+  tasks: # Views
+    show:
+      due_on:     "Due on {{date}}"
+      this:       "this task"
+      claim:
+        button:   "Claim"
+        title:    "Claim task"
+      cancel:
+        button:   "Cancel"
+        title:    "Cancel task"
+        confirm:  "Are you sure?"
+      done:
+        button:   "Done"
+        title:    "Complete task"
+      published:  "{{ago}} ago"
+  forms:
+    show:
+      done:
+        button:   "Done"
+        hint:     "Complete this task & return to task list"
+      save:
+        button:   "Save"
+        hint:     "Save & continue"
+  task: # AR
+    priority:
+      "1":        "High priority"
+      "2":        "Normal priority"
+      "3":        "Low priority"

@@ -1,6 +1,6 @@
 calendar.prodid '-//Apache.org//Singleshot//EN'
-calendar.x_wr_calname 'Singleshot - ' + @title
-calendar.x_wr_caldesc @subtitle
+calendar.x_wr_calname 'Singleshot - ' + t('.title')
+calendar.x_wr_caldesc t('.subtitle')
 for (task, person, published), related in @activities.group_by { |activity| [activity.task, activity.person, activity.created_at] }
   calendar.event related.first do |event|
     event.dtstart published

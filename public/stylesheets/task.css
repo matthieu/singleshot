@@ -25,7 +25,7 @@ body { overflow: hidden; }
 #details {
   display: none;
   position: absolute;
-  left: 135px;
+  left: 145px;
   top: 35px;
   z-index: 2000;
   width: 42em;
@@ -43,7 +43,7 @@ body { overflow: hidden; }
 
 #details ol.activities { list-style: none; padding: 0; }
 #details li.activity { margin-bottom: 0.3em; }
-#details li.activity .created { font-size: 90%; color: #8A8A8A; }
+#details li.activity .published { font-size: 90%; color: #8A8A8A; }
 
 #frame {
   position: relative;

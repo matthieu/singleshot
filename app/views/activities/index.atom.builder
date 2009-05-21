@@ -1,6 +1,6 @@
 atom_feed :root_url=>@root_url do |feed|
-  feed.title "Singleshot: #{@title}"
-  feed.subtitle @subtitle
+  feed.title "Singleshot: #{t('.title')}"
+  feed.subtitle t('.subtitle')
   feed.updated @activities.first.created_at unless @activities.empty?
   feed.link :href=>@next, :rel=>'next', :type=>Mime::ATOM if @next
   feed.link :href=>@previous, :rel=>'previous', :type=>Mime::ATOM if @previous

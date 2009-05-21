@@ -45,3 +45,13 @@ form dl dd { margin: 0 0 0.9em 0; }
 form dl dd input[type=radio] { margin: 0.3em 0 0.6em 0.3em; }
 
 .hidden { display: none; }
+
+
+/** Pagination **/
+
+div.pagination { margin: 0 auto 0 auto; text-align: center; margin-bottom: 3em; }
+div.pagination a, div.pagination span { margin-left: 0.1em; padding: 0.1em 0.3em 0.2em 0.3em; border: 1px solid #cce; color: #222; }
+div.pagination a:hover { border: 1px solid #009; }
+div.pagination .current { color: #fff; background-color: #009; border-color: #009 }
+div.pagination .disabled { color: #ccc; border: 1px solid #ccc; }
+div.pagination span.gap { border: 1px solid #fff; }

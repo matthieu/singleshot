@@ -72,10 +72,6 @@ protected
     @instance ||= authenticated.task(params['id'])
   end
 
-  def sidebar
-    ApplicationHelper::Sidebar.new @activities, @templates
-  end
-
   def presenter
     @presenter ||= presenting(instance)
   end

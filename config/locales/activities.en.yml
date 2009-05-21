@@ -1,11 +1,13 @@
 en:
   activities: # Views
-    show:
-      title: "Activities"
-      subtitle: "Activity from all tasks you own or observe"
+    index:
+      title:      "Activities"
+      sparkline:  "Activity in the last 30 days"
+      subtitle:   "Activity from all tasks you own or observe"
     sidebar:
-      heading:  "Activity"
-      link:     "More &hellip;"
+      heading:    "Activity"
+      link:       "More &hellip;"
+      published:  "{{ago}} ago"
   activity: # Expansion
     task:
       created:    "{{person}} created {{task}}"

@@ -19,9 +19,7 @@ class ActivitiesController < ApplicationController #:nodoc:
   respond_to :html, :json, :xml, :atom, :ics
 
   def index
-    @title = t('activity.index.title')
-    @subtitle = t('activity.index.subtitle')
-    @activities = Activity.visible_to(authenticated).paginate(:page=>params['page'], :per_page=>50)
+    @activities = Activity.visible_to(authenticated).paginate(:page=>params['page'])
     @datapoints = lambda { Activity.visible_to(authenticated).since(Date.today - 1.month).datapoints.map(&:last) }
     respond_with presenting(:activities, @activities)
   end

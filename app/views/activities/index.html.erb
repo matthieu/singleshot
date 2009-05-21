@@ -1,5 +1,6 @@
-<%  @atom_feed_url = activities_url(:format=>:atom, :access_key=>authenticated.access_key) %>
-<%= bar_sparkline @datapoints.call, :title=>"Activity in the last 30 days" %>
+<% @title = t('.title') %>
+<% @atom_feed_url = activities_url(:format=>:atom, :access_key=>authenticated.access_key) %>
+<%= bar_sparkline @datapoints.call, :title=>t('.sparkline') %>
 <ol class='dates hfeed'>
   <% for date, activities in @activities.group_by{ |a| a.created_at.to_date } %>
     <li class='date'>
@@ -7,8 +8,8 @@
       <ol class='activities'>
         <% activities.each do |activity| %>
           <% content_tag_for 'li', activity, :class=>'hentry' do %>
-            <%= content_tag 'span', activity.created_at.strftime('%H:%M %p'), :title=>l(activity.created_at), :class=>'published' %>
-            <%= translate "activity.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to(activity.task.title, activity.task) %>
+            <%= content_tag 'span', l(activity.created_at, :format=>:hour_minute), :title=>l(activity.created_at), :class=>'published' %>
+            <%=t "activity.#{activity.name}", :person=>link_to_person(activity.person), :task=>link_to(activity.task.title, activity.task) %>
           <% end %>
         <% end %>
        </ol>

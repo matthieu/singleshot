@@ -1,5 +1,8 @@
 <% content_for :content do %>
   <div id='main'><%= yield %></div>
-  <%= render :partial=>'sidebar', :object=>sidebar %>
+  <ul id='sidebar'>
+    <%= render :partial=>'activities/sidebar', :locals=>{ :activities=>sidebar.activities } if sidebar.activities %>
+    <%= render :partial=>'templates/sidebar', :locals=>{ :templates=>sidebar.templates } if sidebar.templates %>
+  </ul>
 <% end %>
 <%= render :file=>'layouts/application' %>
