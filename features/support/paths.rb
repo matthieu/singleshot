@@ -20,7 +20,7 @@ module NavigationHelpers
     when /activity page/
       activity_path
     when /the task "(.*)"/
-      task_path(Task.find_by_title($1))
+      task_path(Task.find_by_title($1) || Template.find_by_title($1))
     when /the template "(.*)"/
       template_path(Template.find_by_title($1))
     when /the form for "(.*)"/

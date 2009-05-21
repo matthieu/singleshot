@@ -223,19 +223,20 @@ class Task < Base
 
   # -- Activity --
 
-  after_create do |task|
-    creator = task.creator
-    task.modified_by ||= creator
-    task.log! creator, 'task.created' if creator
-    task.log! task.owner, 'task.claimed' if task.owner
+  before_create do |task|
+    task.modified_by ||= task.creator
   end
 
-  before_update do |task|
+  after_create do |task|
+    task.log! task.creator, 'task.created' if task.creator
+  end
+
+  after_save do |task|
+
     changed = task.changed
     if changed.delete('owner')
       past_owner, owner = task.changes['owner']
       if owner
-        task.log! task.modified_by, 'task.delegated' if task.modified_by && task.modified_by != owner
         task.log! owner, 'task.claimed' 
       else
         task.log! past_owner, 'task.released' 
@@ -255,7 +256,13 @@ class Task < Base
         task.log! task.modified_by, 'task.cancelled'  if task.modified_by
       end
     end
-  
+  end
+
+  after_update do |task|
+    if task.changed.include?('owner') && task.owner && task.modified_by != task.owner
+      task.log! task.modified_by, 'task.delegated' if task.modified_by
+    end
+    changed = task.changed - ['owner', 'past_owners', 'status', 'updated_at', 'version']
     task.log! task.modified_by, 'task.modified' unless changed.empty? || task.modified_by.nil?
   end
 

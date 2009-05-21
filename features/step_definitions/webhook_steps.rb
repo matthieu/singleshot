@@ -27,7 +27,7 @@ class RackApp
       Thread.new do
         Rack::Handler::WEBrick.run instance, :Port=>1234, :Logger=>WEBrick::Log.new(nil, WEBrick::Log::ERROR)
       end
-      sleep 0.1
+      sleep 0.5
       @started = true
     end
   end
@@ -43,7 +43,8 @@ class RackApp
   end
 
   def call(env)
-    resource(env['REQUEST_URI']) << { :method=>env['REQUEST_METHOD'], :enctype=>env['CONTENT_TYPE'] }
+    request = Rack::Request.new(env)
+    resource(request.url) << request
     [ '200', {}, 'OK' ]
   end
 end
@@ -55,5 +56,5 @@ Given /^the resource (\S+)$/ do |url|
 end
 
 Then /^the resource (\S+) receives (\S+) notification$/ do |url, method|
-  RackApp.instance.resource(url).last.should include(:method=>method)
+  RackApp.instance.resource(url).last.request_method.should == method
 end

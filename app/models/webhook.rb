@@ -56,7 +56,7 @@ class Webhook < ActiveRecord::Base
   def send_notification
     uri = URI.parse(url)
     Net::HTTP.start(uri.host, uri.port) do |http|
-      http.post uri.path, "foooo", 'Content-Type'=>enctype
+      http.post uri.path, task.to_xml, 'Content-Type'=>enctype
     end 
   end
 
