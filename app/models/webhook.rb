@@ -58,11 +58,11 @@ class Webhook < ActiveRecord::Base
     Net::HTTP.start(uri.host, uri.port) do |http|
       case enctype
       when Mime::XML
-        http.post uri.path, TaskPresenter.new(nil, task).to_xml, 'Content-Type'=>Mime::XML
+        http.post uri.path, TaskPresenter.new(nil, task).to_xml, 'Content-Type'=>Mime::XML.to_s
       when Mime::JSON
-        http.post uri.path, TaskPresenter.new(nil, task).to_json, 'Content-Type'=>Mime::JSON
+        http.post uri.path, TaskPresenter.new(nil, task).to_json, 'Content-Type'=>Mime::JSON.to_s
       else
-        http.post uri.path, { 'id'=>task.id, 'url'=>task_url(task) }.to_query, 'Content-Type'=>Mime::URL_ENCODED_FORM
+        http.post uri.path, { 'id'=>task.id, 'url'=>task_url(task) }.to_query, 'Content-Type'=>Mime::URL_ENCODED_FORM.to_s
       end
     end 
   end

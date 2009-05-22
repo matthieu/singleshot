@@ -46,8 +46,8 @@ Features: Sending notification
     """
     Then I should receive the email
     """
-    From:     notifications@localhost
-    Reply-To: noreply@localhost
+    From:     notifications@example.com
+    Reply-To: noreply@example.com
     To:       me@example.com
     Subject: "Mark your calendar"
     Body:    "Cool event coming up"
@@ -70,8 +70,8 @@ Features: Sending notification
     And I should see "Cool event coming up"
     Then I should receive the email
     """
-    From:     notifications@localhost
-    Reply-To: noreply@localhost
+    From:     notifications@example.com
+    Reply-To: noreply@example.com
     To:       me@example.com
     Subject: "Mark your calendar"
     Body:    "Cool event coming up"

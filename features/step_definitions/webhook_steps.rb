@@ -56,5 +56,22 @@ Given /^the resource (\S+)$/ do |url|
 end
 
 Then /^the resource (\S+) receives (\S+) notification$/ do |url, method|
-  RackApp.instance.resource(url).last.request_method.should == method
+  request = RackApp.instance.resource(url).last
+  request.should_not be_nil
+  request.request_method.should == method
+end
+
+Then /^the resource (\S+) receives (\S+) notification for "(.*)"$/ do |url, method, title|
+  Then "the resource #{url} receives #{method} notification"
+  request = RackApp.instance.resource(url).last
+  task = Task.find_by_title(title)
+  p request.media_type
+  case request.media_type
+  when Mime::XML
+    Hash.from_xml(request.body.read)['task']['gid'].should == "tag:example.com,#{task.created_at.year}:task/#{task.id}"
+  when Mime::JSON
+    ActiveSupport::JSON.decode(request.body.read)['task']['gid'].should == "tag:example.com,#{task.created_at.year}:task/#{task.id}"
+  else
+    CGI.parse(request.body.read).should == { 'id'=>[task.id.to_s], 'url'=>['http://example.com' + path_to("the task \"#{title}\"")] }
+  end
 end
