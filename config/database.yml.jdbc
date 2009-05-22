@@ -1,0 +1,11 @@
+development:
+  adapter: jdbc
+  jndi: jdbc/simplexdb
+
+test:
+  adapter: jdbc
+  jndi: jdbc/simplexdb  
+
+production:
+  adapter: jdbc
+  jndi: jdbc/simplexdb
