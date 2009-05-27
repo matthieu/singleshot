@@ -16,3 +16,4 @@ config.action_view.cache_template_loading            = true
 # in lib (Rails takes care of app and plugins).
 config.threadsafe!
 config.eager_load_paths << "#{RAILS_ROOT}/lib"
+config.eager_load_paths << "#{RAILS_ROOT}/app/presenters"
