@@ -21,7 +21,7 @@ module ApplicationHelper
   attr_reader :authenticated
 
   # Used for populating the sidebar template.
-  Sidebar = Struct.new(:activities, :templates)
+  Sidebar = Struct.new(:activities, :templates, :notifications)
 
   # Renders bar sparkline. First argument are data points, second argument are options:
   # * title -- Title to show when hovering over element

@@ -1,0 +1,12 @@
+<li class='section'>
+  <h2><%= t('.heading') %></h2>
+  <ol class='notifications'>
+    <% notifications.map(&:notification).each do |notification| %>
+      <% content_tag_for 'li', notification do %>
+        <%= link_to h(notification.subject), notification %>
+      <% end %>
+    <% end %>
+  </ol>
+  <%= link_to t('.link'), notifications_url %>
+</li>
+
