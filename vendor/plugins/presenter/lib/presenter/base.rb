@@ -110,7 +110,7 @@ module Presenter
     
     # Returns an ID using the host name, object class and object identifier.
     def gid_for(object)
-      "tag:#{self.class.default_url_options[:host]},#{2009}:#{self.class.object_name}/#{object.id}"
+      "tag:#{self.class.default_url_options[:host]},#{object.created_at.year}:#{self.class.object_name}/#{object.id}"
     end
 
     def link_to(rels, url_options, options = {})
