@@ -25,6 +25,7 @@ class TasksController < ApplicationController #:nodoc:
       wants.html do
         @activities = Activity.visible_to(authenticated).since(Date.today - 1.week).limit(5)
         @templates = authenticated.templates
+        @notifications = authenticated.notifications.unread
         render :layout=>'main'
       end
       wants.any { respond_with presenting(:task_list, @tasks), :to=>[:html, :json, :xml, :atom] }

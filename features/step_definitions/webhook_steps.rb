@@ -65,7 +65,6 @@ Then /^the resource (\S+) receives (\S+) notification for "(.*)"$/ do |url, meth
   Then "the resource #{url} receives #{method} notification"
   request = RackApp.instance.resource(url).last
   task = Task.find_by_title(title)
-  p request.media_type
   case request.media_type
   when Mime::XML
     Hash.from_xml(request.body.read)['task']['gid'].should == "tag:example.com,#{task.created_at.year}:task/#{task.id}"

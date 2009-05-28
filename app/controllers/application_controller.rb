@@ -78,7 +78,7 @@ protected
 
   helper_method :sidebar
   def sidebar
-    ApplicationHelper::Sidebar.new @activities, @templates
+    ApplicationHelper::Sidebar.new @activities, @templates, @notifications
   end
 
 end

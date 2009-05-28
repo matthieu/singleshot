@@ -8,6 +8,9 @@ en:
     notification:
       also:       "See also: "
       meta:       "Sent on {{published}} {{creator}}"
+    sidebar:
+      heading:    "Notifications"
+      link:       "More &hellip;"
   activerecord: # AR
     errors:
       models:

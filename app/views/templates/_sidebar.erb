@@ -3,7 +3,7 @@
   <ol class='templates'>
     <% templates.each do |template| %>
       <% content_tag_for 'li', template do %>
-        <%= link_to template.title, task_url(template), :title=>template.description %>
+        <%= link_to h(template.title), task_url(template), :title=>h(template.description) %>
       <% end %>
     <% end %>
   </ol>
