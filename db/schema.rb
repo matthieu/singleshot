@@ -27,11 +27,11 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
   create_table "notification_copies", :force => true do |t|
     t.integer "notification_id",                    :null => false
     t.integer "recipient_id",                       :null => false
-    t.boolean "read",            :default => false, :null => false
+    t.boolean "marked_read",     :default => false, :null => false
   end
 
   add_index "notification_copies", ["notification_id", "recipient_id"], :name => "index_notification_copies_on_notification_id_and_recipient_id", :unique => true
-  add_index "notification_copies", ["recipient_id", "read"], :name => "index_notification_copies_on_recipient_id_and_read"
+  add_index "notification_copies", ["recipient_id", "marked_read"], :name => "index_notification_copies_on_recipient_id_and_marked_read"
 
   create_table "notifications", :force => true do |t|
     t.string   "subject",    :limit => 200,  :null => false

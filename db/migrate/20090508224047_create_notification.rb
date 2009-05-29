@@ -13,10 +13,10 @@ class CreateNotification < ActiveRecord::Migration
     create_table :notification_copies do |t|
       t.belongs_to :notification, :null=>false
       t.belongs_to :recipient,    :null=>false
-      t.boolean    :read,         :null=>false, :default=>false
+      t.boolean    :marked_read,  :null=>false, :default=>false
     end
     add_index :notification_copies, [:notification_id, :recipient_id], :unique => true
-    add_index :notification_copies, [:recipient_id, :read]
+    add_index :notification_copies, [:recipient_id, :marked_read]
   end
 
   def self.down
