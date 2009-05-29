@@ -119,9 +119,9 @@ describe Notification do
     should_belong_to :notification
     should_belong_to :recipient
     should_have_readonly_attributes :notification, :recipient
-    should_have_column :read, :type=>:boolean
+    should_have_column :marked_read, :type=>:boolean
     should_have_index [:notification_id, :recipient_id], :unique=>true
-    should_have_index [:recipient_id, :read]
+    should_have_index [:recipient_id, :marked_read]
 
     describe '.read!' do
       it('should make copy as read') { lambda { subject.read! }.should change(subject, :read?).to(true) }

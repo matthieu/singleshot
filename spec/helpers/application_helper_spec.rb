@@ -45,7 +45,7 @@ describe ApplicationHelper do
       before { Notification.make :recipients=>[Person.other] }
       before { Notification.make }
       it('should return count of unread notifications') { should have_tag('span.count', '1') }
-      it('should return empty string if no unread notifiactions') { Notification::Copy.update_all :read=>true ; subject.should == '' }
+      it('should return empty string if no unread notifiactions') { Notification::Copy.update_all :marked_read=>true ; subject.should == '' }
     end
   end
 

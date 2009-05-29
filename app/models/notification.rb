@@ -80,11 +80,15 @@ class Notification < ActiveRecord::Base
     # Make this copy as read. For example:
     #   notif.copy(authenticated).read!
     def read!
-      update_attributes! :read=>true
+      update_attributes! :marked_read=>true
     end
 
-    named_scope :read, :conditions=>'notification_copies.read'
-    named_scope :unread, :conditions=>'!notification_copies.read'
+    def read?
+      marked_read?
+    end
+
+    named_scope :read, :conditions=>'notification_copies.marked_read'
+    named_scope :unread, :conditions=>'!notification_copies.marked_read'
   end
 
 
