@@ -89,8 +89,7 @@ class Template < Base
   def to_task
     modified_by.tasks.new do |task|
       attrs = Template.attr_accessible - ['form', 'owner', 'webhooks']
-      # We need this because stakeholders are not retrieved if we just used task.attributes = template.attributes
-      Template.attr_accessible.each do |attr|
+      attrs.each do |attr|
         task.send "#{attr}=", send(attr)
       end
       task.form = form.clone if form

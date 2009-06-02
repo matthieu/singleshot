@@ -74,7 +74,13 @@ describe Template do
     it('should have same excluded owners as template')  { subject.excluded_owners.should == @template.excluded_owners }
     it('should have same supervisors as template')      { subject.supervisors.should == @template.supervisors }
     it('should have same core attributes as template')  { subject.attributes.should include(@template.attributes.slice(@attributes)) }
-    it('should clone form')                             { subject.form.should_not be(@template.form) }
+    it('should clone form')                             { subject.form.html.should =~ /<input name/
+                                                          subject.form.html.should == @template.form.html
+                                                          subject.form.should_not be(@template.form) }
+    it('should clone webhooks')                         { subject.webhooks.map(&:url).should == ['http://example.com/completed']
+                                                          subject.webhooks.map(&:url).should == @template.webhooks.map(&:url)
+                                                          subject.webhooks.first.should_not be(@template.webhooks.first) }
+                                                          
   end
 
   describe 'newly created' do

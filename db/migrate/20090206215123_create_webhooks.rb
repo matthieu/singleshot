@@ -24,8 +24,7 @@ class CreateWebhooks < ActiveRecord::Migration
       t.string     :enctype,      :null=>false
       t.string     :hmac_key
     end
-
-    add_index :webhooks, [:task_id], :unique => true
+    add_index :webhooks, [:task_id]
   end
 
   def self.down

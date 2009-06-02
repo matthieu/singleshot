@@ -27,12 +27,11 @@ config.gem 'annotate',          :version=>'~>2.0', :lib=>false
 # RSpec and Cucumber for BDD.
 config.gem 'rspec-rails',       :version=>'~>1.2', :lib=>false
 config.gem 'cucumber',          :version=>'~>0.3', :lib=>false
-config.gem 'nokogiri',          :version=>'~>1.2.0', :lib=>false # a) faster, b) solves an encoding bug under Ruby 1.9
 config.gem 'webrat',            :version=>'~>0.4', :lib=>false
 config.gem 'remarkable_rails',  :version=>'~>3.1', :lib=>false
 # Fake data and blueprint models.
 config.gem 'faker',             :version=>'~>0.3', :lib=>false
-config.gem 'notahat-machinist', :version=>'~>0.3', :lib=>false
+config.gem 'notahat-machinist', :version=>'~>1.0', :lib=>false
 
 # To enable Rack::Bug get the bookmarklet from http://localhost:3000/__rack_bug__/bookmarklet.html
 #config.middleware.use 'Rack::Bug'

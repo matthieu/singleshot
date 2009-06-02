@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require 'machinist'
+require 'machinist/active_record'
 
 
 Person.blueprint do
@@ -120,6 +120,7 @@ Template.blueprint do
   supervisors       { [Person.supervisor] }
   potential_owners  { [Person.owner, Person.potential] }
   form.html = "<input name='data[foo]'>"
+  object.webhooks = [Webhook.make]
 end
 
 Notification.blueprint do
