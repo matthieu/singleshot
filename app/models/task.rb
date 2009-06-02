@@ -276,15 +276,6 @@ class Task < Base
   # Locking column used for versioning and detecting update conflicts.
   set_locking_column 'version'
 
-  def clone
-    returning super do |clone|
-      stakeholders.each do |sh|
-        clone.stakeholders.build :role=>sh.role, :person=>sh.person
-      end
-      clone.form = form.clone if form
-    end
-  end
-
 
 =begin
   def to_param #:nodoc:

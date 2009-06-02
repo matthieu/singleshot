@@ -97,6 +97,6 @@ ActiveRecord::Schema.define(:version => 20090508224047) do
     t.string  "hmac_key"
   end
 
-  add_index "webhooks", ["task_id"], :name => "index_webhooks_on_task_id", :unique => true
+  add_index "webhooks", ["task_id"], :name => "index_webhooks_on_task_id"
 
 end
