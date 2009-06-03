@@ -19,7 +19,7 @@ Rails::Initializer.run do |config|
   # Specify gems that this application depends on and have them installed with rake gems:install
   if RUBY_PLATFORM[/java/]
     config.gem 'activerecord-jdbcmysql-adapter',  :version=>'~>0.9', :lib=>false
-    config.gem 'jruby-openssl',                   :version=>'0.4', :lib=>false
+    config.gem 'jruby-openssl',                   :version=>'0.5', :lib=>false
   elsif RUBY_VERSION >= '1.9.0'
     # TODO: find the MySQL gem that works with 1.9.1.
   else
