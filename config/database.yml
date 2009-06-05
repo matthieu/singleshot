@@ -19,7 +19,7 @@ test:
   pool: 5
   timeout: 5000
 
-webapp:
+webapp_local:
   adapter: jdbc
   jndi: jdbc/simplexdb
 
