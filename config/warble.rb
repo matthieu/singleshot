@@ -67,7 +67,7 @@ Warbler::Config.new do |config|
   # config.manifest_file = "config/MANIFEST.MF"
 
   # Value of RAILS_ENV for the webapp -- default as shown below
-  # config.webxml.rails.env = ENV['RAILS_ENV'] || 'production'
+  config.webxml.rails.env = ENV['RAILS_ENV'] || 'webapp'
 
   # Application booter to use, one of :rack, :rails, or :merb. (Default :rails)
   # config.webxml.booter = :rails
