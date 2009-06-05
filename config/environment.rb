@@ -25,7 +25,6 @@ Rails::Initializer.run do |config|
   else
     config.gem 'mysql', :version=>'~>2.7', :lib=>false
   end
-  config.gem 'nokogiri',              :version=>'~>1.3.0' # a) faster, b) solves an encoding bug under Ruby 1.9
   config.gem 'mislav-will_paginate',  :version=>'2.3.11', :lib=>'will_paginate'
   config.gem 'liquid',                :version=>'2.0'
 

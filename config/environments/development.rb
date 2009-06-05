@@ -28,6 +28,7 @@ config.gem 'annotate',          :version=>'~>2.0', :lib=>false
 config.gem 'rspec-rails',       :version=>'~>1.2', :lib=>false
 config.gem 'cucumber',          :version=>'~>0.3', :lib=>false
 config.gem 'webrat',            :version=>'~>0.4', :lib=>false
+config.gem 'nokogiri',          :version=>'~>1.3.0' # a) faster, b) solves an encoding bug under Ruby 1.9
 config.gem 'remarkable_rails',  :version=>'~>3.1', :lib=>false
 # Fake data and blueprint models.
 config.gem 'faker',             :version=>'~>0.3', :lib=>false
