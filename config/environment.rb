@@ -19,13 +19,12 @@ Rails::Initializer.run do |config|
   # Specify gems that this application depends on and have them installed with rake gems:install
   if RUBY_PLATFORM[/java/]
     config.gem 'activerecord-jdbcmysql-adapter',  :version=>'~>0.9', :lib=>false
-    config.gem 'jruby-openssl',                   :version=>'0.4', :lib=>false
+    config.gem 'jruby-openssl',                   :version=>'0.5', :lib=>false
   elsif RUBY_VERSION >= '1.9.0'
     # TODO: find the MySQL gem that works with 1.9.1.
   else
     config.gem 'mysql', :version=>'~>2.7', :lib=>false
   end
-  config.gem 'nokogiri',              :version=>'~>1.3.0' # a) faster, b) solves an encoding bug under Ruby 1.9
   config.gem 'mislav-will_paginate',  :version=>'2.3.11', :lib=>'will_paginate'
   config.gem 'liquid',                :version=>'2.0'
 
