@@ -20,7 +20,7 @@ test:
   timeout: 5000
 
 webapp_local:
-  adapter: jdbc
+  adapter: jdbcmysql
   jndi: jdbc/simplexdb
 
 # MySQL.  Versions 4.1 and 5.0 are recommended.
